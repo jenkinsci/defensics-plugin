@@ -182,12 +182,10 @@ public class ApiService {
   public void saveResults(String runId, FilePath reportFolder)
       throws IOException, DefensicsRequestException, InterruptedException {
 
-    final InputStream cloudReportStream;
-    try {
-      cloudReportStream = defensicsClient.downloadReport(
+    try (InputStream cloudReportStream = defensicsClient.downloadReport(
           Collections.singletonList(runId),
           HtmlReport.Cloud.toString()
-      );
+    )) {
       reportFolder.mkdirs();
 
       // Extract contents of the zip if report contains multiple files.
@@ -246,6 +244,14 @@ public class ApiService {
       return defensicsClient.getConfigurationSuite(id);
     } catch (DefensicsClientException e) {
       throw new DefensicsRequestException("Could not fetch suite information", e);
+    }
+  }
+
+  public void deleteRun(String runId) throws DefensicsRequestException {
+    try {
+      defensicsClient.deleteRun(runId);
+    } catch (DefensicsClientException e) {
+      throw new DefensicsRequestException("Could not delete run", e);
     }
   }
 }

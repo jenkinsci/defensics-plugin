@@ -18,8 +18,6 @@ package com.synopsys.defensics.jenkins;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.synopsys.defensics.api.ApiService;
 import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.RunState;
@@ -40,8 +38,6 @@ import hudson.model.Result;
 import hudson.util.VersionNumber;
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.URL;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.Optional;
@@ -118,36 +114,28 @@ public class FuzzJobRunner {
         runResult = Result.FAILURE;
       }
     } catch (InterruptedException | ClosedByInterruptException | InterruptedIOException e) {
-      logStacktrace(e);
+      // Let's clear the thread interrupted flag now, otherwise e.g. OkHttpClient doesn't do
+      // any of the cleanup requests.
+      Thread.interrupted();
       handleRunInterruption(defensicsRun);
       runResult = Result.ABORTED;
     } catch (Exception e) {
-      logStacktrace(e);
       // The reason this throws an exception instead of logging error and setting build result
       // to failure, is so that users can do exception handling in pipeline scripts when there
       // are errors in the fuzzing process.
       throw new AbortException(e.getMessage() != null ? e.getMessage() : "");
     } finally {
-      // TODO: Is run deletion or other clean up needed now?
       if (defensicsRun != null) {
         try {
-          // If interruption comes in this stage, there's currently not much to do to clean up
-          // server side.
+          // TODO: The normal code path could run here without interrupt. When user interrupts job
+          // here, it's not yet handled
           defensicsClient.deleteRun(defensicsRun.getId());
         } catch (DefensicsRequestException e) {
           logger.logError("Could not delete run in API server");
-          logStacktrace(e);
         }
       }
       jenkinsRun.setResult(runResult != null ? runResult : Result.FAILURE);
     }
-  }
-
-  // FIXME Delete after tests pass
-  private void logStacktrace(Throwable e) {
-    final StringWriter sw = new StringWriter();
-    e.printStackTrace(new PrintWriter(sw));
-    logger.println(sw.toString());
   }
 
   /**
@@ -222,13 +210,6 @@ public class FuzzJobRunner {
     Optional<SuiteInstance> suiteInstanceMaybe =
         defensicsClient.getConfigurationSuite(run.getId());
 
-    int tries = 5;
-    while (!suiteInstanceMaybe.isPresent() && tries-- > 0) {
-      Thread.sleep(1000);
-      suiteInstanceMaybe = defensicsClient.getConfigurationSuite(run.getId());
-    }
-
-    logger.println("STATE=" + suiteInstanceMaybe.map(SuiteInstance::getState).toString());
     while (suiteInstanceMaybe.isPresent()
         && suiteInstanceMaybe.get().getState() == SuiteRunState.LOADING) {
 
@@ -312,40 +293,23 @@ public class FuzzJobRunner {
   /**
    * Handles that Defensics run is properly stopped if Jenkins run gets interrupted.
    */
-  private void handleRunInterruption(Run run1) {
+  private void handleRunInterruption(Run run) {
     logger.println("Fuzzing was interrupted.");
 
-
     try {
-      Run run = defensicsClient.getRun(run1.getId());
-      // We can't stop test run if configuration isn't loaded so let's make sure it is
-      // TODO: Is this needed anymore?
+      run = defensicsClient.getRun(run.getId());
 
-      logger.println(
-          "defensicsClient.getConfigurationSuite(run.getId()).get() = " + defensicsClient
-              .getConfigurationSuite(run.getId()).get());
+      // We can't stop test run if suite isn't loaded so let's make sure it is
+      final Optional<SuiteInstance> suiteMaybe = defensicsClient.getConfigurationSuite(run.getId());
 
-      final Optional<SuiteRunState> suiteRunState = Optional.ofNullable(run)
-          .map(e -> e.getConfiguration())
-          .map(e -> e.getSuiteInstance())
-          .map(e -> e.getState());
-      final ObjectMapper om = new ObjectMapper();
-      om.enable(SerializationFeature.INDENT_OUTPUT);
-      logger.println(om.writeValueAsString(run));
-
-      logger.println(suiteRunState.toString());
-      if (run.getState() == RunState.IDLE ||
-          (run.getConfiguration() != null
-          && run.getConfiguration().getSuiteInstance() != null
-          && run.getConfiguration().getSuiteInstance().getState() != SuiteRunState.LOADED)) {
+      if (suiteMaybe.isPresent() && suiteMaybe.get().getState().equals(SuiteRunState.LOADING)) {
         logger.println("Suite loading is ongoing. Waiting for suite to load before unloading it.");
         waitForSuiteLoading(run);
       }
 
-      logger.println("Run final state: " + run.getState());
-
-      // Only try to stop run if it's created and hasn't finished yet
-      if (run != null && run.getState() != RunState.IDLE && run.getState() != RunState.COMPLETED && run.getState() != RunState.ERROR) {
+      // Only try to stop run if it's created and hasn't finished yet. Idle jobs cannot be stopped.
+      if (run != null && run.getState() != RunState.COMPLETED && run.getState() != RunState.ERROR
+        && run.getState() != RunState.IDLE) {
         final String runId = run.getId();
         logger.println("Stopping run.");
         defensicsClient.stopRun(runId);
@@ -372,7 +336,6 @@ public class FuzzJobRunner {
         }
       }
     } catch (DefensicsRequestException | IOException | InterruptedException exception) {
-      logStacktrace(exception);
       logger.logError(
           "Couldn't track that run was COMPLETED, there is a possibility that run configuration "
               + "can't be removed automatically and suite will be left loaded!");

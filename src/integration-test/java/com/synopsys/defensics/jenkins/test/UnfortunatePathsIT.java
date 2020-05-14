@@ -61,12 +61,21 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * End-to-end tests testing failure modes: cases where job fails in different stage in various
- * ways.
+ * ways. NOTE about interrupted jobs: Currently tests trigger job stop when logs contain given
+ * keywords. This makes the exact spot where stop happens in job in-precise and could cause some
+ * jitter in tests.
  *
  * To be able to run these tests, check that things listed in external dependencies are
  * enabled and their configuration is correct.
+ *
+ * Other things to test:
+ * o Jenkins has HTTP address, but server is using HTTPS
+ * o Test that API server reports that suite from testplan is not found.
+ * o etc...
  */
 public class UnfortunatePathsIT {
+  /** Tests are not run until this is true. */
+  private static final boolean hasRequiredDependencies = false;
 
   /*
    * Required external dependencies
@@ -120,6 +129,11 @@ public class UnfortunatePathsIT {
   public JenkinsRule jenkinsRule = new JenkinsRule();
   private WorkflowJob project;
   private ApiUtils apiUtils;
+
+  @Before
+  public void checkRequisites() {
+    Assume.assumeTrue("Test needs external services running", hasRequiredDependencies);
+  }
 
   @Before
   public void setup() throws Exception {

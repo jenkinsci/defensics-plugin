@@ -31,6 +31,7 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.Map.Entry;
 import java.util.Optional;
+import javax.net.ssl.SSLException;
 
 public class ApiService {
 
@@ -45,7 +46,6 @@ public class ApiService {
       String authenticationToken,
       boolean certificateValidationDisabled
   ) {
-    // FIXME: TLS check disable
     // FIXME: Better slash handling, and client should check if /api/v1 is supplied already
     apiBaseUrl = defensicsInstanceUrl.endsWith("/")
         ? URI.create(defensicsInstanceUrl + "api/v1")
@@ -78,10 +78,12 @@ public class ApiService {
     try {
       return defensicsClient.healthcheck();
     } catch (DefensicsClientException e) {
-      throw new DefensicsRequestException(
-          "Unable to connect to Defensics API at address " + apiBaseUrl + ". "
-              + "Please check you are using the correct token and Defensics API server is running.",
-          e);
+      String message = "Unable to connect to Defensics API at address " + apiBaseUrl + ". "
+          + "Please check you are using the correct token and Defensics API server is running.";
+      if (SSLException.class.isAssignableFrom(e.getCause().getClass())) {
+        message += " Please check also TLS configuration, server returned error: " + e.getCause().getMessage();
+      }
+      throw new DefensicsRequestException(message, e);
     }
   }
 

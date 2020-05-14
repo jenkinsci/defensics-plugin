@@ -452,7 +452,6 @@ public class UnfortunatePathsIT {
         API_SERVER_URL.startsWith("https://"),
         is(true)
     );
-    Assume.assumeFalse(CERTIFICATE_VALIDATION_DISABLED);
     final ApiService apiService = new ApiService(
         API_SERVER_URL,
         AUTH_TOKEN,

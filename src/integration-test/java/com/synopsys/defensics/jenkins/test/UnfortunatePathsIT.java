@@ -86,7 +86,7 @@ public class UnfortunatePathsIT {
   private static final String CREDENTIAL_ID = "test-credential";
   private static final String SETTING_FILE_NAME = "http.testplan";
   private static final String PIPELINE_ERROR_TEXT = "Pipeline found error";
-  private static final String PIPELINE_SCRIPT = createPipelineScript(
+  private String pipelineScript = createPipelineScript(
       NAME,
       SETTING_FILE_NAME,
       String.format("--uri %s", SUT_URI)
@@ -109,6 +109,7 @@ public class UnfortunatePathsIT {
         + "     )\n"
         + "    } catch (error) {\n"
         + "      echo \"" + PIPELINE_ERROR_TEXT + "\";\n"
+        + "      echo error.getMessage();"
         + "      throw error\n"
         + "    }\n"
         + "  }\n"
@@ -147,7 +148,7 @@ public class UnfortunatePathsIT {
   @Test
   public void testRun_suiteShouldBeUnloaded() throws Exception {
     initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
-    final CpsFlowDefinition definition = new CpsFlowDefinition(PIPELINE_SCRIPT, true);
+    final CpsFlowDefinition definition = new CpsFlowDefinition(pipelineScript, true);
     project.setDefinition(definition);
     CredentialsStore store = CredentialsProvider.lookupStores(jenkinsRule.jenkins)
         .iterator()
@@ -171,6 +172,102 @@ public class UnfortunatePathsIT {
 
     checkRunOkAndReportPresent(run);
     checkApiServerResourcesAreCleaned();
+  }
+
+  /**
+   * Test that Jenkins runs report at least WARNING if SUT URI was wrong.
+   */
+  @Test
+  public void testRun_wrongUri() throws Exception {
+    final String WRONG_SUT_URI = "http://non-routable.invalid:9999";
+    pipelineScript = createPipelineScript(
+        NAME,
+        SETTING_FILE_NAME,
+        String.format("--uri %s", WRONG_SUT_URI)
+    );
+    initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
+    final CpsFlowDefinition definition = new CpsFlowDefinition(pipelineScript, true);
+    project.setDefinition(definition);
+    CredentialsStore store = CredentialsProvider.lookupStores(jenkinsRule.jenkins)
+        .iterator()
+        .next();
+    StringCredentialsImpl credential = new StringCredentialsImpl(
+        CredentialsScope.GLOBAL,
+        CREDENTIAL_ID,
+        "Test Secret Text",
+        Secret.fromString(AUTH_TOKEN));
+    store.addCredentials(Domain.global(), credential);
+    ProjectUtils.setupProject(
+        jenkinsRule,
+        project,
+        NAME,
+        API_SERVER_URL,
+        true, CREDENTIAL_ID,
+        SETTING_FILE_NAME);
+
+    WorkflowRun run = project.scheduleBuild2(0).get();
+    dumpLogs(run);
+
+    // Ideally API server should say that connection was not working
+    assertThat(logHas(run, "Verdict: FAIL"), is(true));
+    assertThat(run.getResult(), is(equalTo(Result.FAILURE)));
+    assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
+    assertThat(run.getActions(HTMLAction.class).size(), is(equalTo(0)));
+    assertThat(project.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
+    assertThat(project.getAction(HtmlReportAction.class).getUrlName(),
+        is(equalTo(run.getActions(HtmlReportAction.class).get(0).getUrlName())));
+    assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(false));
+    checkApiServerResourcesAreCleaned();
+  }
+
+  @Test
+  public void testRun_wrongPort() throws Exception {
+    final String WRONG_SUT_URI = "http://127.0.0.1:9999";
+    pipelineScript = createPipelineScript(
+        NAME,
+        SETTING_FILE_NAME,
+        String.format("--uri %s", WRONG_SUT_URI)
+    );
+    initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
+    final CpsFlowDefinition definition = new CpsFlowDefinition(pipelineScript, true);
+    project.setDefinition(definition);
+    CredentialsStore store = CredentialsProvider.lookupStores(jenkinsRule.jenkins)
+        .iterator()
+        .next();
+    StringCredentialsImpl credential = new StringCredentialsImpl(
+        CredentialsScope.GLOBAL,
+        CREDENTIAL_ID,
+        "Test Secret Text",
+        Secret.fromString(AUTH_TOKEN));
+    store.addCredentials(Domain.global(), credential);
+    ProjectUtils.setupProject(
+        jenkinsRule,
+        project,
+        NAME,
+        API_SERVER_URL,
+        true, CREDENTIAL_ID,
+        SETTING_FILE_NAME);
+
+    WorkflowRun run = project.scheduleBuild2(0).get();
+    dumpLogs(run);
+
+    // Ideally API server should say that connection was not working
+    assertThat(
+        logHas(run, "Verdict: WARNING"),
+        is(true)
+    );
+    assertThat(run.getResult(), is(equalTo(Result.FAILURE)));
+    assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
+    assertThat(run.getActions(HTMLAction.class).size(), is(equalTo(0)));
+    assertThat(project.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
+    assertThat(project.getAction(HtmlReportAction.class).getUrlName(),
+        is(equalTo(run.getActions(HtmlReportAction.class).get(0).getUrlName())));
+    assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(false));
+    checkApiServerResourcesAreCleaned();
+  }
+
+  private boolean logHas(WorkflowRun run, String s) throws IOException {
+    return Stream.of(run.getLog(999)).anyMatch(line -> line.toString().contains(s));
   }
 
   private void checkRunOkAndReportPresent(WorkflowRun run) throws IOException {
@@ -203,7 +300,7 @@ public class UnfortunatePathsIT {
         CREDENTIAL_ID,
         SETTING_FILE_NAME);
 
-    project.setDefinition(new CpsFlowDefinition(PIPELINE_SCRIPT, true));
+    project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
 
     // Schedule build
     final QueueTaskFuture<WorkflowRun> runFuture = project.scheduleBuild2(0);
@@ -240,7 +337,7 @@ public class UnfortunatePathsIT {
         CREDENTIAL_ID,
         SETTING_FILE_NAME);
 
-    project.setDefinition(new CpsFlowDefinition(PIPELINE_SCRIPT, true));
+    project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
 
     // Schedule build
     final QueueTaskFuture<WorkflowRun> runFuture = project.scheduleBuild2(0);
@@ -276,7 +373,7 @@ public class UnfortunatePathsIT {
         CREDENTIAL_ID,
         SETTING_FILE_NAME);
 
-    project.setDefinition(new CpsFlowDefinition(PIPELINE_SCRIPT, true));
+    project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
 
     // Schedule build
     final QueueTaskFuture<WorkflowRun> runFuture = project.scheduleBuild2(0);
@@ -314,7 +411,7 @@ public class UnfortunatePathsIT {
         CREDENTIAL_ID,
         SETTING_FILE_NAME);
 
-    project.setDefinition(new CpsFlowDefinition(PIPELINE_SCRIPT, true));
+    project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
 
     // Schedule build
     final QueueTaskFuture<WorkflowRun> runFuture = project.scheduleBuild2(0);

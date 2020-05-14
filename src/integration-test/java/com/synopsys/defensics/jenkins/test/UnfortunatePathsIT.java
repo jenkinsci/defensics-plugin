@@ -17,16 +17,21 @@
 package com.synopsys.defensics.jenkins.test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.CredentialsScope;
 import com.cloudbees.plugins.credentials.CredentialsStore;
 import com.cloudbees.plugins.credentials.domains.Domain;
+import com.synopsys.defensics.api.ApiService;
 import com.synopsys.defensics.apiserver.client.DefensicsApiJsonApiClient;
 import com.synopsys.defensics.apiserver.model.SuiteInstance;
+import com.synopsys.defensics.client.DefensicsRequestException;
+import com.synopsys.defensics.client.UnsafeTlsConfigurator;
 import com.synopsys.defensics.jenkins.result.HtmlReportPublisherTarget.HtmlReportAction;
 import com.synopsys.defensics.jenkins.test.utils.ProjectUtils;
 import htmlpublisher.HtmlPublisherTarget.HTMLAction;
@@ -48,6 +53,7 @@ import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -76,7 +82,7 @@ public class UnfortunatePathsIT {
   private static final String SUT_URI = "http://127.0.0.1:7000";
 
   private static final String NAME = "My Defensics";
-  private static final boolean CERTIFICATE_VALIDATION_DISABLED = false;
+  private static final boolean CERTIFICATE_VALIDATION_DISABLED = true;
   private static final String CREDENTIAL_ID = "test-credential";
   private static final String SETTING_FILE_NAME = "http.testplan";
   private static final String PIPELINE_ERROR_TEXT = "Pipeline found error";
@@ -85,6 +91,8 @@ public class UnfortunatePathsIT {
       SETTING_FILE_NAME,
       String.format("--uri %s", SUT_URI)
   );
+
+  private int initialSuiteInstanceCount = -1;
 
   private static String createPipelineScript(
       String defensicsInstance,
@@ -112,8 +120,6 @@ public class UnfortunatePathsIT {
   private WorkflowJob project;
   private ApiUtils apiUtils;
 
-  private int initialSuiteInstanceCount;
-
   @Before
   public void setup() throws Exception {
     EnvironmentVariablesNodeProperty prop = new EnvironmentVariablesNodeProperty();
@@ -133,7 +139,6 @@ public class UnfortunatePathsIT {
     store.addCredentials(Domain.global(), credential);
 
     apiUtils = new ApiUtils(URI.create(API_SERVER_URL).resolve("/api/v1"), AUTH_TOKEN);
-    initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
   }
 
   /**
@@ -141,6 +146,7 @@ public class UnfortunatePathsIT {
    */
   @Test
   public void testRun_suiteShouldBeUnloaded() throws Exception {
+    initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
     final CpsFlowDefinition definition = new CpsFlowDefinition(PIPELINE_SCRIPT, true);
     project.setDefinition(definition);
     CredentialsStore store = CredentialsProvider.lookupStores(jenkinsRule.jenkins)
@@ -186,7 +192,7 @@ public class UnfortunatePathsIT {
    */
   @Test
   public void testAbortJob_onRunCreation() throws Exception {
-    System.out.println(PIPELINE_SCRIPT);
+    initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
     // Create and use new client to prevent Job from completing.
     ProjectUtils.setupProject(
         jenkinsRule,
@@ -223,6 +229,7 @@ public class UnfortunatePathsIT {
    */
   @Test
   public void testAbortJob_onFuzzStarting() throws Exception {
+    initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
     // Create and use new client to prevent Job from completing.
     ProjectUtils.setupProject(
         jenkinsRule,
@@ -258,6 +265,7 @@ public class UnfortunatePathsIT {
    */
   @Test
   public void testAbortJob_onFuzzing() throws Exception {
+    initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
     // Create and use new client to prevent Job from completing.
     ProjectUtils.setupProject(
         jenkinsRule,
@@ -295,6 +303,7 @@ public class UnfortunatePathsIT {
    */
   @Test
   public void testAbortJob_onCompletion() throws Exception {
+    initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
     // Create and use new client to prevent Job from completing.
     ProjectUtils.setupProject(
         jenkinsRule,
@@ -320,6 +329,35 @@ public class UnfortunatePathsIT {
 
     checkRunAbortedCleanly(run);
     checkApiServerResourcesAreCleaned();
+  }
+
+  /**
+   * Check that requests failing with TLS configuration mention that.
+   */
+  @Test
+  public void testHealthcheck_reportsTlsProblems() {
+    Assume.assumeThat(
+        "This test requires that API server is running with HTTPS",
+        API_SERVER_URL.startsWith("https://"),
+        is(true)
+    );
+    Assume.assumeFalse(CERTIFICATE_VALIDATION_DISABLED);
+    final ApiService apiService = new ApiService(
+        API_SERVER_URL,
+        AUTH_TOKEN,
+        false
+    );
+
+    try {
+      apiService.healthCheck();
+    } catch (DefensicsRequestException e) {
+      final String expectedErrorMessage =
+          "unable to find valid certification path to requested target";
+      assertThat(
+          e.getMessage(),
+          containsString(expectedErrorMessage)
+      );
+    }
   }
 
   private void dumpLogs(WorkflowRun run) throws IOException {
@@ -375,17 +413,37 @@ public class UnfortunatePathsIT {
 
   private void checkApiServerResourcesAreCleaned() {
     assertThat(
+        "Check test: Initial suite count should have been initialized",
+        initialSuiteInstanceCount,
+        is(not(-1))
+    );
+    assertThat(
         "There should be no extra suite instances after run has ended",
         apiUtils.getSuiteInstances().size(),
         is(initialSuiteInstanceCount)
     );
   }
 
+  /**
+   * Add JSON:API client methods which are not defined in DefensicsJsonApiClient but are
+   * needed in these tests.
+   */
   public static class ApiUtils {
     private final DefensicsApiJsonApiClient defensicsApiJsonApiClient;
 
     public ApiUtils(URI apiBaseUri, String authToken) {
-      defensicsApiJsonApiClient = new DefensicsApiJsonApiClient(apiBaseUri, authToken);
+      if (CERTIFICATE_VALIDATION_DISABLED) {
+        defensicsApiJsonApiClient = new DefensicsApiJsonApiClient(
+            apiBaseUri,
+            authToken,
+            UnsafeTlsConfigurator::configureUnsafeTlsOkHttpClient
+        );
+      } else {
+        defensicsApiJsonApiClient = new DefensicsApiJsonApiClient(
+            apiBaseUri,
+            authToken
+        );
+      }
     }
 
     public List<SuiteInstance> getSuiteInstances() {

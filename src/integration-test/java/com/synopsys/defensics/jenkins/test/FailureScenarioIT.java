@@ -28,7 +28,7 @@ import com.cloudbees.plugins.credentials.CredentialsScope;
 import com.cloudbees.plugins.credentials.CredentialsStore;
 import com.cloudbees.plugins.credentials.domains.Domain;
 import com.synopsys.defensics.api.ApiService;
-import com.synopsys.defensics.apiserver.client.DefensicsApiJsonApiClient;
+import com.synopsys.defensics.apiserver.client.DefensicsJsonApiClient;
 import com.synopsys.defensics.apiserver.model.SuiteInstance;
 import com.synopsys.defensics.client.DefensicsRequestException;
 import com.synopsys.defensics.client.UnsafeTlsConfigurator;
@@ -73,7 +73,7 @@ import org.jvnet.hudson.test.JenkinsRule;
  * o Test that API server reports that suite from testplan is not found.
  * o etc...
  */
-public class UnfortunatePathsIT {
+public class FailureScenarioIT {
   /** Tests are not run until this is true. */
   private static final boolean hasRequiredDependencies = false;
 
@@ -539,17 +539,17 @@ public class UnfortunatePathsIT {
    * needed in these tests.
    */
   public static class ApiUtils {
-    private final DefensicsApiJsonApiClient defensicsApiJsonApiClient;
+    private final DefensicsJsonApiClient defensicsJsonApiClient;
 
     public ApiUtils(URI apiBaseUri, String authToken) {
       if (CERTIFICATE_VALIDATION_DISABLED) {
-        defensicsApiJsonApiClient = new DefensicsApiJsonApiClient(
+        defensicsJsonApiClient = new DefensicsJsonApiClient(
             apiBaseUri,
             authToken,
             UnsafeTlsConfigurator::configureUnsafeTlsOkHttpClient
         );
       } else {
-        defensicsApiJsonApiClient = new DefensicsApiJsonApiClient(
+        defensicsJsonApiClient = new DefensicsJsonApiClient(
             apiBaseUri,
             authToken
         );
@@ -557,7 +557,7 @@ public class UnfortunatePathsIT {
     }
 
     public List<SuiteInstance> getSuiteInstances() {
-      final CrnkClient crnkClient = defensicsApiJsonApiClient.getCrnkClient();
+      final CrnkClient crnkClient = defensicsJsonApiClient.getCrnkClient();
       final ResourceRepository<SuiteInstance, String> suiteInstanceRepository = crnkClient
           .getRepositoryForType(SuiteInstance.class);
       return new ArrayList<>(suiteInstanceRepository.findAll(new QuerySpec(SuiteInstance.class)));

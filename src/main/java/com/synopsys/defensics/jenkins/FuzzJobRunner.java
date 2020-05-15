@@ -329,8 +329,11 @@ public class FuzzJobRunner {
       }
 
       // Only try to stop run if it's created and hasn't finished yet. Idle jobs cannot be stopped.
-      if (run.getState() != RunState.COMPLETED && run.getState() != RunState.ERROR
-        && run.getState() != RunState.IDLE) {
+      if (
+          run.getState() != RunState.COMPLETED
+              && run.getState() != RunState.ERROR
+              && run.getState() != RunState.IDLE
+      ) {
         final String runId = run.getId();
         logger.println("Stopping run.");
         defensicsClient.stopRun(runId);

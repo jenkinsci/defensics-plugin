@@ -61,19 +61,29 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 /**
  * End-to-end tests testing failure modes: cases where job fails in different stage in various
- * ways. NOTE about interrupted jobs: Currently tests trigger job stop when logs contain given
+ * ways. This could be moved outside of integration tests, e.g. e2e-tests when final run environment
+ * has been decided. Now this is run manually by settings values in the beginning of this class.
+ *
+ * <p>NOTE about interrupted jobs: Currently tests trigger job stop when logs contain given
  * keywords. This makes the exact spot where stop happens in job in-precise and could cause some
  * jitter in tests.
+ * </p>
  *
- * To be able to run these tests, check that things listed in external dependencies are
+ * <p>To be able to run these tests, check that things listed in external dependencies are
  * enabled and their configuration is correct.
+ * </p>
  *
- * Other things to test:
- * o Jenkins has HTTP address, but server is using HTTPS
- * o Test that API server reports that suite from testplan is not found.
- * o etc...
+ * <p>Other things to test:
+ * <ul>
+ *   <li> Jenkins has HTTP address, but server is using HTTPS</li>
+ *   <li>Test that API server reports that suite from testplan is not found.</li>
+ *   <li>Test that error is reported if client sends a request body which server doesn't
+ *   recognize. This comes in case Jenkins plugin models are out-of-sync with server models</li>
+ *   <li>o etc...</li>
+ * </ul>
  */
 public class FailureScenarioIT {
+
   /** Tests are not run until this is true. */
   private static final boolean hasRequiredDependencies = false;
 
@@ -81,13 +91,15 @@ public class FailureScenarioIT {
    * Required external dependencies
    * o Defensics API Server running.
    *   Should have HTTP Server suite 4.11 installed and license for it.
-   * o HTTP SUT. Now 'python -m SimpleHTTPServer 7000' is used.
+   * o HTTP SUT. Now 'python -m SimpleHTTPServer 7000' has been used.
    */
-   /** API Server address */
+  /** API Server address. */
   private static final String API_SERVER_URL = "http://127.0.0.1:3150";
+
   /** API Server authentication token. */
   private static final String AUTH_TOKEN = "test-token";
-  /** Used SUT address. Now 'python -m SimpleHTTPServer 7000' is used. */
+
+  /** Used SUT address. */
   private static final String SUT_URI = "http://127.0.0.1:7000";
 
   private static final String NAME = "My Defensics";
@@ -103,6 +115,23 @@ public class FailureScenarioIT {
 
   private int initialSuiteInstanceCount = -1;
 
+  @Rule
+  public JenkinsRule jenkinsRule = new JenkinsRule();
+  private WorkflowJob project;
+  private ApiUtils apiUtils;
+
+  @Before
+  public void checkRequisites() {
+    Assume.assumeTrue("Test needs external services running", hasRequiredDependencies);
+  }
+
+  /**
+   * Creates Jenkins pipeline script with given values.
+   * @param defensicsInstance Defensics instance name
+   * @param configurationFilePath Configuration file path
+   * @param configurationOverride Setting override or empty string.
+   * @return Jenkins pipeline script
+   */
   private static String createPipelineScript(
       String defensicsInstance,
       String configurationFilePath,
@@ -125,16 +154,7 @@ public class FailureScenarioIT {
         + "}\n";
   }
 
-  @Rule
-  public JenkinsRule jenkinsRule = new JenkinsRule();
-  private WorkflowJob project;
-  private ApiUtils apiUtils;
-
-  @Before
-  public void checkRequisites() {
-    Assume.assumeTrue("Test needs external services running", hasRequiredDependencies);
-  }
-
+  /** Setup method. */
   @Before
   public void setup() throws Exception {
     EnvironmentVariablesNodeProperty prop = new EnvironmentVariablesNodeProperty();
@@ -157,7 +177,7 @@ public class FailureScenarioIT {
   }
 
   /**
-   * DEF-11341: Test that suite is unloaded after test run
+   * DEF-11341: Test that suite is unloaded after test run.
    */
   @Test
   public void testRun_suiteShouldBeUnloaded() throws Exception {
@@ -193,11 +213,11 @@ public class FailureScenarioIT {
    */
   @Test
   public void testRun_wrongUri() throws Exception {
-    final String WRONG_SUT_URI = "http://non-routable.invalid:9999";
+    final String wrongSutUri = "http://non-routable.invalid:9999";
     pipelineScript = createPipelineScript(
         NAME,
         SETTING_FILE_NAME,
-        String.format("--uri %s", WRONG_SUT_URI)
+        String.format("--uri %s", wrongSutUri)
     );
     initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
     final CpsFlowDefinition definition = new CpsFlowDefinition(pipelineScript, true);
@@ -234,13 +254,17 @@ public class FailureScenarioIT {
     checkApiServerResourcesAreCleaned();
   }
 
+  /**
+   * Test that Jenkins runs report at least WARNING if SUT port was wrong. NOTE: Unreliable test
+   * if host has a service using this port.
+   */
   @Test
   public void testRun_wrongPort() throws Exception {
-    final String WRONG_SUT_URI = "http://127.0.0.1:9999";
+    final String wrongSutUri = "http://127.0.0.1:9999";
     pipelineScript = createPipelineScript(
         NAME,
         SETTING_FILE_NAME,
-        String.format("--uri %s", WRONG_SUT_URI)
+        String.format("--uri %s", wrongSutUri)
     );
     initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
     final CpsFlowDefinition definition = new CpsFlowDefinition(pipelineScript, true);
@@ -278,20 +302,6 @@ public class FailureScenarioIT {
         is(equalTo(run.getActions(HtmlReportAction.class).get(0).getUrlName())));
     assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(false));
     checkApiServerResourcesAreCleaned();
-  }
-
-  private boolean logHas(WorkflowRun run, String s) throws IOException {
-    return Stream.of(run.getLog(999)).anyMatch(line -> line.toString().contains(s));
-  }
-
-  private void checkRunOkAndReportPresent(WorkflowRun run) throws IOException {
-    assertThat(run.getResult(), is(equalTo(Result.SUCCESS)));
-    assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
-    assertThat(run.getActions(HTMLAction.class).size(), is(equalTo(0)));
-    assertThat(project.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
-    assertThat(project.getAction(HtmlReportAction.class).getUrlName(),
-        is(equalTo(run.getActions(HtmlReportAction.class).get(0).getUrlName())));
-    assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(false));
   }
 
   /**
@@ -333,10 +343,7 @@ public class FailureScenarioIT {
   }
 
   /**
-   * Test that job abort is handled cleanly when Fuzz job is on some of these states (current
-   * triggering mechanism doesn't yet allow aborting in exact given step):
-   * 1) Fuzzing is just starting
-   * 2) Fuzzing has just begun
+   * Test that job abort is handled cleanly when Fuzzing just being started or shortly after that.
    */
   @Test
   public void testAbortJob_onFuzzStarting() throws Exception {
@@ -369,10 +376,7 @@ public class FailureScenarioIT {
   }
 
   /**
-   * Test that job abort is handled cleanly when Fuzz job is on some of these states (current
-   * triggering mechanism doesn't yet allow aborting in exact given step):
-   * 1) Fuzzing is just starting
-   * 2) Fuzzing has just begun
+   * Test that job abort is handled cleanly when Fuzz job is RUNNING or shortly after that.
    */
   @Test
   public void testAbortJob_onFuzzing() throws Exception {
@@ -407,10 +411,7 @@ public class FailureScenarioIT {
   }
 
   /**
-   * Test that job abort is handled cleanly when Fuzz job is on some of these states (current
-   * triggering mechanism doesn't yet allow aborting in exact given step):
-   * 1) Fuzzing is just starting
-   * 2) Fuzzing has just begun
+   * Test that job abort is handled cleanly when Fuzzing has just been completed.
    */
   @Test
   public void testAbortJob_onCompletion() throws Exception {
@@ -470,6 +471,20 @@ public class FailureScenarioIT {
     }
   }
 
+  private boolean logHas(WorkflowRun run, String s) throws IOException {
+    return Stream.of(run.getLog(999)).anyMatch(line -> line.toString().contains(s));
+  }
+
+  private void checkRunOkAndReportPresent(WorkflowRun run) throws IOException {
+    assertThat(run.getResult(), is(equalTo(Result.SUCCESS)));
+    assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
+    assertThat(run.getActions(HTMLAction.class).size(), is(equalTo(0)));
+    assertThat(project.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
+    assertThat(project.getAction(HtmlReportAction.class).getUrlName(),
+        is(equalTo(run.getActions(HtmlReportAction.class).get(0).getUrlName())));
+    assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(false));
+  }
+
   private void dumpLogs(WorkflowRun run) throws IOException {
     run.getLog(999).forEach(System.out::println);
   }
@@ -493,30 +508,30 @@ public class FailureScenarioIT {
       String logString
   ) {
     Executors.newSingleThreadExecutor().submit(() -> {
-        try {
-          while (true) {
-            final boolean hasLogString = Stream
-                .of(lastBuild.getLog(100))
-                .anyMatch(line -> line.toString().contains(logString));
+          try {
+            while (true) {
+              final boolean hasLogString = Stream
+                  .of(lastBuild.getLog(100))
+                  .anyMatch(line -> line.toString().contains(logString));
 
-            if (hasLogString) {
+              if (hasLogString) {
 
-              dumpLogs(lastBuild);
-              System.out.println("===");
-              System.out.println("Found line, aborting");
-              // Use Jenkins' own Stop request instead of cancelling future
-              lastBuild.doStop();
-              //runFuture.cancel(true);
-              return;
+                dumpLogs(lastBuild);
+                System.out.println("===");
+                System.out.println("Found line, aborting");
+                // Use Jenkins' own Stop request instead of cancelling future
+                lastBuild.doStop();
+                //runFuture.cancel(true);
+                return;
+              }
+              // Busy loop, replace this triggering with better one if found. Two problems:
+              // 1) Doesn't allow precise abort on given step
+              // 2) Extraneous log polling
+              Thread.sleep(50);
             }
-            // Busy loop, replace this triggering with better one if found. Two problems:
-            // 1) Doesn't allow precise abort on given step
-            // 2) Extraneous log polling
-            Thread.sleep(50);
+          } catch (InterruptedException | IOException e) {
+            e.printStackTrace();
           }
-        } catch (InterruptedException | IOException e) {
-          e.printStackTrace();
-        }
         }
     );
   }
@@ -535,12 +550,13 @@ public class FailureScenarioIT {
   }
 
   /**
-   * Add JSON:API client methods which are not defined in DefensicsJsonApiClient but are
-   * needed in these tests.
+   * Add JSON:API client methods which are not defined in DefensicsJsonApiClient but are needed in
+   * these tests.
    */
   public static class ApiUtils {
     private final DefensicsJsonApiClient defensicsJsonApiClient;
 
+    /** Default constructor. */
     public ApiUtils(URI apiBaseUri, String authToken) {
       if (CERTIFICATE_VALIDATION_DISABLED) {
         defensicsJsonApiClient = new DefensicsJsonApiClient(
@@ -556,6 +572,11 @@ public class FailureScenarioIT {
       }
     }
 
+    /**
+     * Returns all known suite instances from API server. Used here to test that suites are unloaded
+     * after Jenkins job has ended.
+     * @return List of suite instances
+     */
     public List<SuiteInstance> getSuiteInstances() {
       final CrnkClient crnkClient = defensicsJsonApiClient.getCrnkClient();
       final ResourceRepository<SuiteInstance, String> suiteInstanceRepository = crnkClient

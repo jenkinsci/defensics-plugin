@@ -72,6 +72,10 @@ public class FuzzJobRunner {
       throws AbortException {
     this.logger = logger;
 
+    // Denotes if job has been interrupted. If so, the interrupt flag should be reset after cleanup
+    // has been done.
+    boolean wasInterrupted = false;
+
     Run defensicsRun = null;
     Result runResult = null;
 
@@ -113,10 +117,13 @@ public class FuzzJobRunner {
       } else {
         runResult = Result.FAILURE;
       }
+      defensicsClient.deleteRun(defensicsRun.getId());
+      defensicsRun = null;
     } catch (InterruptedException | ClosedByInterruptException | InterruptedIOException e) {
       // Let's clear the thread interrupted flag now, otherwise e.g. OkHttpClient doesn't do
-      // any of the cleanup requests.
-      Thread.interrupted();
+      // any of the cleanup requests. Reset interrupt flag after cleanup.
+      wasInterrupted = Thread.interrupted();
+
       handleRunInterruption(defensicsRun);
       runResult = Result.ABORTED;
     } catch (Exception e) {
@@ -127,14 +134,18 @@ public class FuzzJobRunner {
     } finally {
       if (defensicsRun != null) {
         try {
-          // TODO: The normal code path could run here without interrupt. When user interrupts job
-          // here, it's not yet handled
+          // Delete run if normal code path did not yet delete it.
+          // If run is not deleted, the loaded suite and run will remain in the server
           defensicsClient.deleteRun(defensicsRun.getId());
         } catch (DefensicsRequestException e) {
           logger.logError("Could not delete run in API server");
         }
       }
       jenkinsRun.setResult(runResult != null ? runResult : Result.FAILURE);
+
+      if (wasInterrupted) {
+        Thread.currentThread().interrupt();
+      }
     }
   }
 

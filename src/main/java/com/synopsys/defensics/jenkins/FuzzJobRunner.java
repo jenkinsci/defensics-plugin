@@ -307,8 +307,18 @@ public class FuzzJobRunner {
   private void handleRunInterruption(Run run) {
     logger.println("Fuzzing was interrupted.");
 
+    if (run == null) {
+      // Not much to do since run either was not created at all or was completed and deleted
+      // already.
+      return;
+    }
+
     try {
+      // Update run to get latest information
       run = defensicsClient.getRun(run.getId());
+      if (run == null) {
+        return;
+      }
 
       // We can't stop test run if suite isn't loaded so let's make sure it is
       final Optional<SuiteInstance> suiteMaybe = defensicsClient.getConfigurationSuite(run.getId());
@@ -319,7 +329,7 @@ public class FuzzJobRunner {
       }
 
       // Only try to stop run if it's created and hasn't finished yet. Idle jobs cannot be stopped.
-      if (run != null && run.getState() != RunState.COMPLETED && run.getState() != RunState.ERROR
+      if (run.getState() != RunState.COMPLETED && run.getState() != RunState.ERROR
         && run.getState() != RunState.IDLE) {
         final String runId = run.getId();
         logger.println("Stopping run.");

@@ -137,8 +137,8 @@ public class FuzzJobRunner {
           // Delete run if normal code path did not yet delete it.
           // If run is not deleted, the loaded suite and run will remain in the server
           defensicsClient.deleteRun(defensicsRun.getId());
-        } catch (DefensicsRequestException | IOException e) {
-          logger.logError("Could not delete run in API server");
+        } catch (DefensicsRequestException | InterruptedException e) {
+          logger.logError("Could not delete run in API server: " + e.getMessage());
         }
       }
       jenkinsRun.setResult(runResult != null ? runResult : Result.FAILURE);
@@ -153,7 +153,7 @@ public class FuzzJobRunner {
    * Does Defensics instance configuration and sets up the ApiService.
    */
   private void setUpDefensicsConnection(InstanceConfiguration instanceConfiguration)
-      throws IOException, DefensicsRequestException {
+      throws IOException, DefensicsRequestException, InterruptedException {
     String authenticationToken = AuthenticationTokenProvider.getAuthenticationToken(
         new URL(instanceConfiguration.getUrl()), instanceConfiguration.getCredentialsId());
 

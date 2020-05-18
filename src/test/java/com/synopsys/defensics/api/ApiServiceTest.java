@@ -118,7 +118,8 @@ public class ApiServiceTest {
   }
 
   @Test
-  public void testSetConfigurationSettings() throws IOException, DefensicsRequestException {
+  public void testSetConfigurationSettings()
+      throws DefensicsRequestException, InterruptedException {
     api.setTestConfigurationSettings(DefensicsMockServer.RUN_ID, SUITE_SETTINGS);
   }
 

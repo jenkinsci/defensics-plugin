@@ -27,11 +27,12 @@ import com.synopsys.defensics.client.model.HtmlReport;
 import hudson.FilePath;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.net.URI;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.Collections;
 import java.util.Map.Entry;
 import java.util.Optional;
-import javax.net.ssl.SSLException;
 
 public class ApiService {
 
@@ -74,7 +75,7 @@ public class ApiService {
    * @return true if server is up and healthy
    * @throws DefensicsRequestException if server responds with error
    */
-  public boolean healthCheck() throws DefensicsRequestException, IOException {
+  public boolean healthCheck() throws DefensicsRequestException, InterruptedException {
     try {
       return defensicsClient.healthcheck();
     } catch (DefensicsClientException e) {
@@ -115,7 +116,7 @@ public class ApiService {
    * @throws DefensicsRequestException if server responds with error
    */
   public void setTestConfigurationSettings(String runId, String settings)
-      throws DefensicsRequestException, IOException {
+      throws DefensicsRequestException, InterruptedException {
     final SettingCliArgs settingCliArgs = new SettingCliArgs();
     settingCliArgs.setArgs(settings);
 
@@ -136,7 +137,7 @@ public class ApiService {
    * @throws DefensicsRequestException if server responds with error
    */
   public void startRun(String runId)
-      throws DefensicsRequestException, IOException {
+      throws DefensicsRequestException, InterruptedException {
     try {
       defensicsClient.startRun(runId);
     } catch (DefensicsClientException e) {
@@ -151,7 +152,8 @@ public class ApiService {
    * @param runId run id for the run to get
    * @return Run object or null if run can't be found
    */
-  public Run getRun(String runId) throws DefensicsRequestException, IOException {
+  public Run getRun(String runId)
+      throws DefensicsRequestException, InterruptedException {
     try {
       return defensicsClient.getRun(runId)
           .orElseThrow(
@@ -167,7 +169,8 @@ public class ApiService {
    *
    * @param runId run id
    */
-  public void stopRun(String runId) throws DefensicsRequestException, IOException {
+  public void stopRun(String runId)
+      throws DefensicsRequestException, InterruptedException {
     try {
       defensicsClient.stopRun(runId);
     } catch (DefensicsClientException e) {
@@ -227,7 +230,7 @@ public class ApiService {
    * @return New Defensics run object
    * @throws DefensicsRequestException if run cannot be created in the Defensics server
    */
-  public Run createNewRun() throws DefensicsRequestException, IOException {
+  public Run createNewRun() throws DefensicsRequestException, InterruptedException {
     try {
       return defensicsClient.createTestRun();
     } catch (DefensicsClientException e) {
@@ -245,17 +248,18 @@ public class ApiService {
    *                                   server
    */
   public Optional<SuiteInstance> getConfigurationSuite(String id)
-      throws DefensicsRequestException, IOException {
+      throws DefensicsRequestException, InterruptedException {
     try {
       return defensicsClient.getConfigurationSuite(id);
     } catch (DefensicsClientException e) {
       mapAndThrow(e, "Could not fetch suite information");
-      // Should not reach his
-      return null;
+      // Should not reach this
+      return Optional.empty();
     }
   }
 
-  public void deleteRun(String runId) throws DefensicsRequestException, IOException {
+  public void deleteRun(String runId)
+      throws DefensicsRequestException, InterruptedException {
     try {
       defensicsClient.deleteRun(runId);
     } catch (DefensicsClientException e) {
@@ -269,15 +273,20 @@ public class ApiService {
    * @param e Exception
    *
    * @param message
-   * @throws IOException
    * @throws DefensicsRequestException
+   * @throws InterruptedException if operation was interrupted
    */
   private void mapAndThrow(DefensicsClientException e, String message)
-      throws IOException, DefensicsRequestException {
-    // Let IOExceptions through since to handle Interrupted jobs
-    // TODO: Could be better to throw InterruptedException
-    if (e.getCause() instanceof IOException) {
-      throw (IOException)e.getCause();
+      throws DefensicsRequestException, InterruptedException {
+    // Check if cause was either interruption or some other failure
+    if (
+        e.getCause() instanceof InterruptedIOException
+        || e.getCause() instanceof ClosedByInterruptException
+    ) {
+      throw new InterruptedException(e.getCause().getMessage());
+    }
+    if (e.getCause() instanceof InterruptedException) {
+      throw (InterruptedException)e.getCause();
     }
     throw new DefensicsRequestException(message, e);
   }

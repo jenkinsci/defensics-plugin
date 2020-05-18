@@ -79,11 +79,8 @@ public class ApiService {
       return defensicsClient.healthcheck();
     } catch (DefensicsClientException e) {
       String message = "Unable to connect to Defensics API at address " + apiBaseUrl + ". "
-          + "Please check you are using the correct token and Defensics API server is running.";
-      if (SSLException.class.isAssignableFrom(e.getCause().getClass())) {
-        message += " Please check also TLS configuration, server returned error: "
-            + e.getCause().getMessage();
-      }
+          + "Please check you are using the correct token and Defensics API server is running. "
+          + "Error message: "+ e.getCause().getMessage();
       throw new DefensicsRequestException(message, e);
     }
   }

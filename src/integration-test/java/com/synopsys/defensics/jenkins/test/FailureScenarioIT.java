@@ -500,6 +500,10 @@ public class FailureScenarioIT {
   private void checkRunAbortedCleanly(WorkflowRun run) throws IOException {
     assertThat(run.getResult(), is(equalTo(Result.ABORTED)));
     assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(false));
+    assertThat(logHas(run, "Fuzzing was interrupted"), is(true));
+    if(logHas(run, "Stopping run")) {
+      assertThat(logHas(run, "Stopping succeeded"), is(true));
+    }
   }
 
   private void triggerAbortOnLogLine(

@@ -43,6 +43,7 @@ import hudson.util.Secret;
 import io.crnk.client.CrnkClient;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.ResourceRepository;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -55,8 +56,10 @@ import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.JenkinsRule;
 
 /**
@@ -119,6 +122,9 @@ public class FailureScenarioIT {
   public JenkinsRule jenkinsRule = new JenkinsRule();
   private WorkflowJob project;
   private ApiUtils apiUtils;
+
+  @ClassRule
+  public static TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before
   public void checkRequisites() {
@@ -301,6 +307,43 @@ public class FailureScenarioIT {
     assertThat(project.getAction(HtmlReportAction.class).getUrlName(),
         is(equalTo(run.getActions(HtmlReportAction.class).get(0).getUrlName())));
     assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(false));
+    checkApiServerResourcesAreCleaned();
+  }
+
+  @Test
+  public void testRun_emptyTestplan() throws Exception {
+    final File emptyFile = temporaryFolder.newFile();
+
+    final String pipelineScriptEmptyTestplan = createPipelineScript(
+        NAME,
+        emptyFile.getAbsolutePath(),
+        ""
+    );
+    initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
+    final CpsFlowDefinition definition = new CpsFlowDefinition(pipelineScriptEmptyTestplan, true);
+    project.setDefinition(definition);
+    CredentialsStore store = CredentialsProvider.lookupStores(jenkinsRule.jenkins)
+        .iterator()
+        .next();
+    StringCredentialsImpl credential = new StringCredentialsImpl(
+        CredentialsScope.GLOBAL,
+        CREDENTIAL_ID,
+        "Test Secret Text",
+        Secret.fromString(AUTH_TOKEN));
+    store.addCredentials(Domain.global(), credential);
+    ProjectUtils.setupProject(
+        jenkinsRule,
+        project,
+        NAME,
+        API_SERVER_URL,
+        true, CREDENTIAL_ID,
+        SETTING_FILE_NAME);
+
+    WorkflowRun run = project.scheduleBuild2(0).get();
+    dumpLogs(run);
+    assertThat(run.getResult(), is(equalTo(Result.FAILURE)));
+    assertThat(logHas(run, "Not valid configuration file"), is(true));
+    checkNoReport(run);
     checkApiServerResourcesAreCleaned();
   }
 

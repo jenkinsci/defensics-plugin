@@ -288,6 +288,10 @@ public class ApiService {
     if (e.getCause() instanceof InterruptedException) {
       throw (InterruptedException)e.getCause();
     }
+
+    if (e.getMessage() != null) {
+      message = message + ": " + e.getMessage();
+    }
     throw new DefensicsRequestException(message, e);
   }
 }

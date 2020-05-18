@@ -461,7 +461,7 @@ public class FailureScenarioIT {
 
     try {
       apiService.healthCheck();
-    } catch (DefensicsRequestException e) {
+    } catch (DefensicsRequestException | IOException e) {
       final String expectedErrorMessage =
           "unable to find valid certification path to requested target";
       assertThat(

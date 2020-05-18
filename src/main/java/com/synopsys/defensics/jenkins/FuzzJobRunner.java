@@ -137,7 +137,7 @@ public class FuzzJobRunner {
           // Delete run if normal code path did not yet delete it.
           // If run is not deleted, the loaded suite and run will remain in the server
           defensicsClient.deleteRun(defensicsRun.getId());
-        } catch (DefensicsRequestException e) {
+        } catch (DefensicsRequestException | IOException e) {
           logger.logError("Could not delete run in API server");
         }
       }

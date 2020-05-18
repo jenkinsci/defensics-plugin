@@ -74,14 +74,16 @@ public class ApiService {
    * @return true if server is up and healthy
    * @throws DefensicsRequestException if server responds with error
    */
-  public boolean healthCheck() throws DefensicsRequestException {
+  public boolean healthCheck() throws DefensicsRequestException, IOException {
     try {
       return defensicsClient.healthcheck();
     } catch (DefensicsClientException e) {
       String message = "Unable to connect to Defensics API at address " + apiBaseUrl + ". "
           + "Please check you are using the correct token and Defensics API server is running. "
           + "Error message: "+ e.getCause().getMessage();
-      throw new DefensicsRequestException(message, e);
+      mapAndThrow(e, message);
+      // Should not reach this
+      return false;
     }
   }
 
@@ -101,7 +103,7 @@ public class ApiService {
     try (final InputStream testplanStream = testplan.read()) {
       defensicsClient.uploadTestPlan(configurationId, testplanStream);
     } catch (DefensicsClientException e) {
-      throw new DefensicsRequestException("Failed to upload configuration", e);
+      mapAndThrow(e, "Failed to upload configuration");
     }
   }
 
@@ -113,7 +115,7 @@ public class ApiService {
    * @throws DefensicsRequestException if server responds with error
    */
   public void setTestConfigurationSettings(String runId, String settings)
-      throws DefensicsRequestException {
+      throws DefensicsRequestException, IOException {
     final SettingCliArgs settingCliArgs = new SettingCliArgs();
     settingCliArgs.setArgs(settings);
 
@@ -123,7 +125,7 @@ public class ApiService {
           settingCliArgs
       );
     } catch (DefensicsClientException e) {
-      throw new DefensicsRequestException("Could not test configuration settings", e);
+      mapAndThrow(e, "Could not test configuration settings");
     }
   }
 
@@ -134,13 +136,14 @@ public class ApiService {
    * @throws DefensicsRequestException if server responds with error
    */
   public void startRun(String runId)
-      throws DefensicsRequestException {
+      throws DefensicsRequestException, IOException {
     try {
       defensicsClient.startRun(runId);
     } catch (DefensicsClientException e) {
-      throw new DefensicsRequestException("Failed to start run.", e);
+      mapAndThrow(e, "Failed to start run.");
     }
   }
+
 
   /**
    * Get individual run.
@@ -148,13 +151,14 @@ public class ApiService {
    * @param runId run id for the run to get
    * @return Run object or null if run can't be found
    */
-  public Run getRun(String runId) throws DefensicsRequestException {
+  public Run getRun(String runId) throws DefensicsRequestException, IOException {
     try {
       return defensicsClient.getRun(runId)
           .orElseThrow(
               () -> new DefensicsRequestException("Could not find Defensics run " + runId));
     } catch (DefensicsClientException e) {
-      throw new DefensicsRequestException("Failed to get run", e);
+      mapAndThrow(e, "Failed to get run");
+      return null;
     }
   }
 
@@ -163,11 +167,11 @@ public class ApiService {
    *
    * @param runId run id
    */
-  public void stopRun(String runId) throws DefensicsRequestException {
+  public void stopRun(String runId) throws DefensicsRequestException, IOException {
     try {
       defensicsClient.stopRun(runId);
     } catch (DefensicsClientException e) {
-      throw new DefensicsRequestException("Failed to stop run", e);
+      mapAndThrow(e, "Failed to stop run");
     }
   }
 
@@ -193,7 +197,7 @@ public class ApiService {
       // zipped report is handled.
       reportFolder.unzipFrom(cloudReportStream);
     } catch (DefensicsClientException e) {
-      throw new DefensicsRequestException("Failed to download results report.", e);
+      mapAndThrow(e, "Failed to download results report.");
     }
   }
 
@@ -212,7 +216,7 @@ public class ApiService {
           .downloadResultPackage(Collections.singletonList(runId));
       resultFolder.child(fileName).copyFrom(resultpackage);
     } catch (DefensicsClientException e) {
-      throw new DefensicsRequestException("Failed to download result package.", e);
+      mapAndThrow(e, "Failed to download result package.");
     }
   }
 
@@ -223,11 +227,12 @@ public class ApiService {
    * @return New Defensics run object
    * @throws DefensicsRequestException if run cannot be created in the Defensics server
    */
-  public Run createNewRun() throws DefensicsRequestException {
+  public Run createNewRun() throws DefensicsRequestException, IOException {
     try {
       return defensicsClient.createTestRun();
     } catch (DefensicsClientException e) {
-      throw new DefensicsRequestException("Could not create new Defensics run", e);
+      mapAndThrow(e, "Could not create new Defensics run");
+      return null;
     }
   }
 
@@ -239,19 +244,41 @@ public class ApiService {
    * @throws DefensicsRequestException if suite information could not be fetched from Defensics
    *                                   server
    */
-  public Optional<SuiteInstance> getConfigurationSuite(String id) throws DefensicsRequestException {
+  public Optional<SuiteInstance> getConfigurationSuite(String id)
+      throws DefensicsRequestException, IOException {
     try {
       return defensicsClient.getConfigurationSuite(id);
     } catch (DefensicsClientException e) {
-      throw new DefensicsRequestException("Could not fetch suite information", e);
+      mapAndThrow(e, "Could not fetch suite information");
+      // Should not reach his
+      return null;
     }
   }
 
-  public void deleteRun(String runId) throws DefensicsRequestException {
+  public void deleteRun(String runId) throws DefensicsRequestException, IOException {
     try {
       defensicsClient.deleteRun(runId);
     } catch (DefensicsClientException e) {
-      throw new DefensicsRequestException("Could not delete run", e);
+      mapAndThrow(e, "Could not delete run");
     }
+  }
+
+  /**
+   * Maps JSON:API client exceptions to either Jenkins' DefensicsRequestException or
+   * to another exception types required e.g. in interrupted handling.
+   * @param e Exception
+   *
+   * @param message
+   * @throws IOException
+   * @throws DefensicsRequestException
+   */
+  private void mapAndThrow(DefensicsClientException e, String message)
+      throws IOException, DefensicsRequestException {
+    // Let IOExceptions through since to handle Interrupted jobs
+    // TODO: Could be better to throw InterruptedException
+    if (e.getCause() instanceof IOException) {
+      throw (IOException)e.getCause();
+    }
+    throw new DefensicsRequestException(message, e);
   }
 }

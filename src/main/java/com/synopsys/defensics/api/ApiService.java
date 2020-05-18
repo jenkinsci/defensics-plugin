@@ -126,7 +126,7 @@ public class ApiService {
           settingCliArgs
       );
     } catch (DefensicsClientException e) {
-      mapAndThrow(e, "Could not test configuration settings");
+      mapAndThrow(e, "Could not update configuration settings");
     }
   }
 

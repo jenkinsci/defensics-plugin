@@ -99,6 +99,12 @@ public class FailureScenarioIT {
   /** API Server address. */
   private static final String API_SERVER_URL = "http://127.0.0.1:3150";
 
+  /**
+   * Set to true if API server has been started with --enable-script-execution.
+   * Used to determine if error reporting tests can be run.
+   */
+  private static final boolean API_SERVER_HAS_ENABLED_EXTERNAL_INSTRUMENTATION = false;
+
   /** API Server authentication token. */
   private static final String AUTH_TOKEN = "test-token";
 
@@ -267,6 +273,35 @@ public class FailureScenarioIT {
     dumpLogs(run);
     assertThat(run.getResult(), is(equalTo(Result.FAILURE)));
     assertThat(logHas(run, "Not valid configuration file"), is(true));
+    checkNoReport(run);
+    checkApiServerResourcesAreCleaned();
+  }
+
+  /**
+   * Test that API Server response is shown if testplan has external script but this is disabled
+   * in API Server.
+   */
+  @Test
+  public void testRun_hasForbiddenExternalInstrumentation() throws Exception {
+    Assume.assumeFalse(
+        "API server should have disabled external instrumentation running for this test",
+        API_SERVER_HAS_ENABLED_EXTERNAL_INSTRUMENTATION
+    );
+    initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
+    final String pipelineScriptDefiningExternalInstrumentation = createPipelineScript(
+        NAME,
+        SETTING_FILE_NAME,
+        String.format("--exec-instrument echo 1", SUT_URI)
+    );
+    setupProject(pipelineScriptDefiningExternalInstrumentation);
+
+    WorkflowRun run = project.scheduleBuild2(0).get();
+
+    dumpLogs(run);
+    assertThat(run.getResult(), is(equalTo(Result.FAILURE)));
+    final String expectedError = "There are settings that may cause security risk. If you want to "
+        + "use them please check manual how to enable script execution.";
+    assertThat(logHas(run, expectedError), is(true));
     checkNoReport(run);
     checkApiServerResourcesAreCleaned();
   }

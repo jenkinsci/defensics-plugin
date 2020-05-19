@@ -168,16 +168,8 @@ public class FailureScenarioIT {
     env.put("DEFENSICS_MAX_POLLING_INTERVAL", "1");
     jenkinsRule.jenkins.getGlobalNodeProperties().add(prop);
 
+    setupCredentials();
     project = jenkinsRule.createProject(WorkflowJob.class);
-    CredentialsStore store = CredentialsProvider.lookupStores(jenkinsRule.jenkins)
-        .iterator()
-        .next();
-    StringCredentialsImpl credential = new StringCredentialsImpl(
-        CredentialsScope.GLOBAL,
-        CREDENTIAL_ID,
-        "Test Secret Text",
-        Secret.fromString(AUTH_TOKEN));
-    store.addCredentials(Domain.global(), credential);
 
     apiUtils = new ApiUtils(URI.create(API_SERVER_URL).resolve("/api/v1"), AUTH_TOKEN);
   }
@@ -188,24 +180,7 @@ public class FailureScenarioIT {
   @Test
   public void testRun_suiteShouldBeUnloaded() throws Exception {
     initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
-    final CpsFlowDefinition definition = new CpsFlowDefinition(pipelineScript, true);
-    project.setDefinition(definition);
-    CredentialsStore store = CredentialsProvider.lookupStores(jenkinsRule.jenkins)
-        .iterator()
-        .next();
-    StringCredentialsImpl credential = new StringCredentialsImpl(
-        CredentialsScope.GLOBAL,
-        CREDENTIAL_ID,
-        "Test Secret Text",
-        Secret.fromString(AUTH_TOKEN));
-    store.addCredentials(Domain.global(), credential);
-    ProjectUtils.setupProject(
-        jenkinsRule,
-        project,
-        NAME,
-        API_SERVER_URL,
-        true, CREDENTIAL_ID,
-        SETTING_FILE_NAME);
+    setupProject(pipelineScript);
 
     WorkflowRun run = project.scheduleBuild2(0).get();
     dumpLogs(run);
@@ -226,24 +201,7 @@ public class FailureScenarioIT {
         String.format("--uri %s", wrongSutUri)
     );
     initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
-    final CpsFlowDefinition definition = new CpsFlowDefinition(pipelineScript, true);
-    project.setDefinition(definition);
-    CredentialsStore store = CredentialsProvider.lookupStores(jenkinsRule.jenkins)
-        .iterator()
-        .next();
-    StringCredentialsImpl credential = new StringCredentialsImpl(
-        CredentialsScope.GLOBAL,
-        CREDENTIAL_ID,
-        "Test Secret Text",
-        Secret.fromString(AUTH_TOKEN));
-    store.addCredentials(Domain.global(), credential);
-    ProjectUtils.setupProject(
-        jenkinsRule,
-        project,
-        NAME,
-        API_SERVER_URL,
-        true, CREDENTIAL_ID,
-        SETTING_FILE_NAME);
+    setupProject(pipelineScript);
 
     WorkflowRun run = project.scheduleBuild2(0).get();
     dumpLogs(run);
@@ -273,24 +231,7 @@ public class FailureScenarioIT {
         String.format("--uri %s", wrongSutUri)
     );
     initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
-    final CpsFlowDefinition definition = new CpsFlowDefinition(pipelineScript, true);
-    project.setDefinition(definition);
-    CredentialsStore store = CredentialsProvider.lookupStores(jenkinsRule.jenkins)
-        .iterator()
-        .next();
-    StringCredentialsImpl credential = new StringCredentialsImpl(
-        CredentialsScope.GLOBAL,
-        CREDENTIAL_ID,
-        "Test Secret Text",
-        Secret.fromString(AUTH_TOKEN));
-    store.addCredentials(Domain.global(), credential);
-    ProjectUtils.setupProject(
-        jenkinsRule,
-        project,
-        NAME,
-        API_SERVER_URL,
-        true, CREDENTIAL_ID,
-        SETTING_FILE_NAME);
+    setupProject(pipelineScript);
 
     WorkflowRun run = project.scheduleBuild2(0).get();
     dumpLogs(run);
@@ -320,24 +261,7 @@ public class FailureScenarioIT {
         ""
     );
     initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
-    final CpsFlowDefinition definition = new CpsFlowDefinition(pipelineScriptEmptyTestplan, true);
-    project.setDefinition(definition);
-    CredentialsStore store = CredentialsProvider.lookupStores(jenkinsRule.jenkins)
-        .iterator()
-        .next();
-    StringCredentialsImpl credential = new StringCredentialsImpl(
-        CredentialsScope.GLOBAL,
-        CREDENTIAL_ID,
-        "Test Secret Text",
-        Secret.fromString(AUTH_TOKEN));
-    store.addCredentials(Domain.global(), credential);
-    ProjectUtils.setupProject(
-        jenkinsRule,
-        project,
-        NAME,
-        API_SERVER_URL,
-        true, CREDENTIAL_ID,
-        SETTING_FILE_NAME);
+    setupProject(pipelineScriptEmptyTestplan);
 
     WorkflowRun run = project.scheduleBuild2(0).get();
     dumpLogs(run);
@@ -512,6 +436,40 @@ public class FailureScenarioIT {
           containsString(expectedErrorMessage)
       );
     }
+  }
+
+  /**
+   * Set up project and make it use given pipeline script
+   * @param pipelineScript Script to use
+   * @throws Exception
+   */
+  private void setupProject(String pipelineScript) throws Exception {
+    final CpsFlowDefinition definition = new CpsFlowDefinition(pipelineScript, true);
+    project.setDefinition(definition);
+    ProjectUtils.setupProject(
+        jenkinsRule,
+        project,
+        NAME,
+        API_SERVER_URL,
+        true, CREDENTIAL_ID,
+        SETTING_FILE_NAME
+    );
+  }
+
+  /**
+   * Set up common credentials into Jenkins.
+   * @throws IOException
+   */
+  private void setupCredentials() throws IOException {
+    CredentialsStore store = CredentialsProvider.lookupStores(jenkinsRule.jenkins)
+        .iterator()
+        .next();
+    StringCredentialsImpl credential = new StringCredentialsImpl(
+        CredentialsScope.GLOBAL,
+        CREDENTIAL_ID,
+        "Test Secret Text",
+        Secret.fromString(AUTH_TOKEN));
+    store.addCredentials(Domain.global(), credential);
   }
 
   private boolean logHas(WorkflowRun run, String s) throws IOException {

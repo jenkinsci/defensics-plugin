@@ -159,7 +159,6 @@ public class FailureScenarioIT {
         + "     )\n"
         + "    } catch (error) {\n"
         + "      echo \"" + PIPELINE_ERROR_TEXT + "\";\n"
-        + "      echo error.getMessage();"
         + "      throw error\n"
         + "    }\n"
         + "  }\n"

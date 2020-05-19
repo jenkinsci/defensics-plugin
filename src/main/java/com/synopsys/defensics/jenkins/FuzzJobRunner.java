@@ -127,6 +127,7 @@ public class FuzzJobRunner {
       handleRunInterruption(defensicsRun);
       runResult = Result.ABORTED;
     } catch (Exception e) {
+      logger.logError(e.getMessage());
       // The reason this throws an exception instead of logging error and setting build result
       // to failure, is so that users can do exception handling in pipeline scripts when there
       // are errors in the fuzzing process.

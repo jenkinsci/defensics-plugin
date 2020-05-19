@@ -33,6 +33,7 @@ import java.nio.channels.ClosedByInterruptException;
 import java.util.Collections;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * Intermediate API service class between Jenkins job and Defensics client. Does things which client
@@ -275,7 +276,8 @@ public class ApiService {
 
   /**
    * Maps JSON:API client exceptions to either Jenkins' DefensicsRequestException or
-   * to another exception types required e.g. in interrupted handling.
+   * to another exception types required e.g. in interrupted handling. Exception message is
+   * directly the cause exception's message.
    * @param e Exception
    *
    * @throws DefensicsRequestException
@@ -283,38 +285,38 @@ public class ApiService {
    */
   private void mapAndThrow(DefensicsClientException e)
       throws DefensicsRequestException, InterruptedException {
-    mapAndThrow(e, null);
+    // Call mapAndThrow using default renderer, i.e. just return exception's message
+    mapAndThrow(e, Throwable::getMessage);
   }
 
   /**
    * Maps JSON:API client exceptions to either Jenkins' DefensicsRequestException or
    * to another exception types required e.g. in interrupted handling.
-   * @param e Exception
    *
-   * @param message used to override DefensicsClientException message. Use null to use DCE
+   * @param e Exception
+   * @param messageRenderer Function to render error message. Receives exception as an argument
    * @throws DefensicsRequestException
    * @throws InterruptedException if operation was interrupted
    */
-  private void mapAndThrow(DefensicsClientException e, String message)
-      throws DefensicsRequestException, InterruptedException {
+  private void mapAndThrow(
+      DefensicsClientException e,
+      Function<DefensicsClientException, String> messageRenderer
+  ) throws DefensicsRequestException, InterruptedException {
     // Check if cause was either interruption or some other failure
-    if (
-        e.getCause() instanceof InterruptedIOException
-            || e.getCause() instanceof ClosedByInterruptException
-    ) {
+    final Exception cause = (Exception)e.getCause();
+    if ( cause instanceof InterruptedIOException || cause instanceof ClosedByInterruptException ) {
       throw new InterruptedException(e.getCause().getMessage());
     }
-    if (e.getCause() instanceof InterruptedException) {
-      throw (InterruptedException)e.getCause();
+
+    if (cause instanceof InterruptedException) {
+      throw (InterruptedException)cause;
     }
 
-    if (message == null) {
-      message = e.getMessage();
-    }
+    String message = messageRenderer.apply(e);
 
-    if (e.getCause() != null) {
+    if (cause != null) {
       // Include inner exception
-      throw new DefensicsRequestException(message, (Exception)e.getCause());
+      throw new DefensicsRequestException(message, cause);
     }
 
     throw new DefensicsRequestException(message);

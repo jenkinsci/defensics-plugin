@@ -34,6 +34,15 @@ import java.util.Collections;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+/**
+ * Intermediate API service class between Jenkins job and Defensics client. Does things which client
+ * doesn't yet do and could map some exception/messages to be more suitable for Jenkins.
+ *
+ * NOTE: Exception handling is subject to change when client code is improved. Currently
+ * DefensicsClientException is inspected and InterruptedExceptions are thrown separately to
+ * handle job stopping more cleanly. DefensicsRequestException could be replaced with
+ * DefensicsClientException if InterruptedExceptions are handled someway.
+ */
 public class ApiService {
 
   private final DefensicsJsonApiClient defensicsClient;
@@ -79,10 +88,7 @@ public class ApiService {
     try {
       return defensicsClient.healthcheck();
     } catch (DefensicsClientException e) {
-      String message = "Unable to connect to Defensics API at address " + apiBaseUrl + ". "
-          + "Please check you are using the correct token and Defensics API server is running. "
-          + "Error message: "+ e.getCause().getMessage();
-      mapAndThrow(e, message);
+      mapAndThrow(e);
       // Should not reach this
       return false;
     }
@@ -104,7 +110,7 @@ public class ApiService {
     try (final InputStream testplanStream = testplan.read()) {
       defensicsClient.uploadTestPlan(configurationId, testplanStream);
     } catch (DefensicsClientException e) {
-      mapAndThrow(e, "Failed to upload configuration");
+      mapAndThrow(e);
     }
   }
 
@@ -126,7 +132,7 @@ public class ApiService {
           settingCliArgs
       );
     } catch (DefensicsClientException e) {
-      mapAndThrow(e, "Could not update configuration settings");
+      mapAndThrow(e);
     }
   }
 
@@ -141,7 +147,7 @@ public class ApiService {
     try {
       defensicsClient.startRun(runId);
     } catch (DefensicsClientException e) {
-      mapAndThrow(e, "Failed to start run.");
+      mapAndThrow(e);
     }
   }
 
@@ -159,7 +165,7 @@ public class ApiService {
           .orElseThrow(
               () -> new DefensicsRequestException("Could not find Defensics run " + runId));
     } catch (DefensicsClientException e) {
-      mapAndThrow(e, "Failed to get run");
+      mapAndThrow(e);
       return null;
     }
   }
@@ -174,7 +180,7 @@ public class ApiService {
     try {
       defensicsClient.stopRun(runId);
     } catch (DefensicsClientException e) {
-      mapAndThrow(e, "Failed to stop run");
+      mapAndThrow(e);
     }
   }
 
@@ -200,7 +206,7 @@ public class ApiService {
       // zipped report is handled.
       reportFolder.unzipFrom(cloudReportStream);
     } catch (DefensicsClientException e) {
-      mapAndThrow(e, "Failed to download results report.");
+      mapAndThrow(e);
     }
   }
 
@@ -219,7 +225,7 @@ public class ApiService {
           .downloadResultPackage(Collections.singletonList(runId));
       resultFolder.child(fileName).copyFrom(resultpackage);
     } catch (DefensicsClientException e) {
-      mapAndThrow(e, "Failed to download result package.");
+      mapAndThrow(e);
     }
   }
 
@@ -234,7 +240,7 @@ public class ApiService {
     try {
       return defensicsClient.createTestRun();
     } catch (DefensicsClientException e) {
-      mapAndThrow(e, "Could not create new Defensics run");
+      mapAndThrow(e);
       return null;
     }
   }
@@ -252,7 +258,7 @@ public class ApiService {
     try {
       return defensicsClient.getConfigurationSuite(id);
     } catch (DefensicsClientException e) {
-      mapAndThrow(e, "Could not fetch suite information");
+      mapAndThrow(e);
       // Should not reach this
       return Optional.empty();
     }
@@ -263,7 +269,7 @@ public class ApiService {
     try {
       defensicsClient.deleteRun(runId);
     } catch (DefensicsClientException e) {
-      mapAndThrow(e, "Could not delete run");
+      mapAndThrow(e);
     }
   }
 
@@ -272,7 +278,20 @@ public class ApiService {
    * to another exception types required e.g. in interrupted handling.
    * @param e Exception
    *
-   * @param message
+   * @throws DefensicsRequestException
+   * @throws InterruptedException if operation was interrupted
+   */
+  private void mapAndThrow(DefensicsClientException e)
+      throws DefensicsRequestException, InterruptedException {
+    mapAndThrow(e, null);
+  }
+
+  /**
+   * Maps JSON:API client exceptions to either Jenkins' DefensicsRequestException or
+   * to another exception types required e.g. in interrupted handling.
+   * @param e Exception
+   *
+   * @param message used to override DefensicsClientException message. Use null to use DCE
    * @throws DefensicsRequestException
    * @throws InterruptedException if operation was interrupted
    */
@@ -281,7 +300,7 @@ public class ApiService {
     // Check if cause was either interruption or some other failure
     if (
         e.getCause() instanceof InterruptedIOException
-        || e.getCause() instanceof ClosedByInterruptException
+            || e.getCause() instanceof ClosedByInterruptException
     ) {
       throw new InterruptedException(e.getCause().getMessage());
     }
@@ -289,9 +308,15 @@ public class ApiService {
       throw (InterruptedException)e.getCause();
     }
 
-    if (e.getMessage() != null) {
-      message = message + ": " + e.getMessage();
+    if (message == null) {
+      message = e.getMessage();
     }
-    throw new DefensicsRequestException(message, e);
+
+    if (e.getCause() != null) {
+      // Include inner exception
+      throw new DefensicsRequestException(message, (Exception)e.getCause());
+    }
+
+    throw new DefensicsRequestException(message);
   }
 }

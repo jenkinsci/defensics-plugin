@@ -1,0 +1,287 @@
+{
+  "rules": [
+    // TA problems except for a few low priority special cases
+    {
+      "aggregation_granularity": "file",
+      "violation_name": "MUST_COVER",
+      "issue_impact": "medium",
+      "minimum_line_coverage_pct": 80,
+      "use_filters": [
+        // base filters (should always be applied)
+        "ignore-interrupted-catch-block",
+        "ignore-exception-constructor",
+        "ignore-mains",
+        "include-testworthy-code",
+        "ignore-generated-types",
+        // special case exclusion filters
+        "ignore-getter-function",
+        "ignore-setter-function",
+        "ignore-exception-path",
+        "ignore-catch-block",
+        "ignore-log-line",
+        "ignore-special-functions"
+      ]
+    },
+    // Hard-to-test functions (getters, settters, equals, hashCode, toString, main)
+    /*{
+      "aggregation_granularity": "file",
+      "violation_name": "SHOULD_COVER",
+      "minimum_line_coverage_pct": 80,
+      "use_filters": [
+        // base filters (should always be applied)
+        "ignore-interrupted-catch-block",
+        "ignore-exception-constructor",
+        "ignore-mains",
+        "include-testworthy-code",
+        "ignore-generated-types",
+        // special case filters
+        "only-hard-to-test-functions"
+      ]
+    },*/
+    // Hard-to-test lines (exception path, log lines)
+    /*{
+      "aggregation_granularity": "file",
+      "violation_name": "SHOULD_COVER_LINES",
+      "minimum_line_coverage_pct": 80,
+      "use_filters": [
+        // base filters (should always be applied)
+        "ignore-interrupted-catch-block",
+        "ignore-exception-constructor",
+        "ignore-mains",
+        "include-testworthy-code",
+        "ignore-generated-types",
+        // special case filters
+        "only-hard-to-test-lines"
+      ]
+    }*/
+  ],
+  "define_filters": [
+    {
+      "filter_name": "only-hard-to-test-functions",
+      "function_filters": [
+        {
+          "or": [
+            { // getter function
+              "is_getter_method": true
+            },
+            { // setter function
+              "is_setter_method": true
+            },
+            { // special function (equals, hashCode, toString)
+              "func_name_regex": "(.*\\.equals\\(java\\.lang\\.Object\\))|(.*\\.hashCode\\(\\))|(.*\\.toString\\(\\))"
+            },
+            { // main function
+              "func_name_regex": ".*\\.main\\(java\\.lang\\.String\\[\\]\\)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "filter_name": "only-hard-to-test-lines",
+      "line_filters": [
+        {
+          "or": [
+            { // exception path
+              "contains_astnode": {
+                "throws_type": {
+                  "descends_from": {
+                    "type_name_regex": "^java\\.lang\\.RuntimeException$"
+                  }
+                }
+              }
+            },
+            { // log line
+              "contains_astnode": {
+                "call_to_named_function": "Logger\\.(warn|error|info|debug|trace)"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "filter_name": "ignore-getter-function",
+      "function_filters": [
+        {
+          "exclusion_reason": "getter function",
+          "is_getter_method": false
+        }
+      ]
+    },
+    {
+      "filter_name": "ignore-setter-function",
+      "function_filters": [
+        {
+          "exclusion_reason": "setter function",
+          "is_setter_method": false
+        }
+      ]
+    },
+    {
+      "filter_name": "ignore-exception-path",
+      "line_filters": [
+        {
+          "exclusion_reason": "exception path",
+          "not": {
+            "contains_astnode": {
+              "throws_type": {
+                "descends_from": {
+                  "type_name_regex": "^java\\.lang\\.RuntimeException$"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "filter_name": "ignore-log-line",
+      "line_filters": [
+        {
+          "exclusion_reason": "log line",
+          "not": {
+            "contains_astnode": {
+              "call_to_named_function": "Logger\\.(warn|error|info|debug|trace)"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "filter_name": "ignore-special-functions",
+      "function_filters": [
+        {
+          "exclusion_reason": "special function (equals, hashCode, toString)",
+          "not": {
+            "func_name_regex": "(.*\\.equals\\(java\\.lang\\.Object\\))|(.*\\.hashCode\\(\\))|(.*\\.toString\\(\\))"
+          }
+        }
+      ]
+    },
+    {
+      "filter_name": "ignore-mains",
+      "function_filters": [
+        {
+          "exclusion_reason": "main methods are rarely testable (via unit test)",
+          "not": {
+            "func_name_regex": ".*\\.main\\(java\\.lang\\.String\\[\\]\\)"
+          }
+        }
+      ]
+    },
+    {
+      "filter_name": "ignore-exception-constructor",
+      "function_filters": [
+        {
+          "exclusion_reason": "exception constructor",
+          // Ignore any function that
+          "not": {
+            // is an Exception's constructor
+            "func_name_regex": ".*Exception\\.<init>.*"
+          }
+        }
+      ]
+    },
+    {
+      "filter_name": "ignore-catch-block",
+      "line_filters": [
+        {
+          "exclusion_reason": "catch block",
+          // Ignore any line that
+          "not": {
+            // contains a node that
+            "contains_astnode": {
+              // is contained by
+              "contained_by_astnode": {
+                // a "catch" statement
+                "statement_kind": "catch"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "filter_name": "ignore-interrupted-catch-block",
+      "line_filters": [
+        {
+          "exclusion_reason": "interrupted catch block",
+          // Ignore any line that
+          "not": {
+            // contains a node that
+            "contains_astnode": {
+              // catches an InterruptedException
+              "catches_type": {
+                "or": [
+                  {
+                    "descends_from": {
+                      "type_name_regex": "^java\\.lang\\.InterruptedException$"
+                    }
+                  },
+                  {
+                    "type_name_regex": "^java\\.lang\\.InterruptedException$"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "filter_name": "include-testworthy-code",
+      "file_filters": [
+        {
+          "file_name_regex": ".*/src/main/java/.*"
+        },
+        {
+          "exclusion_reason": "test code",
+          "not": {
+            "or": [
+              {
+                "file_name_regex": ".*/src/test/java/.*"
+              },
+              {
+                "file_name_regex": ".*Test\\.java$"
+              },
+              // TODO: Remove this after all tests have been standardized to end in Test.java.
+              {
+                "file_name_regex": ".*TestCase\\.java$"
+              }
+            ]
+          }
+        },
+        // Ignore files in the script module
+        {
+          "exclusion_reason": "script module code",
+          "not": {
+            "file_name_regex": "/script/.*"
+          }
+        },
+        // Ignore files in the integration-test module
+        {
+          "exclusion_reason": "integration-test code",
+          "not": {
+            "file_name_regex": ".*integration-test/.*"
+          }
+        }
+      ]
+    },
+    {
+      "filter_name": "ignore-generated-types",
+      "function_filters": [
+        {
+          "exclusion_reason": "Generated code is not necessary to test",
+          "not": {
+            "member_of_class_type": {
+              "has_annotation_regex": "^javax\\.annotation\\.Generated$"
+            }
+          }
+        }
+      ]
+    },
+  ],
+  "type": "Coverity test policy definition",
+  "format_version": 1
+}

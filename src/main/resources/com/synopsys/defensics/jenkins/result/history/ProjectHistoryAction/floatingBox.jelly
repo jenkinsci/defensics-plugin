@@ -1,0 +1,12 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:test="/lib/hudson/test" xmlns:regr="/lib/com/mentor/questa/vrm/jenkins" xmlns:f="/lib/form" xmlns:i="jelly:fmt">
+  <j:if test="${from.shouldShowTrendGraph()}">
+    <div align="right">
+      <div id="defensics-failure-trend-title" class="test-trend-caption">${%Defensics Failure Trend}</div>
+    </div>
+    <div>
+      <img id="defensics-failure-trend-graph" src="${from.urlName}/trendGraph" lazymap="${from.urlName}/trendMap"
+        alt="${%Defensics Failure Trend Chart}"></img>
+    </div>
+  </j:if>
+</j:jelly>

@@ -1,0 +1,36 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:c="/lib/credentials">
+  <!--
+    This Jelly script is used to produce the global configuration option.
+
+    Jenkins uses a set of tag libraries to provide uniformity in forms.
+    To determine where this tag is defined, first check the namespace URI,
+    and then look under $JENKINS/views/. For example, <f:section> is defined
+    in $JENKINS/views/lib/form/section.jelly.
+
+    It's also often useful to just check other similar scripts to see what
+    tags they use. Views are always organized according to its owner class,
+    so it should be straightforward to find them.
+    
+  -->
+    <f:entry title="${%Name}" field="name">
+      <f:textbox />
+    </f:entry>
+    <f:entry title="${%URL}" field="url">
+      <f:textbox />
+    </f:entry>
+    <f:entry title="${%Disable HTTPS certificate validation}" field="certificateValidationDisabled">
+      <f:checkbox default="unchecked"/>
+    </f:entry>
+    <f:entry field="credentialsId" title="${%Credentials}">
+      <c:select/>
+    </f:entry>
+    <f:validateButton
+    title="${%Test Connection}" progress="${%Testing...}"
+    method="testConnection" with="url,certificateValidationDisabled,credentialsId" />
+    <f:entry title="">
+      <div align="right">
+        <f:repeatableDeleteButton />
+      </div>
+    </f:entry>
+</j:jelly>

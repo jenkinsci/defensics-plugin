@@ -1,0 +1,25 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:t="/lib/hudson">
+  <t:summary icon="/plugin/defensics/images/48x48/defensics-logo.png">
+    <j:choose>
+      <j:when test="${it.failureCount == 0}">
+        <a href="${it.reportUrl}">Defensics Fuzz Test Results</a>
+        (No failures)
+      </j:when>
+      <j:otherwise>
+        <a href="${it.reportUrl}">Defensics Fuzz Test Results</a>
+        (${it.failureCount} failures)
+      </j:otherwise>
+    </j:choose>
+    <j:if test="${it.resultPackageUrls.size() > 0}">
+      <p>Download Result Package(s):</p>
+      <ol>
+        <j:forEach var="url" items="${it.resultPackageUrls}">
+          <li>
+            <a href="${url}">Result Package</a>
+          </li>
+        </j:forEach>
+      </ol>
+    </j:if>
+  </t:summary>
+</j:jelly>

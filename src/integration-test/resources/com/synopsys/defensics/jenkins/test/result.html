@@ -1,0 +1,839 @@
+<html>
+<head>
+<META http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Defensics</title>
+<style type="text/css">
+
+body {
+    margin: 13px 15px 15px 15px;
+    padding-top: 0px;
+    font-family: Tahoma, Verdana, Arial, Helvetica, sans-serif;
+    background: #ffffff;
+    font-size: 10px;
+}
+
+
+p {
+    color: #444444;
+    max-width: 700px;
+    padding-left: 15px;
+}
+
+
+ul, ol, li {
+    color: #444444;
+    margin-left: 15px;
+    padding-left: 0;
+}
+
+
+hr {
+    border: 0;
+    background-color: #aaaaaa;
+    color: #aaaaaa;
+    height: 1px;
+    width: 80%;
+    max-width: 800px;
+    margin-left: 0;
+		margin-top: 10px;
+		margin-bottom: 10px;
+		text-align: left;
+}
+
+table {
+    margin: 0;
+    max-width: 800px;
+    width: 100%;
+    border: 0px #eeeeee solid;
+    font-size: 100%;
+    vertical-align:top;
+    border-spacing: 0px;
+}
+
+table.message {
+	background-color: #ffffff;
+	width: 100%;
+}
+
+th {
+    padding: 5px;
+    padding-right: 15px;
+    text-align: left;
+    vertical-align:top;
+}
+
+th.separator {
+	border-bottom: 1px #eeeeee solid;
+}
+
+
+td {
+    border: 0;
+    padding-left: 5px;
+	  padding-right: 5px;
+		padding-top: 1px;
+		padding-bottom: 1px;
+    vertical-align:top;
+}
+
+td.offset {
+	color: #808080;
+}
+
+
+.text-align-right {
+	text-align: right;
+}
+
+header {
+  font-family: Arial, Verdana, Helvetica;
+  #font-size: 25px;
+  font-size: 1.3em;
+  font-weight: normal;
+  color: #6fb121;
+  margin: 0px 0px 0px 0;
+  padding: 0 0 6px 0;
+}
+
+h1 {
+  font-family: Arial, Verdana, Helvetica;
+  font-size: 1.8em;
+  font-weight: normal;
+  color: #55565a;
+}
+
+h1.colored {
+  font-family: Arial, Verdana, Helvetica;
+  font-size: 1.8em;
+  font-weight: normal;
+  color: #ffffff;
+  width: 80%;
+  background-color: #c4d600;
+  padding: 5px;
+}
+
+groupfirst {
+	border-top-width: 1px;
+	border-top-style: solid;
+	border-top-color: #aaaaaa;
+}
+
+tr.colored {
+	background-color: #F9F9F9;
+}
+
+h2 {
+  font-family: Arial, Verdana, Helvetica;
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #55565a;
+}
+
+h3 {
+  font-family: Arial, Verdana, Helvetica;
+  font-size: 1.3em;
+  font-weight: bold;
+  color: #55565a;
+}
+
+h4 {
+  font-family: Arial, Verdana, Helvetica;
+  font-size: 1.1em;
+  font-weight: bold;
+  color: #55565a;
+}
+
+h5 {
+    font-size: 0.98em;
+    color: #55565a;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+a { 
+    color: #5a2b81;
+}
+
+a:link { 
+    color: #5a2b81;
+}
+
+a:visited { 
+    color: #5a2b81;
+}
+
+a:active {
+    background: none;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+img {
+  border: 0;
+}
+
+# Below there are defs from old that are not in the new.
+
+p.indent {
+    color: #444444;
+    max-width: 700px;
+    margin-left: 15px;
+}
+
+p.toc {
+	font-style:italic;
+}
+
+ul.toc {
+	list-style-type:circle;
+}
+
+
+dt {
+    color: #444444;
+    font-weight: bold;
+}
+
+dd {
+    color: #444444;
+    max-width: 700px;
+}
+
+pre {
+    font-size: 100%;
+}
+
+tr.output-row-odd {
+  background-color: rgb(236,252,228);
+}
+tr.output-row-even {
+  background-color: #ffffff;
+}
+tr.input-row-odd {
+  background-color: rgb(241,247,254);
+}
+tr.input-row-even {
+  background-color: #ffffff;
+}
+tr.anomaly-row-odd {
+  #background-color: rgb(255,237,251);
+  background-color: rgb(254,222,249);
+}
+tr.anomaly-row-even {
+  background-color: rgb(254,222,249);
+}
+
+table.basegroup: {
+    max-width: 600px;
+    width: 60%;
+}
+th.basegroup {
+    padding: 0px;
+    border: 0px #eeeeee solid;
+    text-align: center;
+    vertical-align:top;
+}
+td.suite {
+    border: 3px #000000 solid;
+    vertical-align:top;
+    background: #cccccc;
+}
+td.message {
+    border: 0;
+    vertical-align:top;
+    text-align: center;
+}
+td.topic {
+    border: 0;
+    vertical-align:top;
+    text-align: center;
+}
+td.in-message {
+    border: 0;
+    vertical-align:top;
+    text-align: right;
+}
+td.in-topic {
+    border: 0;
+    vertical-align:top;
+    text-align: center;
+}
+td.out-message {
+    border: 0;
+    vertical-align:top;
+    text-align: left;
+}
+td.out-topic {
+    border: 0;
+    vertical-align:top;
+    text-align: center;
+}
+td.sut {
+    border: 3px #000000 solid;
+#    padding: 5px;
+    vertical-align:top;
+    background: #cccccc;
+}
+
+strong {
+    color: #09478D;
+    font-size: 1.0em;
+}
+
+strong.red {
+    color: #e85016;
+}
+
+strong.green {
+    color: #c4d600;
+}
+
+code {
+    font-size: 1.0em;
+}
+
+/* Page separator (rfcmagic2) */
+span.grey {
+    color: #aaaaaa;
+}
+
+       </style>
+</head>
+<body>
+<h1>Fuzz report for fuzz-httpd-d3-http-server</h1>
+<a name="Summary"></a>
+<h1 class="colored">Summary</h1>
+<a name="TestRunsSummary"></a>
+<h2>Test runs</h2>
+<table cellspacing="0" cellpadding="3">
+<tr>
+<th>#</th><th>System under test</th><th>Version</th><th>Test suite</th><th>Overall verdict</th><th>Test case count</th><th>Run time</th>
+</tr>
+<tr>
+<td><a href="#7ddb73f5-03f8-428e-a863-5f373ca2ac5a">1</a></td><td>SUT d8ac8f64-669e-337d-448e-a14360d6d05b&nbsp;</td><td>&nbsp;</td><td>HTTP Server Test Suite 4.11.1&nbsp;</td><td>PASS&nbsp;</td><td>101&nbsp;</td><td>00:01:31&nbsp;</td>
+</tr>
+<tr>
+<td><a href="#21ea4405-d5bc-4708-bccb-34aa2fd4de58">2</a></td><td>SUT 55497c27-7f00-bc33-f464-87976e6fb2a3&nbsp;</td><td>&nbsp;</td><td>HTTP Server Test Suite 4.11.1&nbsp;</td><td>PASS&nbsp;</td><td>101&nbsp;</td><td>00:00:32&nbsp;</td>
+</tr>
+<tr>
+<td><a href="#873c222b-e3cc-464b-a445-1df8a70f49d2">3</a></td><td>SUT 45e90a45-f439-8562-007e-6bd4329911c4&nbsp;</td><td>&nbsp;</td><td>HTTP Server Test Suite 4.11.1&nbsp;</td><td>PASS&nbsp;</td><td>101&nbsp;</td><td>00:00:02&nbsp;</td>
+</tr>
+<tr>
+<td>Total</td><td></td><td></td><td></td><td></td><td>303&nbsp;</td><td>00:02:06&nbsp;</td>
+</tr>
+</table>
+<hr>
+<h2>Table of contents</h2>
+<ul class="toc">
+<li>
+<a href="#Summary">Summary</a>
+</li>
+<ul class="toc">
+<li>
+<a href="#Tableofcontents">Table of contents</a>
+</li>
+<li>
+<a href="#TestRunsSummary">Test runs</a>
+</li>
+</ul>
+<li>
+<a href="#TestRuns">Test runs</a>
+</li>
+<ul class="toc">
+<li>
+<a href="#7ddb73f5-03f8-428e-a863-5f373ca2ac5a">Slice id d8ac8f64-669e-337d-448e-a14360d6d05b : HTTP Server Test Suite</a>
+</li>
+<ul class="toc">
+<ul class="toc"></ul>
+</ul>
+<li>
+<a href="#21ea4405-d5bc-4708-bccb-34aa2fd4de58">Slice id 55497c27-7f00-bc33-f464-87976e6fb2a3 : HTTP Server Test Suite</a>
+</li>
+<ul class="toc">
+<ul class="toc"></ul>
+</ul>
+<li>
+<a href="#873c222b-e3cc-464b-a445-1df8a70f49d2">Slice id 45e90a45-f439-8562-007e-6bd4329911c4 : HTTP Server Test Suite</a>
+</li>
+<ul class="toc">
+<ul class="toc"></ul>
+</ul>
+</ul>
+</ul>
+<hr>
+<a name="TestRuns"></a>
+<h1 class="colored">Test runs</h1>
+<a name="7ddb73f5-03f8-428e-a863-5f373ca2ac5a">
+<h2>SUT d8ac8f64-669e-337d-448e-a14360d6d05b</h2>
+<h2>Slice id d8ac8f64-669e-337d-448e-a14360d6d05b : HTTP Server Test Suite</h2>
+</a>
+<h3>Diagnoses</h3>
+<table style="width: auto;">
+<tr>
+<td>Valid case instrumentation</td><td>DISABLED</td>
+</tr>
+<tr>
+<td>External instrumentation</td><td>DISABLED</td>
+</tr>
+<tr>
+<td>Protocol semantics</td><td>ENABLED</td>
+</tr>
+<tr>
+<td>Connection based instrumentation</td><td>ENABLED</td>
+</tr>
+<tr>
+<td>SNMP instrumentation</td><td>DISABLED</td>
+</tr>
+<tr>
+<td>SNMP Trap instrumentation</td><td>DISABLED</td>
+</tr>
+<tr>
+<td>ISASecure CCM</td><td>DISABLED</td>
+</tr>
+<tr>
+<td>SafeGuard</td><td>DISABLED</td>
+</tr>
+<tr>
+<td>Syslog instrumentation</td><td>DISABLED</td>
+</tr>
+<tr>
+<td>
+          Instrumentation fail limit
+        </td><td>1</td>
+</tr>
+<tr>
+<td>
+          Instrumentation frequency
+        </td><td>1</td>
+</tr>
+</table>
+<p>Total of
+      101 cases were executed.
+    </p>
+<table>
+<th>
+            Combined overall verdict
+          </th><th><strong>PASS</strong></th><th></th>
+<tr>
+<td class="text-align-right"><b></b></td><td></td><td></td>
+</tr>
+<tr>
+<td class="text-align-right">Verdict from tcp / protocol instrumentation</td><td>pass</td><td>The test cases passed successfully. No flaws in the system
+    under test were detected by the monitoring facility in context of these test cases.
+  </td>
+</tr>
+<tr>
+<td class="text-align-right">0</td><td>fail</td><td>There is a reason to believe that the SUT crashed or
+    malfunctioned in some other detectable way while executing these test cases.
+  </td>
+</tr>
+<tr>
+<td class="text-align-right">101</td><td>pass</td><td>The test cases passed successfully. No flaws in the system
+    under test were detected by the monitoring facility in context of these test cases.
+  </td>
+</tr>
+</table>
+<hr>
+<h3>Test run notes</h3>
+<table style="width: auto;">
+<tr>
+<th colspan="2">System under test</th>
+</tr>
+<tr>
+<td>Identity:</td><td>10.112.14.56:23776</td>
+</tr>
+<tr>
+<td>Name:</td><td>SUT d8ac8f64-669e-337d-448e-a14360d6d05b</td>
+</tr>
+<tr>
+<td>Version:</td><td></td>
+</tr>
+<tr>
+<th colspan="2">Test setup</th>
+</tr>
+<tr>
+<td>Name of the tester:</td><td></td>
+</tr>
+<tr>
+<td>Contact information:</td><td></td>
+</tr>
+<tr>
+<td>Operating system:</td><td>Linux amd64 4.4.0-119-generic</td>
+</tr>
+<tr>
+<td>Java:</td><td>1.8.0_161 25.161-b12 mixed mode</td>
+</tr>
+<tr>
+<th colspan="2">Test suite</th>
+</tr>
+<tr>
+<td>Name:</td><td>HTTP Server Test Suite</td>
+</tr>
+<tr>
+<td>Version:</td><td>4.11.1 20180123 2017.12-5</td>
+</tr>
+<tr>
+<td>License:</td><td>Licensed to Synopsys INTERNAL use. Distribution strictly prohibited.</td>
+</tr>
+<tr>
+<th colspan="2">Test execution time</th>
+</tr>
+<tr>
+<td>Test runs started:</td><td class="text-align-right">20180503 05:47:49</td>
+</tr>
+<tr>
+<td>Test runs ended:</td><td class="text-align-right">20180503 05:49:20</td>
+</tr>
+<tr>
+<td>Running time:</td><td class="text-align-right">00:01:31</td>
+</tr>
+<tr>
+<td>Average cases per second:</td><td class="text-align-right">1.10</td>
+</tr>
+<tr>
+<th colspan="2">Options</th>
+</tr>
+<tr>
+<td>Sequence</td><td>HTTP request and response (in file user/request-response.seq)</td>
+</tr>
+<tr>
+<td>Test case selection mode</td><td>all</td>
+</tr>
+<tr>
+<td>Test run type</td><td>normal</td>
+</tr>
+<tr>
+<th colspan="2">Other notes</th>
+</tr>
+<tr>
+<td>Cloud.Job</td><td>e79828b3-677b-4312-9087-e0aee3aa7abd</td>
+</tr>
+<tr>
+<td>Cloud.Slice</td><td>d8ac8f64-669e-337d-448e-a14360d6d05b</td>
+</tr>
+</table>
+<hr>
+<a name="Failures7ddb73f5-03f8-428e-a863-5f373ca2ac5a"></a>
+<h3 class="colored">Failure categories</h3>
+<p>0
+        failures were detected in this test run.
+      </p>
+<hr>
+<a name="21ea4405-d5bc-4708-bccb-34aa2fd4de58">
+<h2>SUT 55497c27-7f00-bc33-f464-87976e6fb2a3</h2>
+<h2>Slice id 55497c27-7f00-bc33-f464-87976e6fb2a3 : HTTP Server Test Suite</h2>
+</a>
+<h3>Diagnoses</h3>
+<table style="width: auto;">
+<tr>
+<td>Valid case instrumentation</td><td>DISABLED</td>
+</tr>
+<tr>
+<td>External instrumentation</td><td>DISABLED</td>
+</tr>
+<tr>
+<td>Protocol semantics</td><td>ENABLED</td>
+</tr>
+<tr>
+<td>Connection based instrumentation</td><td>ENABLED</td>
+</tr>
+<tr>
+<td>SNMP instrumentation</td><td>DISABLED</td>
+</tr>
+<tr>
+<td>SNMP Trap instrumentation</td><td>DISABLED</td>
+</tr>
+<tr>
+<td>ISASecure CCM</td><td>DISABLED</td>
+</tr>
+<tr>
+<td>SafeGuard</td><td>DISABLED</td>
+</tr>
+<tr>
+<td>Syslog instrumentation</td><td>DISABLED</td>
+</tr>
+<tr>
+<td>
+          Instrumentation fail limit
+        </td><td>1</td>
+</tr>
+<tr>
+<td>
+          Instrumentation frequency
+        </td><td>1</td>
+</tr>
+</table>
+<p>Total of
+      101 cases were executed.
+    </p>
+<table>
+<th>
+            Combined overall verdict
+          </th><th><strong>PASS</strong></th><th></th>
+<tr>
+<td class="text-align-right"><b></b></td><td></td><td></td>
+</tr>
+<tr>
+<td class="text-align-right">Verdict from tcp / protocol instrumentation</td><td>pass</td><td>The test cases passed successfully. No flaws in the system
+    under test were detected by the monitoring facility in context of these test cases.
+  </td>
+</tr>
+<tr>
+<td class="text-align-right">0</td><td>fail</td><td>There is a reason to believe that the SUT crashed or
+    malfunctioned in some other detectable way while executing these test cases.
+  </td>
+</tr>
+<tr>
+<td class="text-align-right">101</td><td>pass</td><td>The test cases passed successfully. No flaws in the system
+    under test were detected by the monitoring facility in context of these test cases.
+  </td>
+</tr>
+</table>
+<hr>
+<h3>Test run notes</h3>
+<table style="width: auto;">
+<tr>
+<th colspan="2">System under test</th>
+</tr>
+<tr>
+<td>Identity:</td><td>10.112.14.38:28645</td>
+</tr>
+<tr>
+<td>Name:</td><td>SUT 55497c27-7f00-bc33-f464-87976e6fb2a3</td>
+</tr>
+<tr>
+<td>Version:</td><td></td>
+</tr>
+<tr>
+<th colspan="2">Test setup</th>
+</tr>
+<tr>
+<td>Name of the tester:</td><td></td>
+</tr>
+<tr>
+<td>Contact information:</td><td></td>
+</tr>
+<tr>
+<td>Operating system:</td><td>Linux amd64 4.4.0-119-generic</td>
+</tr>
+<tr>
+<td>Java:</td><td>1.8.0_161 25.161-b12 mixed mode</td>
+</tr>
+<tr>
+<th colspan="2">Test suite</th>
+</tr>
+<tr>
+<td>Name:</td><td>HTTP Server Test Suite</td>
+</tr>
+<tr>
+<td>Version:</td><td>4.11.1 20180123 2017.12-5</td>
+</tr>
+<tr>
+<td>License:</td><td>Licensed to Synopsys INTERNAL use. Distribution strictly prohibited.</td>
+</tr>
+<tr>
+<th colspan="2">Test execution time</th>
+</tr>
+<tr>
+<td>Test runs started:</td><td class="text-align-right">20180503 05:47:27</td>
+</tr>
+<tr>
+<td>Test runs ended:</td><td class="text-align-right">20180503 05:48:00</td>
+</tr>
+<tr>
+<td>Running time:</td><td class="text-align-right">00:00:32</td>
+</tr>
+<tr>
+<td>Average cases per second:</td><td class="text-align-right">3.09</td>
+</tr>
+<tr>
+<th colspan="2">Options</th>
+</tr>
+<tr>
+<td>Sequence</td><td>HTTP request and response (in file user/request-response.seq)</td>
+</tr>
+<tr>
+<td>Test case selection mode</td><td>all</td>
+</tr>
+<tr>
+<td>Test run type</td><td>normal</td>
+</tr>
+<tr>
+<th colspan="2">Other notes</th>
+</tr>
+<tr>
+<td>Cloud.Job</td><td>e79828b3-677b-4312-9087-e0aee3aa7abd</td>
+</tr>
+<tr>
+<td>Cloud.Slice</td><td>55497c27-7f00-bc33-f464-87976e6fb2a3</td>
+</tr>
+</table>
+<hr>
+<a name="Failures21ea4405-d5bc-4708-bccb-34aa2fd4de58"></a>
+<h3 class="colored">Failure categories</h3>
+<p>0
+        failures were detected in this test run.
+      </p>
+<hr>
+<a name="873c222b-e3cc-464b-a445-1df8a70f49d2">
+<h2>SUT 45e90a45-f439-8562-007e-6bd4329911c4</h2>
+<h2>Slice id 45e90a45-f439-8562-007e-6bd4329911c4 : HTTP Server Test Suite</h2>
+</a>
+<h3>Diagnoses</h3>
+<table style="width: auto;">
+<tr>
+<td>Valid case instrumentation</td><td>DISABLED</td>
+</tr>
+<tr>
+<td>External instrumentation</td><td>DISABLED</td>
+</tr>
+<tr>
+<td>Protocol semantics</td><td>ENABLED</td>
+</tr>
+<tr>
+<td>Connection based instrumentation</td><td>ENABLED</td>
+</tr>
+<tr>
+<td>SNMP instrumentation</td><td>DISABLED</td>
+</tr>
+<tr>
+<td>SNMP Trap instrumentation</td><td>DISABLED</td>
+</tr>
+<tr>
+<td>ISASecure CCM</td><td>DISABLED</td>
+</tr>
+<tr>
+<td>SafeGuard</td><td>DISABLED</td>
+</tr>
+<tr>
+<td>Syslog instrumentation</td><td>DISABLED</td>
+</tr>
+<tr>
+<td>
+          Instrumentation fail limit
+        </td><td>1</td>
+</tr>
+<tr>
+<td>
+          Instrumentation frequency
+        </td><td>1</td>
+</tr>
+</table>
+<p>Total of
+      101 cases were executed.
+    </p>
+<table>
+<th>
+            Combined overall verdict
+          </th><th><strong>PASS</strong></th><th></th>
+<tr>
+<td class="text-align-right"><b></b></td><td></td><td></td>
+</tr>
+<tr>
+<td class="text-align-right">Verdict from tcp / protocol instrumentation</td><td>pass</td><td>The test cases passed successfully. No flaws in the system
+    under test were detected by the monitoring facility in context of these test cases.
+  </td>
+</tr>
+<tr>
+<td class="text-align-right">0</td><td>fail</td><td>There is a reason to believe that the SUT crashed or
+    malfunctioned in some other detectable way while executing these test cases.
+  </td>
+</tr>
+<tr>
+<td class="text-align-right">101</td><td>pass</td><td>The test cases passed successfully. No flaws in the system
+    under test were detected by the monitoring facility in context of these test cases.
+  </td>
+</tr>
+</table>
+<hr>
+<h3>Test run notes</h3>
+<table style="width: auto;">
+<tr>
+<th colspan="2">System under test</th>
+</tr>
+<tr>
+<td>Identity:</td><td>10.112.14.51:30424</td>
+</tr>
+<tr>
+<td>Name:</td><td>SUT 45e90a45-f439-8562-007e-6bd4329911c4</td>
+</tr>
+<tr>
+<td>Version:</td><td></td>
+</tr>
+<tr>
+<th colspan="2">Test setup</th>
+</tr>
+<tr>
+<td>Name of the tester:</td><td></td>
+</tr>
+<tr>
+<td>Contact information:</td><td></td>
+</tr>
+<tr>
+<td>Operating system:</td><td>Linux amd64 4.4.0-119-generic</td>
+</tr>
+<tr>
+<td>Java:</td><td>1.8.0_161 25.161-b12 mixed mode</td>
+</tr>
+<tr>
+<th colspan="2">Test suite</th>
+</tr>
+<tr>
+<td>Name:</td><td>HTTP Server Test Suite</td>
+</tr>
+<tr>
+<td>Version:</td><td>4.11.1 20180123 2017.12-5</td>
+</tr>
+<tr>
+<td>License:</td><td>Licensed to Synopsys INTERNAL use. Distribution strictly prohibited.</td>
+</tr>
+<tr>
+<th colspan="2">Test execution time</th>
+</tr>
+<tr>
+<td>Test runs started:</td><td class="text-align-right">20180503 05:47:27</td>
+</tr>
+<tr>
+<td>Test runs ended:</td><td class="text-align-right">20180503 05:47:30</td>
+</tr>
+<tr>
+<td>Running time:</td><td class="text-align-right">00:00:02</td>
+</tr>
+<tr>
+<td>Average cases per second:</td><td class="text-align-right">34.69</td>
+</tr>
+<tr>
+<th colspan="2">Options</th>
+</tr>
+<tr>
+<td>Sequence</td><td>HTTP request and response (in file user/request-response.seq)</td>
+</tr>
+<tr>
+<td>Test case selection mode</td><td>all</td>
+</tr>
+<tr>
+<td>Test run type</td><td>normal</td>
+</tr>
+<tr>
+<th colspan="2">Other notes</th>
+</tr>
+<tr>
+<td>Cloud.Job</td><td>e79828b3-677b-4312-9087-e0aee3aa7abd</td>
+</tr>
+<tr>
+<td>Cloud.Slice</td><td>45e90a45-f439-8562-007e-6bd4329911c4</td>
+</tr>
+</table>
+<hr>
+<a name="Failures873c222b-e3cc-464b-a445-1df8a70f49d2"></a>
+<h3 class="colored">Failure categories</h3>
+<p>0
+        failures were detected in this test run.
+      </p>
+<hr>
+<hr>
+<p>For licensed use. Distribution prohibited.<br>Copyright(c) Synopsys, Inc. All rights reserved.</p>
+</body>
+</html>

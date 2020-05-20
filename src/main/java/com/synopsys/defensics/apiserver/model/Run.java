@@ -1,0 +1,173 @@
+/*
+ * Copyright © 2020 Synopsys, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.synopsys.defensics.apiserver.model;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.crnk.core.resource.annotations.JsonApiField;
+import io.crnk.core.resource.annotations.JsonApiRelation;
+import io.crnk.core.resource.annotations.JsonApiResource;
+import io.swagger.v3.oas.annotations.media.Schema;
+import java.io.File;
+import java.util.List;
+
+@JsonApiResource(type = "runs")
+public class Run extends BaseTestRun {
+
+  @Schema(description = "Number of test cases that are going to be executed on the run")
+  @JsonApiField(postable = false, patchable = false)
+  private int casesToBeExecuted;
+
+  // Case index changes during the run. Client can't specify these, so it's not postable/patchable.
+  @Schema(description = "Index of the case run is currently executing")
+  @JsonApiField(postable = false, patchable = false)
+  private int caseIndex;
+
+  @Schema(description = "Number of cases already executed on run")
+  @JsonApiField(postable = false, patchable = false)
+  private int runIndex;
+
+  @JsonApiField(postable = false, patchable = false)
+  private RunState state;
+
+  @JsonApiField(postable = false, patchable = false)
+  private RunVerdict verdict;
+
+  @JsonApiRelation(mappedBy = "run")
+  @JsonApiField(postable = false, patchable = false)
+  private List<FailureSummaryEntry> failureSummary;
+
+  /**
+   * Directory where the results are written to. Not used for serializing so transient.
+   */
+  @JsonIgnore
+  private transient File targetDirectory;
+
+  public Run() {
+  }
+
+  /**
+   * Constructor.
+   * @param id Run id
+   * @param projectId Project id
+   * @param casesToBeExecuted How many cases are to be executed in this run.
+   * @param caseIndex Case index.
+   * @param runIndex Run index.
+   * @param state Current state of run.
+   * @param verdict Verdict for run.
+   * @param failureSummary Failure summary.
+   */
+  public Run(
+      String id,
+      String projectId,
+      int casesToBeExecuted,
+      int caseIndex,
+      int runIndex,
+      RunState state,
+      RunVerdict verdict,
+      List<FailureSummaryEntry> failureSummary
+  ) {
+    this.id = id;
+    this.projectId = projectId;
+    this.casesToBeExecuted = casesToBeExecuted;
+    this.caseIndex = caseIndex;
+    this.runIndex = runIndex;
+    this.state = state;
+    this.verdict = verdict;
+    this.failureSummary = failureSummary;
+  }
+
+  public Run(String runId) {
+    this.id = runId;
+  }
+
+  public Run(String runId, String projectId) {
+    this.id = runId;
+    this.projectId = projectId;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public RunState getState() {
+    return state;
+  }
+
+  public String getProjectId() {
+    return projectId;
+  }
+
+  public RunVerdict getVerdict() {
+    return verdict;
+  }
+
+  public void setFailureSummary(List<FailureSummaryEntry> failureSummary) {
+    this.failureSummary = failureSummary;
+  }
+
+  public void setRunIndex(int runIndex) {
+    this.runIndex = runIndex;
+  }
+
+  public void setCaseIndex(int caseIndex) {
+    this.caseIndex = caseIndex;
+  }
+
+  public int getCaseIndex() {
+    return caseIndex;
+  }
+
+  public int getRunIndex() {
+    return runIndex;
+  }
+
+  public List<FailureSummaryEntry> getFailureSummary() {
+    return failureSummary;
+  }
+
+  public void setVerdict(RunVerdict verdict) {
+    this.verdict = verdict;
+  }
+
+  public void setState(RunState state) {
+    this.state = state;
+  }
+
+  public File getTargetDirectory() {
+    return targetDirectory;
+  }
+
+  public void setTargetDirectory(File targetDirectory) {
+    this.targetDirectory = targetDirectory;
+  }
+
+  public int getCasesToBeExecuted() {
+    return casesToBeExecuted;
+  }
+
+  public void setCasesToBeExecuted(int casesToBeExecuted) {
+    this.casesToBeExecuted = casesToBeExecuted;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
+
+  public void setProjectId(String projectId) {
+    this.projectId = projectId;
+  }
+}

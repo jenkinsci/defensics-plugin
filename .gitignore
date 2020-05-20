@@ -1,0 +1,7 @@
+/target/
+/work/
+/.idea
+*.iml
+/data-coverity/
+
+.DS_Store

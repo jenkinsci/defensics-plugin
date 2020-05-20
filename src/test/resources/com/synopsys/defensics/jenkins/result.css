@@ -1,0 +1,411 @@
+body {
+    margin: 13px 15px 15px 15px;
+    padding-top: 0px;
+    font-family: Tahoma, Verdana, Arial, Helvetica, sans-serif;
+    background: #ffffff;
+    font-size: 10px;
+}
+
+
+p {
+    color: #444444;
+    max-width: 700px;
+}
+
+
+ul, ol, li {
+    color: #444444;
+    margin-left: 15px;
+    padding-left: 0;
+}
+
+ol.no-bullet {
+    list-style-type:none;
+}
+
+ol.abc {
+    list-style-type:lower-alpha;
+}
+
+
+
+hr {
+    border: 0;
+    color: #eeeeee;
+    height: 1px;
+    max-width: 700px;
+    margin-left: 0;
+}
+
+table {
+    margin: 0px;
+	padding: 0px;
+    max-width: 800px;
+    width: 100%;
+    border: 0px #eeeeee solid;
+    font-size: 100%;
+    vertical-align:top;
+}
+
+table.message {
+	background-color: #ffffff;
+	width: 100%;
+	border: 1px #eeeeee solid;
+	margin-bottom: 10px;
+}
+
+th {
+    padding: 5px;
+    padding-right: 15px;
+    text-align: left;
+    vertical-align:top;
+}
+
+th.vertical {
+	background-color: #F0F0F0;
+}
+
+th.separator {
+	margin-top: 10px;
+	border-bottom: 1px #eeeeee solid;
+}
+
+
+td {
+    border: 0;
+    padding-left: 5px;
+	padding-right: 5px;
+	padding-top: 1px;
+	padding-bottom: 1px;
+    vertical-align:top;
+}
+
+td.offset {
+	color: #808080;
+}
+
+.groupfirst {
+	border-top: 1px solid #aaaaaa;
+}
+
+tr.colored {
+	background-color: #F9F9F9;
+}
+
+header {
+  font-family: Helvetica, Arial, Verdana;
+  #font-size: 25px;
+  font-size: 1.3em;
+  font-weight: bold;
+  color: #4e9d2d;
+  margin: 0px 0px 0px 0;
+  padding: 0 0 6px 0;
+}
+
+h1 {
+  font-family: Helvetica, Arial, Verdana;
+  #font-size: 20px;
+  font-size: 1.3em;
+  font-weight: bold;
+  color: #55565a;
+}
+
+h2 {
+  font-family: Helvetica, Arial, Verdana;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: #55565a;  
+}
+
+h3 {
+  font-family: Helvetica, Arial, Verdana;
+  font-size: 1.0em;
+  font-weight: bold;
+  color: #55565a;
+  margin-top: 10px;
+}
+
+h4 {
+    font-size: 0.98em;
+    color: #55565a;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+h5 {
+    font-size: 0.98em;
+    color: #55565a;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+a { 
+    color: #5a2b81;
+}
+
+a:link { 
+    color: #5a2b81;
+}
+
+a:visited { 
+    color: #5a2b81;
+}
+
+a:active {
+    background: none;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+img {
+  border: 0;
+}
+
+pre span.normal {
+  color:#000000;
+}
+
+pre span.anomaly {
+  color:#800000;
+}
+
+pre span.meta {
+  color:#d3d3d3;
+}
+
+pre span.output {
+  color:#009600;
+}
+
+pre span.input {
+  color:#000096;
+}
+
+pre span.verdict-fail {
+  color:#dc0000;
+}
+
+pre span.verdict-inconclusive {
+  color:#a5ac00;
+}
+
+pre span.verdict-pass {
+  color:#009600;
+}
+
+table tr td span.anomaly {
+    color:#800000;
+}
+
+table tr td span.meta {
+    color:#808080;
+}
+
+table tr th span.anomaly {
+    color:#ff0000;
+}
+
+table tr th span.output {
+    color:#339933;
+}
+
+table tr th span.input {
+    color:#0000ff;
+}
+
+table tr td span.anomaly {
+    color:#800000;
+}
+
+table tr td span.meta {
+    color:#808080;
+}
+
+# Below there are defs from old that are not in the new.
+
+p.indent {
+    color: #444444;
+    max-width: 700px;
+    margin-left: 15px;
+}
+
+
+
+
+dt {
+    color: #444444;
+    font-weight: bold;
+}
+
+dd {
+    color: #444444;
+    max-width: 700px;
+    padding-bottom: 5px;
+}
+
+pre {
+    font-size: 100%;
+}
+
+tr.output-row-odd {
+  background-color: rgb(236,252,228);
+}
+tr.output-row-even {
+  background-color: #ffffff;
+}
+tr.input-row-odd {
+  background-color: rgb(241,247,254);
+}
+tr.input-row-even {
+  background-color: #ffffff;
+}
+tr.anomaly-row-odd {
+  #background-color: rgb(255,237,251);
+  background-color: rgb(254,222,249);
+}
+tr.anomaly-row-even {
+  background-color: rgb(254,222,249);
+}
+
+table.basegroup: {
+    max-width: 600px;
+    width: 60%;
+}
+th.basegroup {
+    padding: 0px;
+    border: 0px #eeeeee solid;
+    text-align: center;
+    vertical-align:top;
+}
+td.suite {
+    border: 3px #000000 solid;
+    vertical-align:top;
+    background: #cccccc;
+}
+td.message {
+    border: 0;
+    vertical-align:top;
+    text-align: center;
+		padding-left: 5px;
+}
+td.topic {
+    border: 0;
+    vertical-align:top;
+    text-align: center;
+}
+td.in-message {
+    border: 0;
+    vertical-align:top;
+    text-align: right;
+}
+td.in-topic {
+    border: 0;
+    vertical-align:top;
+    text-align: center;
+}
+td.out-message {
+    border: 0;
+    vertical-align:top;
+    text-align: left;
+}
+td.out-topic {
+    border: 0;
+    vertical-align:top;
+    text-align: center;
+}
+td.sut {
+    border: 3px #000000 solid;
+#    padding: 5px;
+    vertical-align:top;
+    background: #cccccc;
+}
+
+strong {
+    color: #09478D;
+    font-size: 1.0em;
+}
+
+strong.red {
+    color: #e85016;
+}
+
+code {
+    font-size: 1.0em;
+}
+
+
+p.verdict-label-pass {
+	background-color: #c4d600;
+	display:inline-block;
+	color: #ffffff;
+	font-size:15px;
+	font-weight:bold;
+	font-style:normal;
+	text-decoration:none;
+	text-align:center;
+	width: 140px;
+	padding: 5px;
+}
+
+p.center-text {
+	text-align:center;
+} 
+
+p.verdict-label-fail {
+	background-color: #e85016;
+	display:inline-block;
+	color: #ffffff;
+	font-size:15px;
+	font-weight:bold;
+	font-style:normal;
+	text-decoration:none;
+	text-align:center;
+	width: 140px;
+	padding: 5px;
+}
+
+p.verdict-label-warning {
+	background-color: #ffc600;
+	display:inline-block;
+	color: #ffffff;
+	font-size:15px;
+	font-weight:bold;
+	font-style:normal;
+	text-decoration:none;
+	text-align:center;
+	width: 140px;
+	padding: 5px;
+}
+
+p.verdict-label-unknown {
+	background-color: #929497;
+	display:inline-block;
+	color: #ffffff;
+	font-size:15px;
+	font-weight:bold;
+	font-style:normal;
+	text-decoration:none;
+	text-align:center;
+	width: 140px;
+	padding: 5px;
+}
+
+p.verdict-label-unknown a {
+	color: #ffffff;
+	text-decoration:underline;
+}
+
+a.nounderline{
+	
+	text-decoration:none;
+	border: 0;
+	color: #ffffff;
+/* 	background-color:#ffffff; */
+}
+
+/* Page separator (rfcmagic2) */
+span.grey {
+    color: #aaaaaa;
+}

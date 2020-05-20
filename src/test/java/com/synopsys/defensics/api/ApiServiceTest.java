@@ -1,0 +1,141 @@
+/*
+ * Copyright © 2020 Synopsys, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.synopsys.defensics.api;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.fail;
+
+import com.synopsys.defensics.DefensicsMockServer;
+import com.synopsys.defensics.apiserver.model.Run;
+import com.synopsys.defensics.apiserver.model.RunState;
+import com.synopsys.defensics.client.DefensicsRequestException;
+import hudson.FilePath;
+import java.io.File;
+import java.io.IOException;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.mockserver.integration.ClientAndServer;
+
+public class ApiServiceTest {
+
+  private static final String SUITE_SETTINGS = "--suite.setting=thisIsFakeSetting";
+  private static ClientAndServer mockServer;
+  private static final String DEFENSICS_URL = "http://localhost:1080/";
+  private static final String TOKEN = "test-token";
+  private static final boolean CERTIFICATE_VALIDATION_DISABLED = false;
+  private ApiService api;
+
+  @BeforeClass
+  public static void startServer() {
+    mockServer = ClientAndServer.startClientAndServer(1080);
+    final DefensicsMockServer defensicsMockServer = new DefensicsMockServer(
+        true,
+        "PASS",
+        RunState.STARTING
+    );
+    defensicsMockServer.initServer(mockServer);
+  }
+
+  @AfterClass
+  public static void stopServer() {
+    mockServer.stop();
+  }
+
+  @Before
+  public void init() {
+    api = new ApiService(DEFENSICS_URL, TOKEN, CERTIFICATE_VALIDATION_DISABLED);
+  }
+
+  @Test
+  public void testTestConnectionSuccess() throws Exception {
+    api.healthCheck(); //causes Exception if failing
+  }
+
+  @Test
+  public void testTestConnectionFailConnection() throws Exception {
+    try {
+      api = new ApiService(
+          "http://invalid_url.not.found", TOKEN, CERTIFICATE_VALIDATION_DISABLED);
+      api.healthCheck();
+      fail("Test connection with false url did not fail");
+    } catch (DefensicsRequestException exception) {
+      assertThat(
+          exception.getMessage(), containsString("invalid_url.not.found"));
+    }
+  }
+
+  @Test
+  public void testTestConnectionFailAuth() throws Exception {
+    try {
+      api = new ApiService(
+          DEFENSICS_URL, "wrong-token", CERTIFICATE_VALIDATION_DISABLED);
+      api.healthCheck();
+      fail("Test connection authentication did not return DefensicsRequestException");
+    } catch (DefensicsRequestException exception) {
+      final String apiAddress = "http://localhost:1080/api/v1";
+      assertThat(
+          exception.getMessage(),
+          is(equalTo("Unable to connect to Defensics API at address " + apiAddress
+              + ". "
+              + "Please check you are using the "
+              + "correct token and Defensics API server is running.")));
+
+    }
+    // FIXME: Previous implementation had HTTP code and response body, those should be included
+    // now as well
+    //is(equalTo("Unable to connect to Defensics API at address " + apiAddress
+    //    + ". "
+    //    + "Please check you are using the "
+    //    + "correct token and Defensics API server is running. Status: 401 "
+    //    + "Response: Unauthorized. No authentication credentials found in request.")));
+  }
+
+  @Test
+  public void testUploadTestplan() throws Exception {
+    File file = new File("src/test/resources/com/synopsys/defensics/client/test.testplan");
+    api.uploadTestPlan(DefensicsMockServer.RUN_ID, new FilePath(file));
+  }
+
+  @Test
+  public void testSetConfigurationSettings() throws IOException, DefensicsRequestException {
+    api.setTestConfigurationSettings(DefensicsMockServer.RUN_ID, SUITE_SETTINGS);
+  }
+
+  @Test
+  public void testGetRun() throws Exception {
+    Run run = api.getRun(DefensicsMockServer.RUN_ID);
+    assertThat(run.getId(), is(equalTo(DefensicsMockServer.RUN_ID)));
+    assertThat(run.getState(), is(equalTo(RunState.STARTING)));
+  }
+
+  @Test
+  public void testFetchJobReport() throws Exception {
+    TemporaryFolder temporaryFolder = new TemporaryFolder();
+    temporaryFolder.create();
+    FilePath resultForlder = new FilePath(temporaryFolder.getRoot());
+    api.saveResults(DefensicsMockServer.RUN_ID, resultForlder);
+    assertThat(resultForlder.exists(), is(equalTo(true)));
+    assertThat(resultForlder.child("report.html").exists(), is(equalTo(true)));
+  }
+}

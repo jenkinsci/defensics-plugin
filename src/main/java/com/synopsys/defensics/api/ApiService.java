@@ -31,7 +31,6 @@ import java.io.InterruptedIOException;
 import java.net.URI;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.Collections;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -39,10 +38,10 @@ import java.util.function.Function;
  * Intermediate API service class between Jenkins job and Defensics client. Does things which client
  * doesn't yet do and could map some exception/messages to be more suitable for Jenkins.
  *
- * NOTE: Exception handling is subject to change when client code is improved. Currently
+ * <p>NOTE: Exception handling is subject to change when client code is improved. Currently
  * DefensicsClientException is inspected and InterruptedExceptions are thrown separately to
  * handle job stopping more cleanly. DefensicsRequestException could be replaced with
- * DefensicsClientException if InterruptedExceptions are handled someway.
+ * DefensicsClientException if InterruptedExceptions are handled some way.
  */
 public class ApiService {
 
@@ -167,6 +166,7 @@ public class ApiService {
               () -> new DefensicsRequestException("Could not find Defensics run " + runId));
     } catch (DefensicsClientException e) {
       mapAndThrow(e);
+      // Should not reach this
       return null;
     }
   }
@@ -242,6 +242,7 @@ public class ApiService {
       return defensicsClient.createTestRun();
     } catch (DefensicsClientException e) {
       mapAndThrow(e);
+      // Should not reach this
       return null;
     }
   }
@@ -278,10 +279,10 @@ public class ApiService {
    * Maps JSON:API client exceptions to either Jenkins' DefensicsRequestException or
    * to another exception types required e.g. in interrupted handling. Exception message is
    * directly the cause exception's message.
-   * @param e Exception
    *
-   * @throws DefensicsRequestException
-   * @throws InterruptedException if operation was interrupted
+   * @param e Exception
+   * @throws DefensicsRequestException mapped from DefensicsClientException
+   * @throws InterruptedException if inner exception was interrupted
    */
   private void mapAndThrow(DefensicsClientException e)
       throws DefensicsRequestException, InterruptedException {
@@ -295,8 +296,8 @@ public class ApiService {
    *
    * @param e Exception
    * @param messageRenderer Function to render error message. Receives exception as an argument
-   * @throws DefensicsRequestException
-   * @throws InterruptedException if operation was interrupted
+   * @throws DefensicsRequestException mapped from DefensicsClientException
+   * @throws InterruptedException if inner exception was interrupted
    */
   private void mapAndThrow(
       DefensicsClientException e,
@@ -314,8 +315,8 @@ public class ApiService {
 
     String message = messageRenderer.apply(e);
 
+    // Map from DefensicsClientException and include inner exception if present
     if (cause != null) {
-      // Include inner exception
       throw new DefensicsRequestException(message, cause);
     }
 

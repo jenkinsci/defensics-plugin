@@ -65,7 +65,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 /**
  * End-to-end tests testing failure modes: cases where job fails in different stage in various
  * ways. This could be moved outside of integration tests, e.g. e2e-tests when final run environment
- * has been decided. Now this is run manually by settings values in the beginning of this class.
+ * has been decided. Now this is run manually by setting values in the beginning of this class.
  *
  * <p>NOTE about interrupted jobs: Currently tests trigger job stop when logs contain given
  * keywords. This makes the exact spot where stop happens in job in-precise and could cause some
@@ -78,11 +78,11 @@ import org.jvnet.hudson.test.JenkinsRule;
  *
  * <p>Other things to test:
  * <ul>
- *   <li> Jenkins has HTTP address, but server is using HTTPS</li>
+ *   <li>Jenkins has HTTP address, but server is using HTTPS</li>
  *   <li>Test that API server reports that suite from testplan is not found.</li>
  *   <li>Test that error is reported if client sends a request body which server doesn't
  *   recognize. This comes in case Jenkins plugin models are out-of-sync with server models</li>
- *   <li>o etc...</li>
+ *   <li>etc...</li>
  * </ul>
  */
 public class FailureScenarioIT {
@@ -93,7 +93,7 @@ public class FailureScenarioIT {
   /*
    * Required external dependencies
    * o Defensics API Server running.
-   *   Should have HTTP Server suite 4.11 installed and license for it.
+   *   Should have HTTP Server suite 4.11.1 installed and license for it.
    * o HTTP SUT. Now 'python -m SimpleHTTPServer 7000' has been used.
    */
   /** API Server address. */
@@ -180,7 +180,7 @@ public class FailureScenarioIT {
   }
 
   /**
-   * DEF-11341: Test that suite is unloaded after test run.
+   * Test that suite is unloaded after test run.
    */
   @Test
   public void testRun_suiteShouldBeUnloaded() throws Exception {
@@ -315,7 +315,6 @@ public class FailureScenarioIT {
   @Test
   public void testAbortJob_onRunCreation() throws Exception {
     initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
-    // Create and use new client to prevent Job from completing.
     ProjectUtils.setupProject(
         jenkinsRule,
         project,
@@ -349,7 +348,6 @@ public class FailureScenarioIT {
   @Test
   public void testAbortJob_onFuzzStarting() throws Exception {
     initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
-    // Create and use new client to prevent Job from completing.
     ProjectUtils.setupProject(
         jenkinsRule,
         project,
@@ -382,7 +380,6 @@ public class FailureScenarioIT {
   @Test
   public void testAbortJob_onFuzzing() throws Exception {
     initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
-    // Create and use new client to prevent Job from completing.
     ProjectUtils.setupProject(
         jenkinsRule,
         project,
@@ -399,8 +396,6 @@ public class FailureScenarioIT {
     Thread.sleep(100);
 
     final WorkflowRun lastBuild = project.getLastBuild();
-    // Trigger abort on first status line
-    // [Defensics] 45.5% ( 46/101) of tests run. All passed.
     triggerAbortOnLogLine(runFuture, lastBuild, "Fuzz testing is RUNNING.");
 
     WorkflowRun run = runFuture.get();
@@ -417,7 +412,6 @@ public class FailureScenarioIT {
   @Test
   public void testAbortJob_onCompletion() throws Exception {
     initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
-    // Create and use new client to prevent Job from completing.
     ProjectUtils.setupProject(
         jenkinsRule,
         project,

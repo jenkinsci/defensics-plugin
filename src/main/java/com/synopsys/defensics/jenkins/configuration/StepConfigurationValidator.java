@@ -56,7 +56,7 @@ public class StepConfigurationValidator {
       return FormValidation.ok();
     } else {
 
-      String regex = "([\\s]?--([^\\s-]+([-][^\\s-]+)*)([\\s][^-]+([^\\s][^\\s-]+)*)?)+";
+      String regex = "(\\s?--([^\\s]+)(\\s?)((('.*')|(\".*\"))|([^\\s]+))?)+";
 
       // Create a Pattern object
       Pattern r = Pattern.compile(regex);

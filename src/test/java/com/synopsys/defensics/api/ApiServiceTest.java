@@ -20,7 +20,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.fail;
 
 import com.synopsys.defensics.DefensicsMockServer;
@@ -29,7 +28,6 @@ import com.synopsys.defensics.apiserver.model.RunState;
 import com.synopsys.defensics.client.DefensicsRequestException;
 import hudson.FilePath;
 import java.io.File;
-import java.io.IOException;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -93,22 +91,16 @@ public class ApiServiceTest {
       api.healthCheck();
       fail("Test connection authentication did not return DefensicsRequestException");
     } catch (DefensicsRequestException exception) {
-      final String apiAddress = "http://localhost:1080/api/v1";
+      final String apiAddress = "http://localhost:1080/api/v1/healthcheck";
       assertThat(
           exception.getMessage(),
-          is(equalTo("Unable to connect to Defensics API at address " + apiAddress
+          is(equalTo("Unable to connect Defensics server healthcheck at address " + apiAddress
               + ". "
               + "Please check you are using the "
-              + "correct token and Defensics API server is running.")));
-
+              + "correct token and Defensics API server is running. "
+              + "HTTP status code: 401, message: Unauthorized. No authentication credentials found in request."
+              )));
     }
-    // FIXME: Previous implementation had HTTP code and response body, those should be included
-    // now as well
-    //is(equalTo("Unable to connect to Defensics API at address " + apiAddress
-    //    + ". "
-    //    + "Please check you are using the "
-    //    + "correct token and Defensics API server is running. Status: 401 "
-    //    + "Response: Unauthorized. No authentication credentials found in request.")));
   }
 
   @Test

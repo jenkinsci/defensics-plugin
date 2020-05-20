@@ -473,6 +473,32 @@ public class FailureScenarioIT {
   }
 
   /**
+   * Check that Jenkins logs contain information about 401 unauthorized access if token is wrong.
+   */
+  @Test
+  public void testHealthcheck_reportUnauthorized() {
+    Assume.assumeThat(
+        "This test requires that API server is running with HTTPS - if HTTP, server could be "
+            + "running in insecure mode",
+        API_SERVER_URL.startsWith("https://"),
+        is(true)
+    );
+    final boolean disableCertValidation = true;
+    final ApiService apiService = new ApiService(
+        API_SERVER_URL,
+        AUTH_TOKEN,
+        disableCertValidation
+    );
+
+    try {
+      apiService.healthCheck();
+    } catch (DefensicsRequestException | InterruptedException e) {
+      assertThat(e.getMessage(), containsString("401"));
+      assertThat(e.getMessage(), containsString("Unauthorized"));
+    }
+  }
+
+  /**
    * Set up project and make it use given pipeline script
    * @param pipelineScript Script to use
    * @throws Exception

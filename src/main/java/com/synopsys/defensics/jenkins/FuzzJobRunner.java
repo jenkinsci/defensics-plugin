@@ -262,7 +262,6 @@ public class FuzzJobRunner {
     if (saveResultPackage) {
       logger.println("Downloading result package.");
       defensicsClient.saveResultPackage(resultsDir, resultFile, defensicsRun.getId());
-      resultPackageUrl = "Defensics_Results/" + resultFile;
     }
 
     HtmlReport report = null;
@@ -271,7 +270,7 @@ public class FuzzJobRunner {
       // ResultPublisher will move result files from workspace to job's build folder.
       // This includes result package if user has chosen to save it.
       new ResultPublisher().publishResults(
-          jenkinsRun, defensicsRun, report, resultPackageUrl, logger, workspace);
+          jenkinsRun, defensicsRun, report, resultFile, logger, workspace);
     } finally {
       if (report != null) {
         if (saveResultPackage) {

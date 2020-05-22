@@ -25,35 +25,35 @@ public class BuildResultAction implements Action {
 
   private final String reportUrl;
   private final long failureCount;
-  private final List<String> resultPackageUrls = new ArrayList<>();
+  private final List<String> resultPackages = new ArrayList<>();
 
   /**
    * Helps displaying Defensics run result in build page.
    *
-   * @param reportUrl        url to Defensics html report
-   * @param failureCount     failure count to display as a summary
-   * @param resultPackageUrl result package url (zip-file)
+   * @param reportUrl    url to Defensics html report
+   * @param failureCount failure count to display as a summary
+   * @param resultFile   result package file name
    */
-  public BuildResultAction(String reportUrl, long failureCount, String resultPackageUrl) {
+  public BuildResultAction(String reportUrl, long failureCount, String resultFile) {
     this.reportUrl = reportUrl;
     this.failureCount = failureCount;
-    if (resultPackageUrl != null) {
-      resultPackageUrls.add(resultPackageUrl);
+    if (resultFile != null) {
+      resultPackages.add(resultFile);
     }
   }
 
   /**
    * Helps displaying Defensics run result in build page.
    *
-   * @param reportUrl         url to Defensics html report
-   * @param failureCount      failure count to display as a summary
-   * @param resultPackageUrls result package urls as a list
+   * @param reportUrl      url to Defensics html report
+   * @param failureCount   failure count to display as a summary
+   * @param resultPackages result package files as a list
    */
-  public BuildResultAction(String reportUrl, long failureCount, List<String> resultPackageUrls) {
+  public BuildResultAction(String reportUrl, long failureCount, List<String> resultPackages) {
     this.reportUrl = reportUrl;
     this.failureCount = failureCount;
-    if (resultPackageUrls.size() > 0) {
-      this.resultPackageUrls.addAll(resultPackageUrls);
+    if (resultPackages.size() > 0) {
+      this.resultPackages.addAll(resultPackages);
     }
   }
 
@@ -83,18 +83,18 @@ public class BuildResultAction implements Action {
     return failureCount;
   }
 
-  public List<String> getResultPackageUrls() {
-    return resultPackageUrls;
+  public List<String> getResultPackages() {
+    return resultPackages;
   }
 
   /**
-   * Add a result package url.
+   * Add a result package.
    *
-   * @param resultPackageUrl if the param is null it won't be added.
+   * @param resultPackage if the param is null it won't be added.
    */
-  public void addResultPackageUrl(String resultPackageUrl) {
-    if (resultPackageUrl != null) {
-      resultPackageUrls.add(resultPackageUrl);
+  public void addResultPackage(String resultPackage) {
+    if (resultPackage != null) {
+      resultPackages.add(resultPackage);
     }
   }
 }

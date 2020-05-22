@@ -11,12 +11,12 @@
         (${it.failureCount} failures)
       </j:otherwise>
     </j:choose>
-    <j:if test="${it.resultPackageUrls.size() > 0}">
+    <j:if test="${it.resultPackages.size() > 0}">
       <p>Download Result Package(s):</p>
       <ol>
-        <j:forEach var="url" items="${it.resultPackageUrls}">
+        <j:forEach var="package" items="${it.resultPackages}">
           <li>
-            <a href="${url}">Result Package</a>
+            <a href="${it.reportUrl}/${package}">Result Package</a>
           </li>
         </j:forEach>
       </ol>

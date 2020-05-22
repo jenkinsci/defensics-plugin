@@ -200,8 +200,8 @@ public class FuzzJobRunner {
     Optional<SuiteInstance> suiteInstanceMaybe =
         defensicsClient.getConfigurationSuite(run.getId());
 
-    while (suiteInstanceMaybe.isPresent() == false
-      || suiteInstanceMaybe.get().getState() != SuiteRunState.LOADED) {
+    while (!suiteInstanceMaybe.isPresent()
+        || suiteInstanceMaybe.get().getState() != SuiteRunState.LOADED) {
 
       final SuiteInstance suiteInstance = suiteInstanceMaybe.get();
 
@@ -227,8 +227,6 @@ public class FuzzJobRunner {
    * @param testPlanName      Testplan filename. This is used as title for the report tab, which
    *                          helps identify results if there are multiple Defensics steps in the
    *                          Jenkins job.
-   * @param launcher          Required by HTML publisher plugin but doesn't seem to be actually used
-   *                          for anything?
    * @param saveResultPackage Save Defensics run results and provide link in build page?
    * @throws DefensicsRequestException If server responds with error
    * @throws IOException               If deleting the temporary report files in workspace fails
@@ -244,10 +242,11 @@ public class FuzzJobRunner {
     // (https://issues.jenkins-ci.org/browse/JENKINS-48885) that causes pluginmanager not to have
     // any plugins when running Jenkins test harness, even though the plugins are there and usable.
     Plugin htmlPublisherPlugin = Jenkins.get().getPlugin("htmlpublisher");
-    if (!Jenkins.get().getPluginManager().getClass().getName().equals("org.jvnet.hudson.test.TestPluginManager")
+    if (!Jenkins.get().getPluginManager().getClass().getName()
+        .equals("org.jvnet.hudson.test.TestPluginManager")
         && (htmlPublisherPlugin == null
         || htmlPublisherPlugin.getWrapper().getVersionNumber().compareTo(
-        new VersionNumber("1.20")) < 0))  {
+        new VersionNumber("1.20")) < 0)) {
       logger.logError("Results can't be published without HTML Publisher Plugin 1.20 or newer. "
           + "Please install/update in Manage Jenkins > Manage Plugins. ");
       return;

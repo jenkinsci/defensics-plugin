@@ -23,12 +23,17 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.io.ByteStreams;
+import com.synopsys.defensics.apiserver.model.HealthCheckResult;
 import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.RunTestConfiguration;
 import com.synopsys.defensics.apiserver.model.SettingCliArgs;
 import com.synopsys.defensics.apiserver.model.SuiteInstance;
 import io.crnk.client.CrnkClient;
+import io.crnk.client.TransportException;
 import io.crnk.client.http.okhttp.OkHttpAdapter;
+import io.crnk.core.engine.document.ErrorData;
+import io.crnk.core.exception.CrnkException;
+import io.crnk.core.exception.CrnkMappableException;
 import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.OneRelationshipRepository;
@@ -56,6 +61,10 @@ import okhttp3.ResponseBody;
  * Defensics API JSON:API Client, uses crnk JSON:API clients most of the request, and OkHttpClient
  * for non-JSON:API requests. Client is configured to use token in all requests so new client has
  * to be created if token is to be changed.
+ *
+ * <p>Now most of exceptions (e.g. CrnkExceptions, InterruptedExceptions, IOExceptions) are
+ * collected as a cause in the DefensicsClientException but the exception handling is subject to
+ * change when client code evolves.
  */
 public class DefensicsJsonApiClient implements DefensicsApiClient {
   private final CrnkClient crnkClient;
@@ -179,22 +188,24 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
           )
           .build();
     } catch (IOException e) {
-      throw new DefensicsClientException("Could not read testplan", e);
+      throw new DefensicsClientException("Could not read configuration file: " + e.getMessage(), e);
     }
     try {
       final Response response = okHttpClient.newCall(request).execute();
 
       if (response.code() >= 400) {
-        throw new DefensicsClientException(
-            String.format(
-                "Could not upload testplan, code: %s, message: %s",
-                response.code(),
-                response.message()
-            )
+        final String errorMessage = errorMessageForFailingJaxRsRequest(
+            "Could not upload test configuration",
+            response
         );
+
+        throw new DefensicsClientException(errorMessage);
       }
     } catch (IOException e) {
-      throw new DefensicsClientException("Could not upload testplan", e);
+      throw new DefensicsClientException(
+          "Could not upload test configuration: " + e.getMessage(),
+          e
+      );
     }
   }
 
@@ -219,39 +230,73 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
            .build();
       final Response response = okHttpClient.newCall(request).execute();
       if (response.code() >= 400) {
-        throw new DefensicsClientException("Could not update test configuration."
-             + "HTTP status code: " + response.code());
+        String message = errorMessageForFailingJaxRsRequest(
+            "Could not update test configuration.",
+            response
+        );
+
+        throw new DefensicsClientException(message);
       }
     } catch (IOException e) {
-      throw new DefensicsClientException("Could not update test configuration", e);
+      throw new DefensicsClientException(
+          "Could not update test configuration: " + e.getMessage(),
+          e
+      );
     }
   }
 
   @Override
   public Run createTestRun() {
-    return runRepository.create(new Run());
+    try {
+      return runRepository.create(new Run());
+    } catch (TransportException | CrnkException e) {
+      throw new DefensicsClientException(
+          errorMessageForFailingCrnkRequest("Could not create run", e)
+      );
+    }
   }
 
   @Override
   public Optional<RunTestConfiguration> getRunConfiguration(String configurationId) {
-    return Optional.ofNullable(
-        testConfigurationRepository.findOne(configurationId,
-          new QuerySpec(RunTestConfiguration.class))
-    );
+    try {
+      return Optional.ofNullable(
+          testConfigurationRepository.findOne(configurationId,
+            new QuerySpec(RunTestConfiguration.class))
+      );
+    } catch (TransportException | CrnkException e) {
+      throw new DefensicsClientException(
+          errorMessageForFailingCrnkRequest(
+              "Could not get run " + configurationId + " configuration",
+              e
+          )
+      );
+    }
   }
 
   @Override
   public Optional<Run> getRun(String runId) {
     QuerySpec querySpec = new QuerySpec(Run.class);
     querySpec.includeRelation(PathSpec.of("failureSummary"));
-    return Optional.ofNullable(
-        runRepository.findOne(runId, querySpec)
-    );
+    try {
+      return Optional.ofNullable(
+          runRepository.findOne(runId, querySpec)
+      );
+    } catch (TransportException | CrnkException e) {
+      throw new DefensicsClientException(
+          errorMessageForFailingCrnkRequest("Could not get run " + runId, e)
+      );
+    }
   }
 
   @Override
   public void deleteRun(String runId) {
-    runRepository.delete(runId);
+    try {
+      runRepository.delete(runId);
+    } catch (TransportException | CrnkException e) {
+      throw new DefensicsClientException(
+          errorMessageForFailingCrnkRequest("Could not delete run", e)
+      );
+    }
   }
 
   @Override
@@ -263,26 +308,39 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
     Request request = new Builder()
         .url(healthcheckUrl)
         .build();
+    final String baseErrorMessage = String.format(
+        "Unable to connect Defensics server healthcheck at address %s. "
+            + "Please check you are using the correct token and Defensics API server is running",
+        healthcheckUrl
+    );
 
     try (Response response = okHttpClient.newCall(request).execute()) {
+      // NOTE: Some of the status codes could be mapped to unhealthy status but that'll require
+      // upcoming more detailed healthcheck model so use now exception with error message.
+      if (response.code() >= 400) {
+        final String errorMessage = errorMessageForFailingJaxRsRequest(
+            baseErrorMessage,
+            response
+        );
+        throw new DefensicsClientException(errorMessage);
+      }
       final ObjectMapper objectMapper = crnkClient.getObjectMapper();
       // Using optional/mapping since spotbugs issues NPE warning easily otherwise
       try (final InputStream contentStream = Optional.of(response)
           .map(Response::body)
           .map(ResponseBody::byteStream)
           .orElseThrow(
-              () -> new DefensicsClientException(
-                  "Could not get healthcheck status, response empty.")
+              () -> new DefensicsClientException(baseErrorMessage + ". Server response empty")
           )
       ) {
-        final Map<String, Boolean> healthChecks = objectMapper.readValue(
+        final Map<String, HealthCheckResult> healthChecks = objectMapper.readValue(
             contentStream,
-            new TypeReference<Map<String, Boolean>>() {}
+            new TypeReference<Map<String, HealthCheckResult>>() {}
         );
-        return healthChecks.values().stream().allMatch(healthy -> healthy);
+        return healthChecks.values().stream().allMatch(HealthCheckResult::isHealthy);
       }
     } catch (IOException e) {
-      throw new DefensicsClientException("Could not get healthcheck status", e);
+      throw new DefensicsClientException(baseErrorMessage + ": " + e.getMessage(), e);
     }
   }
 
@@ -305,19 +363,21 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
       final Response response = okHttpClient.newCall(request).execute();
 
       if (response.code() >= 400) {
-        throw new DefensicsClientException(
-            "Could not fetch report. HTTP status code: " + response.code()
+        final String errorMessage = errorMessageForFailingJaxRsRequest(
+            "Could not download results report",
+            response
         );
+        throw new DefensicsClientException(errorMessage);
       }
 
       return Optional.of(response)
           .map(Response::body)
           .map(ResponseBody::byteStream)
           .orElseThrow(
-              () -> new DefensicsClientException("Could not fetch report. Response empty")
+              () -> new DefensicsClientException("Could not download report. Response empty.")
           );
     } catch (IOException e) {
-      throw new DefensicsClientException("Could not fetch report", e);
+      throw new DefensicsClientException("Could not download result report: " + e.getMessage(), e);
     }
   }
 
@@ -336,18 +396,22 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
     try {
       final Response response = okHttpClient.newCall(request).execute();
       if (response.code() >= 400) {
-        throw new DefensicsClientException(
-            "Could not fetch result package. HTTP status code: " + response.code()
+        final String errorMessage = errorMessageForFailingJaxRsRequest(
+            "Could not download result package.",
+            response
         );
+        throw new DefensicsClientException(errorMessage);
       }
       return Optional.of(response)
           .map(Response::body)
           .map(ResponseBody::byteStream)
           .orElseThrow(
-              () -> new DefensicsClientException("Could not fetch result package. Response empty")
+              () -> new DefensicsClientException(
+                  "Could not download result package. Response empty"
+              )
           );
     } catch (IOException e) {
-      throw new DefensicsClientException("Could not fetch result package", e);
+      throw new DefensicsClientException("Could not download result package: " + e.getMessage(), e);
     }
   }
 
@@ -358,14 +422,29 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
         "suite-instance",
         new QuerySpec(SuiteInstance.class)
     );
-    return Optional.ofNullable(result.get(configurationId));
+    try {
+      return Optional.ofNullable(result.get(configurationId));
+    } catch (TransportException | CrnkException e) {
+      throw new DefensicsClientException(
+          errorMessageForFailingCrnkRequest(
+              "Could not get suite-instance for configuration " + configurationId,
+              e
+          )
+      );
+    }
   }
 
   @Override
   public Optional<SuiteInstance> getSuiteInstance(String suiteInstanceId) {
-    return Optional.ofNullable(
-        suiteInstanceRepository.findOne(suiteInstanceId, new QuerySpec(SuiteInstance.class))
-    );
+    try {
+      return Optional.ofNullable(
+          suiteInstanceRepository.findOne(suiteInstanceId, new QuerySpec(SuiteInstance.class))
+      );
+    } catch (TransportException | CrnkException e) {
+      throw new DefensicsClientException(
+          errorMessageForFailingCrnkRequest("Could not get suite instance " + suiteInstanceId, e)
+      );
+    }
   }
 
   @Override
@@ -382,10 +461,14 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
 
     try (Response response = okHttpClient.newCall(request).execute()) {
       if (response.code() >= 400) {
-        throw new DefensicsClientException("Could not start run, status code: " + response.code());
+        final String errorMessage = errorMessageForFailingJaxRsRequest(
+            "Could not start run",
+            response
+        );
+        throw new DefensicsClientException(errorMessage);
       }
     } catch (IOException e) {
-      throw new DefensicsClientException("Could not start run", e);
+      throw new DefensicsClientException("Could not start run: " + e.getMessage(), e);
     }
   }
 
@@ -406,7 +489,11 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
 
     try (Response response = okHttpClient.newCall(request).execute()) {
       if (response.code() >= 400) {
-        throw new DefensicsClientException("Could not stop run, status code: " + response.code());
+        final String errorMessage = errorMessageForFailingJaxRsRequest(
+            "Could not stop run",
+            response
+        );
+        throw new DefensicsClientException(errorMessage);
       }
     } catch (IOException e) {
       throw new DefensicsClientException("Could not stop run", e);
@@ -430,7 +517,11 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
 
     try (Response response = okHttpClient.newCall(request).execute()) {
       if (response.code() >= 400) {
-        throw new DefensicsClientException("Could not pause run, status code: " + response.code());
+        final String errorMessage = errorMessageForFailingJaxRsRequest(
+            "Could not pause run",
+             response
+        );
+        throw new DefensicsClientException(errorMessage);
       }
     } catch (IOException e) {
       throw new DefensicsClientException("Could not pause run", e);
@@ -454,7 +545,11 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
 
     try (Response response = okHttpClient.newCall(request).execute()) {
       if (response.code() >= 400) {
-        throw new DefensicsClientException("Could not resume run, status code: " + response.code());
+        final String errorMessage = errorMessageForFailingJaxRsRequest(
+            "Could not resume run",
+            response
+        );
+        throw new DefensicsClientException(errorMessage);
       }
     } catch (IOException e) {
       throw new DefensicsClientException("Could not resume run", e);
@@ -499,5 +594,99 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
 
   public CrnkClient getCrnkClient() {
     return crnkClient;
+  }
+
+  /**
+   * Creates error message for failing requests done to JAX-RS endpoints. JSON:API has currently
+   * different error formatting so it's handled separately. Returned error message format:
+   *
+   * <code>Base message. HTTP status code: 123, message: error response body</code>
+   *
+   * <p>NOTE: Error message formatting and handling is unstable and subject to change in future
+   * versions.
+   *
+   * @param baseMessage Generic message describing failure
+   * @param response failing response
+   * @return Formatted error message containing baseMessage, HTTP code and response body if
+   *     available
+   */
+  private String errorMessageForFailingJaxRsRequest(String baseMessage, Response response) {
+
+    final StringBuilder messageBuilder = new StringBuilder();
+    messageBuilder.append(baseMessage);
+
+    if (!baseMessage.trim().endsWith(".")) {
+      messageBuilder.append(".");
+    }
+
+    messageBuilder.append(" HTTP status code: ").append(response.code());
+
+    String errorBody = Optional.of(response)
+        .map(Response::body)
+        .map(e -> {
+          try {
+            return e.string();
+          } catch (IOException ioException) {
+            // Could not read response - return null message -> eventually mapped to ""
+            return null;
+          }
+        }).orElse("");
+
+    if (!errorBody.isEmpty()) {
+      // Some responses have numeric status code, remove that from message
+      // to prevent duplication.
+      String statusCode = String.valueOf(response.code());
+      if (errorBody.startsWith(statusCode)) {
+        errorBody = errorBody.replaceFirst(statusCode + " ", "");
+      }
+      messageBuilder.append(", message: ").append(errorBody);
+    }
+    return messageBuilder.toString();
+  }
+
+  /**
+   * Creates error message for failing requests done to JSON:API endpoints.
+   * JAX-RS endpoints have currently different error formatting so it's handled separately.
+   * Returned error message format:
+   *
+   * <code>
+   *   Base message. HTTP status code: 123[, message: crnk_error_title - crnk_error_details]
+   *
+   * [ ] part optional, depends if crnk provided that information.
+   * </code>
+   *
+   * <p>NOTE: Error message formatting and handling is unstable and subject to change in future
+   * versions.
+   *
+   * @param baseMessage Generic message describing failure
+   * @param e Crnk exception
+   * @return Formatted error message containing baseMessage, HTTP code and response body if
+   *     available
+   */
+  private String errorMessageForFailingCrnkRequest(String baseMessage, Exception e) {
+    final StringBuilder messageBuilder = new StringBuilder();
+    messageBuilder.append(baseMessage);
+
+    if (!baseMessage.trim().endsWith(".")) {
+      messageBuilder.append(".");
+    }
+    // Mappable exceptions contains HTTP status code and further details
+    if (e instanceof CrnkMappableException) {
+      final CrnkMappableException mappableException = (CrnkMappableException) e;
+      messageBuilder.append(" HTTP status code: ").append(mappableException.getHttpStatus());
+
+      final ErrorData errorData = mappableException.getErrorData();
+      if (errorData.getTitle() != null && !errorData.getTitle().isEmpty()) {
+        messageBuilder.append(", message: ").append(mappableException.getErrorData().getTitle());
+
+        if (errorData.getDetail() != null && !errorData.getDetail().isEmpty()) {
+          messageBuilder.append(" - ").append(mappableException.getErrorData().getDetail());
+        }
+
+      }
+    } else {
+      messageBuilder.append(e.getMessage());
+    }
+    return messageBuilder.toString();
   }
 }

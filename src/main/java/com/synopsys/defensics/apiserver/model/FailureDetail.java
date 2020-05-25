@@ -16,18 +16,15 @@
 
 package com.synopsys.defensics.apiserver.model;
 
-/**
- * Object for failure details.
- */
 public class FailureDetail {
 
   /**
-   * Source of the failure.
+   * Source instrumentation of the failure.
    */
   private String source;
 
   /**
-   * Failed rounds.
+   * Number of failed instrumentation rounds.
    */
   private int failedRounds;
 

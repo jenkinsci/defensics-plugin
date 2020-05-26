@@ -251,7 +251,8 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
       return runRepository.create(new Run());
     } catch (TransportException | CrnkException e) {
       throw new DefensicsClientException(
-          errorMessageForFailingCrnkRequest("Could not create run", e)
+          errorMessageForFailingCrnkRequest("Could not create run", e),
+          e
       );
     }
   }
@@ -268,7 +269,8 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
           errorMessageForFailingCrnkRequest(
               "Could not get run " + configurationId + " configuration",
               e
-          )
+          ),
+          e
       );
     }
   }
@@ -283,7 +285,8 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
       );
     } catch (TransportException | CrnkException e) {
       throw new DefensicsClientException(
-          errorMessageForFailingCrnkRequest("Could not get run " + runId, e)
+          errorMessageForFailingCrnkRequest("Could not get run " + runId, e),
+          e
       );
     }
   }
@@ -294,7 +297,8 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
       runRepository.delete(runId);
     } catch (TransportException | CrnkException e) {
       throw new DefensicsClientException(
-          errorMessageForFailingCrnkRequest("Could not delete run", e)
+          errorMessageForFailingCrnkRequest("Could not delete run", e),
+          e
       );
     }
   }
@@ -429,7 +433,8 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
           errorMessageForFailingCrnkRequest(
               "Could not get suite-instance for configuration " + configurationId,
               e
-          )
+          ),
+          e
       );
     }
   }
@@ -442,7 +447,8 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
       );
     } catch (TransportException | CrnkException e) {
       throw new DefensicsClientException(
-          errorMessageForFailingCrnkRequest("Could not get suite instance " + suiteInstanceId, e)
+          errorMessageForFailingCrnkRequest("Could not get suite instance " + suiteInstanceId, e),
+          e
       );
     }
   }

@@ -32,7 +32,6 @@ public class ProjectUtils {
       String defensicsName, String defensicsUrl, boolean certiciateValidationDisabled,
       String credentialsId,
       String settingFileName) throws Exception {
-    new FuzzJobRunner();
     addInstanceConfiguration(jenkinsRule, defensicsName, defensicsUrl, certiciateValidationDisabled,
         credentialsId);
 

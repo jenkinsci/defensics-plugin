@@ -39,6 +39,7 @@ import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
+import org.kohsuke.stapler.verb.POST;
 
 /**
  * Global configuration for one Defensics Instance.
@@ -213,6 +214,7 @@ public class InstanceConfiguration extends
      * @return Ok if a get request is successfully made to the api endpoint of the url, otherwise
      *         Error.
      */
+    @POST
     public FormValidation doTestConnection(@QueryParameter("url") final String url,
         @QueryParameter("certificateValidationDisabled") final boolean
             certificateValidationDisabled,

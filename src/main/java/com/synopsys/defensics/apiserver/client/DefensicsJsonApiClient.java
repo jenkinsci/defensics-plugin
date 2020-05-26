@@ -603,8 +603,8 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
   }
 
   /**
-   * Creates error message for failing requests done to JAX-RS endpoints. JSON:API has currently
-   * different error formatting so it's handled separately. Returned error message format:
+   * Creates error message for failing requests done to JAX-RS endpoints. Returned error message
+   * format:
    *
    * <code>Base message. HTTP status code: 123, message: error response body</code>
    *
@@ -651,9 +651,8 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
   }
 
   /**
-   * Creates error message for failing requests done to JSON:API endpoints.
-   * JAX-RS endpoints have currently different error formatting so it's handled separately.
-   * Returned error message format:
+   * Creates error message for failing requests done to JSON:API endpoints. Returned error message
+   * format:
    *
    * <code>
    *   Base message. HTTP status code: 123[, message: crnk_error_title - crnk_error_details]
@@ -691,7 +690,7 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
 
       }
     } else {
-      messageBuilder.append(e.getMessage());
+      messageBuilder.append(" ").append(e.getMessage());
     }
     return messageBuilder.toString();
   }

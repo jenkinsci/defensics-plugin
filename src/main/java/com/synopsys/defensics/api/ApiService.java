@@ -33,6 +33,7 @@ import java.nio.channels.ClosedByInterruptException;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Function;
+import org.apache.commons.lang.exception.ExceptionUtils;
 
 /**
  * Intermediate API service class between Jenkins job and Defensics client. Does things which client
@@ -303,14 +304,16 @@ public class ApiService {
       DefensicsClientException e,
       Function<DefensicsClientException, String> messageRenderer
   ) throws DefensicsRequestException, InterruptedException {
-    // Check if cause was either interruption or some other failure
-    final Exception cause = (Exception)e.getCause();
-    if ( cause instanceof InterruptedIOException || cause instanceof ClosedByInterruptException ) {
-      throw new InterruptedException(e.getCause().getMessage());
-    }
 
-    if (cause instanceof InterruptedException) {
-      throw (InterruptedException)cause;
+    final Exception cause = (Exception)e.getCause();
+
+    // Check if there was interruption, and if yes, map to InterruptedException
+    if (cause != null
+        && (ExceptionUtils.indexOfType(cause, InterruptedIOException.class) >= 0
+            || ExceptionUtils.indexOfType(cause, ClosedByInterruptException.class) >= 0
+            || ExceptionUtils.indexOfType(cause, InterruptedException.class) >= 0)
+    ) {
+      throw new InterruptedException(e.getCause().getMessage());
     }
 
     String message = messageRenderer.apply(e);

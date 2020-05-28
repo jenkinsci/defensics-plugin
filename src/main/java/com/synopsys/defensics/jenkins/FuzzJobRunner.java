@@ -138,6 +138,7 @@ public class FuzzJobRunner {
           // Delete run if normal code path did not yet delete it.
           // If run is not deleted, the loaded suite and run will remain in the server
           defensicsClient.deleteRun(defensicsRun.getId());
+          logger.println("Unloaded suite and deleted the run from API server");
         } catch (DefensicsRequestException | InterruptedException e) {
           logger.logError("Could not delete run in API server: " + e.getMessage());
         }
@@ -364,6 +365,9 @@ public class FuzzJobRunner {
       logger.logError(
           "Couldn't track that run was COMPLETED, there is a possibility that run configuration "
               + "can't be removed automatically and suite will be left loaded!");
+      if (exception.getMessage() != null) {
+        logger.logError("Error message: " + exception.getMessage());
+      }
     }
   }
 }

@@ -27,11 +27,23 @@ import com.synopsys.defensics.client.model.HtmlReport;
 import hudson.FilePath;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.net.URI;
+import java.nio.channels.ClosedByInterruptException;
 import java.util.Collections;
-import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.function.Function;
+import org.apache.commons.lang.exception.ExceptionUtils;
 
+/**
+ * Intermediate API service class between Jenkins job and Defensics client. Does things which client
+ * doesn't yet do and could map some exception/messages to be more suitable for Jenkins.
+ *
+ * <p>NOTE: Exception handling is subject to change when client code is improved. Currently
+ * DefensicsClientException is inspected and InterruptedExceptions are thrown separately to
+ * handle job stopping more cleanly. DefensicsRequestException could be replaced with
+ * DefensicsClientException if InterruptedExceptions are handled some way.
+ */
 public class ApiService {
 
   private final DefensicsJsonApiClient defensicsClient;
@@ -45,7 +57,6 @@ public class ApiService {
       String authenticationToken,
       boolean certificateValidationDisabled
   ) {
-    // FIXME: TLS check disable
     // FIXME: Better slash handling, and client should check if /api/v1 is supplied already
     apiBaseUrl = defensicsInstanceUrl.endsWith("/")
         ? URI.create(defensicsInstanceUrl + "api/v1")
@@ -74,14 +85,13 @@ public class ApiService {
    * @return true if server is up and healthy
    * @throws DefensicsRequestException if server responds with error
    */
-  public boolean healthCheck() throws DefensicsRequestException {
+  public boolean healthCheck() throws DefensicsRequestException, InterruptedException {
     try {
       return defensicsClient.healthcheck();
     } catch (DefensicsClientException e) {
-      throw new DefensicsRequestException(
-          "Unable to connect to Defensics API at address " + apiBaseUrl + ". "
-              + "Please check you are using the correct token and Defensics API server is running.",
-          e);
+      mapAndThrow(e);
+      // Should not reach this
+      return false;
     }
   }
 
@@ -101,7 +111,7 @@ public class ApiService {
     try (final InputStream testplanStream = testplan.read()) {
       defensicsClient.uploadTestPlan(configurationId, testplanStream);
     } catch (DefensicsClientException e) {
-      throw new DefensicsRequestException("Failed to upload configuration", e);
+      mapAndThrow(e);
     }
   }
 
@@ -113,7 +123,7 @@ public class ApiService {
    * @throws DefensicsRequestException if server responds with error
    */
   public void setTestConfigurationSettings(String runId, String settings)
-      throws DefensicsRequestException {
+      throws DefensicsRequestException, InterruptedException {
     final SettingCliArgs settingCliArgs = new SettingCliArgs();
     settingCliArgs.setArgs(settings);
 
@@ -123,7 +133,7 @@ public class ApiService {
           settingCliArgs
       );
     } catch (DefensicsClientException e) {
-      throw new DefensicsRequestException("Could not test configuration settings", e);
+      mapAndThrow(e);
     }
   }
 
@@ -134,13 +144,14 @@ public class ApiService {
    * @throws DefensicsRequestException if server responds with error
    */
   public void startRun(String runId)
-      throws DefensicsRequestException {
+      throws DefensicsRequestException, InterruptedException {
     try {
       defensicsClient.startRun(runId);
     } catch (DefensicsClientException e) {
-      throw new DefensicsRequestException("Failed to start run.", e);
+      mapAndThrow(e);
     }
   }
+
 
   /**
    * Get individual run.
@@ -148,13 +159,16 @@ public class ApiService {
    * @param runId run id for the run to get
    * @return Run object or null if run can't be found
    */
-  public Run getRun(String runId) throws DefensicsRequestException {
+  public Run getRun(String runId)
+      throws DefensicsRequestException, InterruptedException {
     try {
       return defensicsClient.getRun(runId)
           .orElseThrow(
               () -> new DefensicsRequestException("Could not find Defensics run " + runId));
     } catch (DefensicsClientException e) {
-      throw new DefensicsRequestException("Failed to get run", e);
+      mapAndThrow(e);
+      // Should not reach this
+      return null;
     }
   }
 
@@ -163,11 +177,12 @@ public class ApiService {
    *
    * @param runId run id
    */
-  public void stopRun(String runId) throws DefensicsRequestException {
+  public void stopRun(String runId)
+      throws DefensicsRequestException, InterruptedException {
     try {
       defensicsClient.stopRun(runId);
     } catch (DefensicsClientException e) {
-      throw new DefensicsRequestException("Failed to stop run", e);
+      mapAndThrow(e);
     }
   }
 
@@ -182,12 +197,10 @@ public class ApiService {
   public void saveResults(String runId, FilePath reportFolder)
       throws IOException, DefensicsRequestException, InterruptedException {
 
-    final InputStream cloudReportStream;
-    try {
-      cloudReportStream = defensicsClient.downloadReport(
+    try (InputStream cloudReportStream = defensicsClient.downloadReport(
           Collections.singletonList(runId),
           HtmlReport.Cloud.toString()
-      );
+    )) {
       reportFolder.mkdirs();
 
       // Extract contents of the zip if report contains multiple files.
@@ -195,7 +208,7 @@ public class ApiService {
       // zipped report is handled.
       reportFolder.unzipFrom(cloudReportStream);
     } catch (DefensicsClientException e) {
-      throw new DefensicsRequestException("Failed to download results report.", e);
+      mapAndThrow(e);
     }
   }
 
@@ -214,7 +227,7 @@ public class ApiService {
           .downloadResultPackage(Collections.singletonList(runId));
       resultFolder.child(fileName).copyFrom(resultpackage);
     } catch (DefensicsClientException e) {
-      throw new DefensicsRequestException("Failed to download result package.", e);
+      mapAndThrow(e);
     }
   }
 
@@ -225,11 +238,13 @@ public class ApiService {
    * @return New Defensics run object
    * @throws DefensicsRequestException if run cannot be created in the Defensics server
    */
-  public Run createNewRun() throws DefensicsRequestException {
+  public Run createNewRun() throws DefensicsRequestException, InterruptedException {
     try {
       return defensicsClient.createTestRun();
     } catch (DefensicsClientException e) {
-      throw new DefensicsRequestException("Could not create new Defensics run", e);
+      mapAndThrow(e);
+      // Should not reach this
+      return null;
     }
   }
 
@@ -241,11 +256,73 @@ public class ApiService {
    * @throws DefensicsRequestException if suite information could not be fetched from Defensics
    *                                   server
    */
-  public Optional<SuiteInstance> getConfigurationSuite(String id) throws DefensicsRequestException {
+  public Optional<SuiteInstance> getConfigurationSuite(String id)
+      throws DefensicsRequestException, InterruptedException {
     try {
       return defensicsClient.getConfigurationSuite(id);
     } catch (DefensicsClientException e) {
-      throw new DefensicsRequestException("Could not fetch suite information", e);
+      mapAndThrow(e);
+      // Should not reach this
+      return Optional.empty();
     }
+  }
+
+  public void deleteRun(String runId)
+      throws DefensicsRequestException, InterruptedException {
+    try {
+      defensicsClient.deleteRun(runId);
+    } catch (DefensicsClientException e) {
+      mapAndThrow(e);
+    }
+  }
+
+  /**
+   * Maps JSON:API client exceptions to either Jenkins' DefensicsRequestException or
+   * to another exception types required e.g. in interrupted handling. Exception message is
+   * directly the cause exception's message.
+   *
+   * @param e Exception
+   * @throws DefensicsRequestException mapped from DefensicsClientException
+   * @throws InterruptedException if inner exception was interrupted
+   */
+  private void mapAndThrow(DefensicsClientException e)
+      throws DefensicsRequestException, InterruptedException {
+    // Call mapAndThrow using default renderer, i.e. just return exception's message
+    mapAndThrow(e, Throwable::getMessage);
+  }
+
+  /**
+   * Maps JSON:API client exceptions to either Jenkins' DefensicsRequestException or
+   * to another exception types required e.g. in interrupted handling.
+   *
+   * @param e Exception
+   * @param messageRenderer Function to render error message. Receives exception as an argument
+   * @throws DefensicsRequestException mapped from DefensicsClientException
+   * @throws InterruptedException if inner exception was interrupted
+   */
+  private void mapAndThrow(
+      DefensicsClientException e,
+      Function<DefensicsClientException, String> messageRenderer
+  ) throws DefensicsRequestException, InterruptedException {
+
+    final Exception cause = (Exception)e.getCause();
+
+    // Check if there was interruption, and if yes, map to InterruptedException
+    if (cause != null
+        && (ExceptionUtils.indexOfType(cause, InterruptedIOException.class) >= 0
+            || ExceptionUtils.indexOfType(cause, ClosedByInterruptException.class) >= 0
+            || ExceptionUtils.indexOfType(cause, InterruptedException.class) >= 0)
+    ) {
+      throw new InterruptedException(e.getCause().getMessage());
+    }
+
+    String message = messageRenderer.apply(e);
+
+    // Map from DefensicsClientException and include inner exception if present
+    if (cause != null) {
+      throw new DefensicsRequestException(message, cause);
+    }
+
+    throw new DefensicsRequestException(message);
   }
 }

@@ -72,6 +72,10 @@ public class FuzzJobRunner {
       throws AbortException {
     this.logger = logger;
 
+    // Denotes if job has been interrupted. If so, the interrupt flag should be reset after cleanup
+    // has been done.
+    boolean wasInterrupted = false;
+
     Run defensicsRun = null;
     Result runResult = null;
 
@@ -113,18 +117,36 @@ public class FuzzJobRunner {
       } else {
         runResult = Result.FAILURE;
       }
+      defensicsClient.deleteRun(defensicsRun.getId());
+      defensicsRun = null;
     } catch (InterruptedException | ClosedByInterruptException | InterruptedIOException e) {
+      // Let's clear the thread interrupted flag now, otherwise e.g. OkHttpClient doesn't do
+      // any of the cleanup requests. Reset interrupt flag after cleanup.
+      wasInterrupted = Thread.interrupted();
+
       handleRunInterruption(defensicsRun);
       runResult = Result.ABORTED;
     } catch (Exception e) {
+      logger.logError(e.getMessage());
       // The reason this throws an exception instead of logging error and setting build result
       // to failure, is so that users can do exception handling in pipeline scripts when there
       // are errors in the fuzzing process.
       throw new AbortException(e.getMessage() != null ? e.getMessage() : "");
     } finally {
-      // TODO: Is run deletion or other clean up needed now?
-      // removeConfiguration(testConfiguration);
+      if (defensicsRun != null) {
+        try {
+          // Delete run if normal code path did not yet delete it.
+          // If run is not deleted, the loaded suite and run will remain in the server
+          defensicsClient.deleteRun(defensicsRun.getId());
+        } catch (DefensicsRequestException | InterruptedException e) {
+          logger.logError("Could not delete run in API server: " + e.getMessage());
+        }
+      }
       jenkinsRun.setResult(runResult != null ? runResult : Result.FAILURE);
+
+      if (wasInterrupted) {
+        Thread.currentThread().interrupt();
+      }
     }
   }
 
@@ -132,7 +154,7 @@ public class FuzzJobRunner {
    * Does Defensics instance configuration and sets up the ApiService.
    */
   private void setUpDefensicsConnection(InstanceConfiguration instanceConfiguration)
-      throws IOException, DefensicsRequestException {
+      throws IOException, DefensicsRequestException, InterruptedException {
     String authenticationToken = AuthenticationTokenProvider.getAuthenticationToken(
         new URL(instanceConfiguration.getUrl()), instanceConfiguration.getCredentialsId());
 
@@ -200,8 +222,8 @@ public class FuzzJobRunner {
     Optional<SuiteInstance> suiteInstanceMaybe =
         defensicsClient.getConfigurationSuite(run.getId());
 
-    while (suiteInstanceMaybe.isPresent() == false
-      || suiteInstanceMaybe.get().getState() != SuiteRunState.LOADED) {
+    while (suiteInstanceMaybe.isPresent()
+        && suiteInstanceMaybe.get().getState() == SuiteRunState.LOADING) {
 
       final SuiteInstance suiteInstance = suiteInstanceMaybe.get();
 
@@ -227,8 +249,6 @@ public class FuzzJobRunner {
    * @param testPlanName      Testplan filename. This is used as title for the report tab, which
    *                          helps identify results if there are multiple Defensics steps in the
    *                          Jenkins job.
-   * @param launcher          Required by HTML publisher plugin but doesn't seem to be actually used
-   *                          for anything?
    * @param saveResultPackage Save Defensics run results and provide link in build page?
    * @throws DefensicsRequestException If server responds with error
    * @throws IOException               If deleting the temporary report files in workspace fails
@@ -244,10 +264,11 @@ public class FuzzJobRunner {
     // (https://issues.jenkins-ci.org/browse/JENKINS-48885) that causes pluginmanager not to have
     // any plugins when running Jenkins test harness, even though the plugins are there and usable.
     Plugin htmlPublisherPlugin = Jenkins.get().getPlugin("htmlpublisher");
-    if (!Jenkins.get().getPluginManager().getClass().getName().equals("org.jvnet.hudson.test.TestPluginManager")
+    if (!Jenkins.get().getPluginManager().getClass().getName()
+        .equals("org.jvnet.hudson.test.TestPluginManager")
         && (htmlPublisherPlugin == null
         || htmlPublisherPlugin.getWrapper().getVersionNumber().compareTo(
-        new VersionNumber("1.20")) < 0))  {
+        new VersionNumber("1.20")) < 0)) {
       logger.logError("Results can't be published without HTML Publisher Plugin 1.20 or newer. "
           + "Please install/update in Manage Jenkins > Manage Plugins. ");
       return;
@@ -262,7 +283,6 @@ public class FuzzJobRunner {
     if (saveResultPackage) {
       logger.println("Downloading result package.");
       defensicsClient.saveResultPackage(resultsDir, resultFile, defensicsRun.getId());
-      resultPackageUrl = "Defensics_Results/" + resultFile;
     }
 
     HtmlReport report = null;
@@ -271,7 +291,7 @@ public class FuzzJobRunner {
       // ResultPublisher will move result files from workspace to job's build folder.
       // This includes result package if user has chosen to save it.
       new ResultPublisher().publishResults(
-          jenkinsRun, defensicsRun, report, resultPackageUrl, logger, workspace);
+          jenkinsRun, defensicsRun, report, resultFile, logger, workspace);
     } finally {
       if (report != null) {
         if (saveResultPackage) {
@@ -288,18 +308,33 @@ public class FuzzJobRunner {
   private void handleRunInterruption(Run run) {
     logger.println("Fuzzing was interrupted.");
 
+    if (run == null) {
+      // Not much to do since run either was not created at all or was completed and deleted
+      // already.
+      return;
+    }
+
     try {
-      // We can't stop test run if configuration isn't loaded so let's make sure it is
-      // TODO: Is this needed anymore?
-      if (run != null
-          && run.getConfiguration() != null
-          && run.getConfiguration().getSuiteInstance() != null
-          && run.getConfiguration().getSuiteInstance().getState() != SuiteRunState.LOADED) {
+      // Update run to get latest information
+      run = defensicsClient.getRun(run.getId());
+      if (run == null) {
+        return;
+      }
+
+      // We can't stop test run if suite isn't loaded so let's make sure it is
+      final Optional<SuiteInstance> suiteMaybe = defensicsClient.getConfigurationSuite(run.getId());
+
+      if (suiteMaybe.isPresent() && suiteMaybe.get().getState().equals(SuiteRunState.LOADING)) {
         logger.println("Suite loading is ongoing. Waiting for suite to load before unloading it.");
         waitForSuiteLoading(run);
       }
-      // Only try to stop run if it's created and hasn't finished yet
-      if (run != null && run.getState() != RunState.COMPLETED && run.getState() != RunState.ERROR) {
+
+      // Only try to stop run if it's created and hasn't finished yet. Idle jobs cannot be stopped.
+      if (
+          run.getState() != RunState.COMPLETED
+              && run.getState() != RunState.ERROR
+              && run.getState() != RunState.IDLE
+      ) {
         final String runId = run.getId();
         logger.println("Stopping run.");
         defensicsClient.stopRun(runId);

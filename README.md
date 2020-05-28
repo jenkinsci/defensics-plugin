@@ -59,3 +59,8 @@ To install the plugin manually to a Jenkins:
 
 1. Upload and install Defensics Plugin `defensics-plugin.hpi` from **Manage Jenkins -> Plugins -> Advanced**.
 2. Restart Jenkins.
+
+## Release notes
+
+### Version 1.0.0
+ - Initial release

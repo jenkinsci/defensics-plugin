@@ -58,13 +58,10 @@ public class ResultIT {
   private static ClientAndServer mockServer;
   @Rule
   public JenkinsRule jenkinsRule = new JenkinsRule();
-  private ApiService api;
   private FreeStyleProject project;
 
   @Before
   public void setup() throws Exception {
-    api = new ApiService(URL, "", CERTIFICATE_VALIDATION_DISABLED);
-
     project = jenkinsRule.createFreeStyleProject();
     ProjectUtils.setupProject(
         jenkinsRule,

@@ -58,15 +58,11 @@ public class RunFreestyleIT {
   @Rule
   public JenkinsRule jenkinsRule = new JenkinsRule();
 
-  private ApiService api;
   private FreeStyleProject project;
   private ClientAndServer mockServer;
 
   @Before
   public void setup() throws Exception {
-
-    api = new ApiService(URL, AUTH_TOKEN, CERTIFICATE_VALIDATION_DISABLED);
-
     project = jenkinsRule.createFreeStyleProject();
     CredentialsStore store = CredentialsProvider.lookupStores(jenkinsRule.jenkins)
         .iterator()

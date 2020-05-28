@@ -57,15 +57,15 @@ public class BuildResultActionTest {
 
   @Test
   public void testGetResultPackageUrl() {
-    assertThat(buildResultAction.getResultPackageUrls(), contains(RESULT_PACKAGE_URL));
+    assertThat(buildResultAction.getResultPackages(), contains(RESULT_PACKAGE_URL));
   }
 
   @Test
   public void testGetResultPackageUrls() {
-    assertThat(buildResultAction.getResultPackageUrls(), contains(RESULT_PACKAGE_URL));
-    assertThat(buildResultAction.getResultPackageUrls(), not(contains(RESULT_PACKAGE_URL2)));
-    buildResultAction.addResultPackageUrl(RESULT_PACKAGE_URL2);
-    assertThat(buildResultAction.getResultPackageUrls(),
+    assertThat(buildResultAction.getResultPackages(), contains(RESULT_PACKAGE_URL));
+    assertThat(buildResultAction.getResultPackages(), not(contains(RESULT_PACKAGE_URL2)));
+    buildResultAction.addResultPackage(RESULT_PACKAGE_URL2);
+    assertThat(buildResultAction.getResultPackages(),
         containsInRelativeOrder(RESULT_PACKAGE_URL, RESULT_PACKAGE_URL2));
   }
 }

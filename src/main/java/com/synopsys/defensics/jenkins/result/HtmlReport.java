@@ -63,7 +63,8 @@ public class HtmlReport {
    *         workspace.
    */
   public String getResultDirectory() {
-    return reportFile.getParent().getRemote();
+    return (reportFile == null || reportFile.getParent() == null) ? null
+        : reportFile.getParent().getRemote();
   }
 
   /**

@@ -59,7 +59,8 @@ public class FuzzStep {
     }
 
     new FuzzJobRunner().run(
-        run, workspace, launcher, logger, testPlan, configurationOverrides, configuration, saveResultPackage);
+        run, workspace, launcher, logger, testPlan, configurationOverrides, configuration,
+        saveResultPackage);
   }
 
 

@@ -219,6 +219,7 @@ public class InstanceConfiguration extends
         @QueryParameter("certificateValidationDisabled") final boolean
             certificateValidationDisabled,
         @QueryParameter("credentialsId") final String credentialsId) {
+      Jenkins.get().checkPermission(Jenkins.ADMINISTER);
       try {
         ApiService apiService = new ApiService(
             url,

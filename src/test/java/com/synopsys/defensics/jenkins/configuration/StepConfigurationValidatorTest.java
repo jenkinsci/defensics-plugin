@@ -63,20 +63,24 @@ public class StepConfigurationValidatorTest {
 
   @Test
   public void testValidateConfigurationOverrides() {
-    validateConfigurationOverrides("", Kind.OK);
-    validateConfigurationOverrides("--uri http://127.0.0.1", Kind.OK);
-    validateConfigurationOverrides("--test --setting", Kind.OK);
-    validateConfigurationOverrides("--max-run-cases 40", Kind.OK);
-    validateConfigurationOverrides("--index 15-40 --max-run-cases 15", Kind.OK);
-    validateConfigurationOverrides("--index 15-40 --max-run-cases 15 test setting", Kind.OK);
-    validateConfigurationOverrides("--suite-setting \"aa aa\"", Kind.OK);
-    validateConfigurationOverrides("--exec-instrument \"echo \\\"bar baz\\\"\"\n", Kind.OK);
+    final Kind ok = Kind.OK;
+    validateConfigurationOverrides("", ok);
+    validateConfigurationOverrides("--uri http://127.0.0.1", ok);
+    validateConfigurationOverrides("--test --setting", ok);
+    validateConfigurationOverrides("--max-run-cases 40", ok);
+    validateConfigurationOverrides("--index 15-40 --max-run-cases 15", ok);
+    validateConfigurationOverrides("--suite-setting \"aa aa\"", ok);
+    validateConfigurationOverrides("--exec-instrument \"echo \\\"bar baz\\\"\"", ok);
+    validateConfigurationOverrides("--index 15-40 --another-setting \"value1 value2\"", ok);
+    validateConfigurationOverrides("--exec-instrument 'sh -c \"echo 1\"' --uri http://127.0.0.1:7666 --index 1-1000 --instrument", ok);
   }
 
   @Test
   public void testValidateConfigurationOverridesInvalidFormat() {
-    validateConfigurationOverrides("something fishy", Kind.ERROR);
-    validateConfigurationOverrides("-almost correct", Kind.ERROR);
+    final Kind error = Kind.ERROR;
+    validateConfigurationOverrides("something fishy", error);
+    validateConfigurationOverrides("-almost correct", error);
+    validateConfigurationOverrides("--index 15-40 --another-setting value1 value2", error);
   }
 
   private void validateConfigurationOverrides(String override, Kind expectedResult) {

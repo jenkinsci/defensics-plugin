@@ -145,7 +145,7 @@ public class RunPipelineIT {
     assertThat(project.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
     assertThat(project.getAction(HtmlReportAction.class).getUrlName(),
         is(equalTo(run.getActions(HtmlReportAction.class).get(0).getUrlName())));
-    assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(false));
+    assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(true));
   }
 
   @Test

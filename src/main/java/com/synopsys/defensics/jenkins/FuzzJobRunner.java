@@ -114,11 +114,18 @@ public class FuzzJobRunner {
 
       if (defensicsRun.getVerdict().equals(RunVerdict.PASS)) {
         runResult = Result.SUCCESS;
+        defensicsClient.deleteRun(defensicsRun.getId());
+        defensicsRun = null;
       } else {
         runResult = Result.FAILURE;
+        RunVerdict verdict = defensicsRun.getVerdict();
+        int failureCount = DefensicsUtils.countRunFailures(defensicsRun);
+        defensicsClient.deleteRun(defensicsRun.getId());
+        defensicsRun = null;
+        throw new AbortException("Fuzzing completed with verdict " + verdict
+            + " and " + failureCount + " failures. "
+            + "See Defensics Results for details.");
       }
-      defensicsClient.deleteRun(defensicsRun.getId());
-      defensicsRun = null;
     } catch (InterruptedException | ClosedByInterruptException | InterruptedIOException e) {
       // Let's clear the thread interrupted flag now, otherwise e.g. OkHttpClient doesn't do
       // any of the cleanup requests. Reset interrupt flag after cleanup.
@@ -127,6 +134,10 @@ public class FuzzJobRunner {
       handleRunInterruption(defensicsRun);
       runResult = Result.ABORTED;
     } catch (Exception e) {
+      if (e instanceof AbortException) {
+        throw (AbortException)e;
+      }
+      runResult = Result.FAILURE;
       logger.logError(e.getMessage());
       // The reason this throws an exception instead of logging error and setting build result
       // to failure, is so that users can do exception handling in pipeline scripts when there
@@ -143,7 +154,12 @@ public class FuzzJobRunner {
           logger.logError("Could not delete run in API server: " + e.getMessage());
         }
       }
-      jenkinsRun.setResult(runResult != null ? runResult : Result.FAILURE);
+
+      if (runResult == null) {
+        throw new AbortException("Fuzzing failed for unknown reason.");
+      } else if (runResult != Result.FAILURE) {
+        jenkinsRun.setResult(runResult);
+      }
 
       if (wasInterrupted) {
         Thread.currentThread().interrupt();

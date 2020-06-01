@@ -220,6 +220,9 @@ public class FailureScenarioIT {
     assertThat(project.getAction(HtmlReportAction.class).getUrlName(),
         is(equalTo(run.getActions(HtmlReportAction.class).get(0).getUrlName())));
     assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(true));
+    assertThat(run.getLog(100).contains("ERROR: Fuzzing completed with verdict FAIL and 1 "
+        + "failures. See Defensics Results for details."), is(true));
+
     checkApiServerResourcesAreCleaned();
   }
 
@@ -253,6 +256,8 @@ public class FailureScenarioIT {
     assertThat(project.getAction(HtmlReportAction.class).getUrlName(),
         is(equalTo(run.getActions(HtmlReportAction.class).get(0).getUrlName())));
     assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(true));
+    assertThat(run.getLog(100).contains("ERROR: Fuzzing completed with verdict WARNING "
+        + "and 0 failures. See Defensics Results for details."), is(true));
     checkApiServerResourcesAreCleaned();
   }
 

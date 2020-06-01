@@ -21,7 +21,8 @@ import io.crnk.core.resource.annotations.JsonApiRelationId;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
- * Base class for RunTestConfiguration (run of a specific run) and TestConfiguration (shared config
+ * Base class for RunTestConfiguration (run of a specific on-going run), ResultTestConfiguration
+ * (Info about configuration that was used on some past run) and TestConfiguration (shared config
  * that can be used as basis for starting different runs).
  */
 public abstract class BaseTestConfiguration {

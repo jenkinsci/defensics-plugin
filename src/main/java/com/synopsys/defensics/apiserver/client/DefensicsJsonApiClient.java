@@ -350,15 +350,14 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
 
   @Override
   public InputStream downloadReport(
-      List<String> runIds,
+      String runId,
       String reportType
   ) {
     HttpUrl.Builder uriBuilder = apiBaseUrl.newBuilder()
-        .addPathSegments("reporting/report")
-        .addQueryParameter("format", reportType)
-        .addQueryParameter("sync", "true");
-
-    runIds.forEach(runId -> uriBuilder.addQueryParameter("run-id", runId));
+        .addPathSegment("runs")
+        .addPathSegment(runId)
+        .addPathSegment("report")
+        .addQueryParameter("format", reportType);
 
     final HttpUrl reportUri = uriBuilder.build();
     final Request request = new Builder().url(reportUri).build();
@@ -386,12 +385,12 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
   }
 
   @Override
-  public InputStream downloadResultPackage(List<String> runIds) {
+  public InputStream downloadResultPackage(String runId) {
     HttpUrl.Builder uriBuilder = apiBaseUrl
         .newBuilder()
-        .addPathSegments("results/result-package");
-
-    runIds.forEach(runId -> uriBuilder.addQueryParameter("run-id", runId));
+        .addPathSegment("runs")
+        .addPathSegment(runId)
+        .addPathSegment("package");
 
     final HttpUrl resultPackageUri = uriBuilder.build();
 

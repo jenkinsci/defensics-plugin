@@ -125,20 +125,20 @@ public interface DefensicsApiClient {
   /**
    * Downloads Defensics report of given type for given run IDs. Caller has to close the stream.
    *
-   * @param runIds Run IDs for which to generate report
+   * @param runId Run IDs for which to generate report
    * @param reportType Report type
    * @return Report as a stream
    */
-  InputStream downloadReport(List<String> runIds, String reportType);
+  InputStream downloadReport(String runId, String reportType);
 
   /**
-   * Downloads Defensics result package for given run IDs. Result package contains Defensics
+   * Downloads Defensics result package for given run ID. Result package contains Defensics
    * result files in ZIP archive. Caller has to close the stream.
    *
-   * @param runIds Run IDs to include in the result package
+   * @param runId Run ID to include in the result package
    * @return Result package as an inputstream. Contains Zip-package
    */
-  InputStream downloadResultPackage(List<String> runIds);
+  InputStream downloadResultPackage(String runId);
 
   /**
    * Pauses given Defensics run.

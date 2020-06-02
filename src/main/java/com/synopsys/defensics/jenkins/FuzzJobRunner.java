@@ -191,6 +191,7 @@ public class FuzzJobRunner {
 
       switch (run.getState()) {
         case ERROR:
+          runLogger.log(run);
           throw new AbortException("Fuzzing failed.");
         case STARTING:
         case RUNNING:
@@ -200,6 +201,7 @@ public class FuzzJobRunner {
           break;
         case STOPPING:
         case COMPLETED:
+          runLogger.log(run);
           return run;
         default:
           nextSleepDuration = pollingIntervals.getRunPollingInterval();

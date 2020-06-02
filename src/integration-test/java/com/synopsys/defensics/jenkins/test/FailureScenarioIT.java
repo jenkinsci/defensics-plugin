@@ -531,6 +531,7 @@ public class FailureScenarioIT {
   }
 
   private void checkRunOkAndReportPresent(WorkflowRun run) throws IOException {
+    assertThat(logHas(run, "100.0%"), is(true));
     assertThat(run.getResult(), is(equalTo(Result.SUCCESS)));
     assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
     assertThat(run.getActions(HTMLAction.class).size(), is(equalTo(0)));

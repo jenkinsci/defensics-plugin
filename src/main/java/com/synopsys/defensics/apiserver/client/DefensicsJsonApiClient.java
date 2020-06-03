@@ -341,6 +341,10 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
             contentStream,
             new TypeReference<Map<String, HealthCheckResult>>() {}
         );
+
+        if (healthChecks == null) {
+          throw new DefensicsClientException(baseErrorMessage + ". Server response empty");
+        }
         return healthChecks.values().stream().allMatch(HealthCheckResult::isHealthy);
       }
     } catch (IOException e) {

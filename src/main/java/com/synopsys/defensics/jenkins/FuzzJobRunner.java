@@ -296,11 +296,10 @@ public class FuzzJobRunner {
     logger.println("Downloading report.");
     final FilePath resultsDir = workspace.createTempDir("defensics-results", null);
     defensicsClient.saveResults(defensicsRun.getId(), resultsDir);
-    final String resultFile = String
-        .format("defensics-b%s-%s.zip", jenkinsRun.getId(), defensicsRun.getId());
-    String resultPackageUrl = null;
+    String resultFile = null;
     if (saveResultPackage) {
       logger.println("Downloading result package.");
+      resultFile = String.format("defensics-b%s-%s.zip", jenkinsRun.getId(), defensicsRun.getId());
       defensicsClient.saveResultPackage(resultsDir, resultFile, defensicsRun.getId());
     }
 

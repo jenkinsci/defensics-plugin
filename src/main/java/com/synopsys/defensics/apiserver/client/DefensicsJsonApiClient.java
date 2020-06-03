@@ -148,7 +148,7 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
     }
 
     crnkClient.setHttpAdapter(httpAdapter);
-    crnkClient.getHttpAdapter().setReceiveTimeout(60, TimeUnit.SECONDS);
+    crnkClient.getHttpAdapter().setReceiveTimeout(60, TimeUnit.MINUTES);
     // Register each requests to contain given token in Authorization header
     this.setToken(token, httpAdapter);
 

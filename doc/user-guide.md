@@ -2,9 +2,7 @@
 
 ## Overview
 
-The Synopsys Defensics Jenkins plugin enables you to integrate Defensics fuzz testing into your 
-Jenkins builds. It allows you to connect to multiple Defensics instances and run pre-configured 
-fuzz tests on them.
+The Synopsys Defensics Jenkins plugin enables you to integrate Defensics fuzz testing into your Jenkins builds. It allows you to connect to multiple Defensics instances and run pre-configured fuzz tests on them.
 
 More information on Defensics and fuzz testing is available at 
 https://www.synopsys.com/software-integrity/security-testing/fuzz-testing.html.
@@ -80,7 +78,8 @@ You can integrate Defensics fuzz tests into your builds as a build or post-build
     * [How do I get my .set file into my job's workspace?](#faq-4)
 5. If you want to override any settings from the test configuration file, you can do so in the **Test configuration setting overrides** text box.
     * [How should I override test configuration file settings?](#faq-5)
-6. Select **Save**.
+6. If you want Defensics result package zip files to be saved with each build, check the **Save Defensics result package for builds** checkbox. The files are quite big and storing many of them will take up disk space, so this is disabled by default. A result package can be imported into Defensics UI to re-run the tests.
+7. Select **Save**.
 
 ### Configuring Defensics test steps for pipeline projects
 The minimum syntax for running fuzz tests in a pipeline script is:
@@ -89,7 +88,7 @@ The minimum syntax for running fuzz tests in a pipeline script is:
 
 The full syntax is:
 
-`defensics configurationFilePath: 'my_suite_configuration.set', defensicsInstance: 'synopsys_defensics', configurationOverrides: '--uri https://example.com'`
+`defensics configurationFilePath: 'my_suite_configuration.set', configurationOverrides: '--uri https://example.com', defensicsInstance: 'synopsys_defensics', saveResultPackage: true`
 
 The parameters are explained in [Configuring Defensics test steps for freestyle projects](#freestyle-config).
 
@@ -102,6 +101,8 @@ The parameters are explained in [Configuring Defensics test steps for freestyle 
 ### Build results
 
 The build status page contains links to the fuzzing report in both the sidebar menu and the main content area. The number of failures is also visible in the main content area. If you don't see links to the report, it means a fuzzing step was not completed for that build. If there are multiple fuzzing steps, reports for all of them are found behind the same link. The reports are separated into tabs.
+
+There will also be a link to the result package for each Defensics step in the build that has **Save Defensics result package for builds** enabled.
 ![Build status page](img/build-results.png)
 
 ### Project results

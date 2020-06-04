@@ -10,7 +10,7 @@
   </parent>
   <groupId>com.synopsys</groupId>
   <artifactId>defensics</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.0-SNAPSHOT</version>
   <packaging>hpi</packaging>
   <properties>
     <jenkins.version>2.176.4</jenkins.version>

@@ -21,8 +21,6 @@ import java.io.IOException;
 
 public class HtmlReport {
 
-  public static final String REPORT_FOLDER = "results";
-
   private final FilePath reportFolder;
   private final FilePath reportFile;
   private final FilePath reportCssFile;

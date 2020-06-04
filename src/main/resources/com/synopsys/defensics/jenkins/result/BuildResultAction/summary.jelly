@@ -11,15 +11,5 @@
         (${it.failureCount} failures)
       </j:otherwise>
     </j:choose>
-    <j:if test="${it.resultPackages.size() > 0}">
-      <p>Download Result Package(s):</p>
-      <ol>
-        <j:forEach var="package" items="${it.resultPackages}">
-          <li>
-            <a href="${it.reportUrl}/${package}">Result Package</a>
-          </li>
-        </j:forEach>
-      </ol>
-    </j:if>
   </t:summary>
 </j:jelly>

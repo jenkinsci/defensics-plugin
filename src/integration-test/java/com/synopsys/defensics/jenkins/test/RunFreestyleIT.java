@@ -26,7 +26,6 @@ import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.CredentialsScope;
 import com.cloudbees.plugins.credentials.CredentialsStore;
 import com.cloudbees.plugins.credentials.domains.Domain;
-import com.synopsys.defensics.api.ApiService;
 import com.synopsys.defensics.apiserver.model.RunState;
 import com.synopsys.defensics.jenkins.result.HtmlReportPublisherTarget.HtmlReportAction;
 import com.synopsys.defensics.jenkins.test.utils.DefensicsMockServer;
@@ -98,7 +97,7 @@ public class RunFreestyleIT {
         CERTIFICATE_VALIDATION_DISABLED,
         CREDENTIAL_ID,
         TESTPLAN_NAME);
-    ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME);
+    ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME, false);
 
     FreeStyleBuild run = project.scheduleBuild2(0).get();
 
@@ -122,7 +121,7 @@ public class RunFreestyleIT {
         CERTIFICATE_VALIDATION_DISABLED,
         CREDENTIAL_ID,
         TESTPLAN_NAME);
-    ProjectUtils.addPostBuildStep(project, NAME, TESTPLAN_NAME);
+    ProjectUtils.addPostBuildStep(project, NAME, TESTPLAN_NAME, false);
 
     FreeStyleBuild run = project.scheduleBuild2(0).get();
 
@@ -146,7 +145,7 @@ public class RunFreestyleIT {
         CERTIFICATE_VALIDATION_DISABLED,
         CREDENTIAL_ID,
         TESTPLAN_NAME);
-    ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME);
+    ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME, false);
 
     jenkinsRule.configRoundtrip(project);
 
@@ -174,7 +173,7 @@ public class RunFreestyleIT {
         CERTIFICATE_VALIDATION_DISABLED,
         CREDENTIAL_ID,
         TESTPLAN_NAME);
-    ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME);
+    ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME, false);
 
     // Schedule build
     QueueTaskFuture<FreeStyleBuild> runFuture = project.scheduleBuild2(0);
@@ -205,7 +204,7 @@ public class RunFreestyleIT {
         CERTIFICATE_VALIDATION_DISABLED,
         CREDENTIAL_ID,
         TESTPLAN_NAME);
-    ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME);
+    ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME, false);
 
     FreeStyleBuild run = project.scheduleBuild2(0).get();
 
@@ -230,7 +229,7 @@ public class RunFreestyleIT {
         CERTIFICATE_VALIDATION_DISABLED,
         CREDENTIAL_ID,
         TESTPLAN_NAME);
-    ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME);
+    ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME, false);
 
     FreeStyleBuild run = project.scheduleBuild2(0).get();
 

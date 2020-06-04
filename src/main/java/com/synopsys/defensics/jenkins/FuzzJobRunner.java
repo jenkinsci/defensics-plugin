@@ -28,6 +28,7 @@ import com.synopsys.defensics.client.DefensicsRequestException;
 import com.synopsys.defensics.jenkins.configuration.AuthenticationTokenProvider;
 import com.synopsys.defensics.jenkins.configuration.InstanceConfiguration;
 import com.synopsys.defensics.jenkins.result.HtmlReport;
+import com.synopsys.defensics.jenkins.result.ResultPackageAction;
 import com.synopsys.defensics.jenkins.result.ResultPublisher;
 import com.synopsys.defensics.jenkins.util.DefensicsUtils;
 import hudson.AbortException;
@@ -109,8 +110,12 @@ public class FuzzJobRunner {
           jenkinsRun,
           defensicsRun,
           workspace,
-          testPlan.getName(),
-          saveResultPackage);
+          testPlan.getName()
+      );
+
+      if (saveResultPackage) {
+        publishResultPackage(jenkinsRun, defensicsRun);
+      }
 
       if (defensicsRun.getVerdict().equals(RunVerdict.PASS)) {
         runResult = Result.SUCCESS;
@@ -135,7 +140,7 @@ public class FuzzJobRunner {
       runResult = Result.ABORTED;
     } catch (Exception e) {
       if (e instanceof AbortException) {
-        throw (AbortException)e;
+        throw (AbortException) e;
       }
       runResult = Result.FAILURE;
       logger.logError(e.getMessage());
@@ -262,20 +267,18 @@ public class FuzzJobRunner {
    * Publish results. Handles publishing HTML report and adding actions to both build and job
    * level.
    *
-   * @param jenkinsRun        The Jenkins run whose results are being published
-   * @param defensicsRun      The Defensics run whose results are being published
-   * @param workspace         Jenkins workspace, used to temporarily store report files.
-   * @param testPlanName      Testplan filename. This is used as title for the report tab, which
-   *                          helps identify results if there are multiple Defensics steps in the
-   *                          Jenkins job.
-   * @param saveResultPackage Save Defensics run results and provide link in build page?
+   * @param jenkinsRun   The Jenkins run whose results are being published
+   * @param defensicsRun The Defensics run whose results are being published
+   * @param workspace    Jenkins workspace, used to temporarily store report files.
+   * @param testPlanName Testplan filename. This is used as title for the report tab, which helps
+   *                     identify results if there are multiple Defensics steps in the Jenkins job.
    * @throws DefensicsRequestException If server responds with error
    * @throws IOException               If deleting the temporary report files in workspace fails
    * @throws InterruptedException      If deleting the temporary report files in workspace is
    *                                   interrupted.
    */
   public void publishResults(hudson.model.Run<?, ?> jenkinsRun, Run defensicsRun,
-      FilePath workspace, String testPlanName, boolean saveResultPackage)
+      FilePath workspace, String testPlanName)
       throws Exception {
     // HTML report publishing doesn't work properly without HTML Publisher version 1.20 or newer.
     // With 1.19, for example, one result is published ok, but two results don't show up properly.
@@ -296,28 +299,42 @@ public class FuzzJobRunner {
     logger.println("Downloading report.");
     final FilePath resultsDir = workspace.createTempDir("defensics-results", null);
     defensicsClient.saveResults(defensicsRun.getId(), resultsDir);
-    String resultFile = null;
-    if (saveResultPackage) {
-      logger.println("Downloading result package.");
-      resultFile = String.format("defensics-b%s-%s.zip", jenkinsRun.getId(), defensicsRun.getId());
-      defensicsClient.saveResultPackage(resultsDir, resultFile, defensicsRun.getId());
-    }
 
     HtmlReport report = null;
     try {
       report = new HtmlReport(resultsDir, defensicsRun.getId(), testPlanName);
-      // ResultPublisher will move result files from workspace to job's build folder.
-      // This includes result package if user has chosen to save it.
-      new ResultPublisher().publishResults(
-          jenkinsRun, defensicsRun, report, resultFile, logger, workspace);
+      new ResultPublisher().publishResults(jenkinsRun, defensicsRun, report, logger, workspace);
     } finally {
       if (report != null) {
-        if (saveResultPackage) {
-          resultsDir.child(resultFile).delete();
-        }
         report.delete();
       }
     }
+  }
+
+  /**
+   * Downloads and archives result package for the test run. Adds action to provide html link in the
+   * build results.
+   *
+   * @param jenkinsRun   Jenkins run
+   * @param defensicsRun Defensics run
+   * @throws Exception See {@link ApiService#saveResultPackage(FilePath, String, String)
+   *                   saveResultPackage} for possible exceptions
+   */
+  public void publishResultPackage(hudson.model.Run<?, ?> jenkinsRun, Run defensicsRun)
+      throws Exception {
+    logger.println("Downloading result package.");
+    final String resultFile = String
+        .format("defensics-b%s-%s.zip", jenkinsRun.getId(), defensicsRun.getId());
+    final FilePath filePath = new FilePath(jenkinsRun.getRootDir())
+        .child(ResultPackageAction.URL_NAME);
+    defensicsClient.saveResultPackage(filePath, resultFile, defensicsRun.getId());
+    ResultPackageAction resultPackageAction = jenkinsRun.getAction(ResultPackageAction.class);
+    if (resultPackageAction == null) {
+      resultPackageAction = new ResultPackageAction(resultFile);
+    } else {
+      resultPackageAction.addResultPackage(resultFile);
+    }
+    jenkinsRun.addOrReplaceAction(resultPackageAction);
   }
 
   /**

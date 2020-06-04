@@ -17,44 +17,22 @@
 package com.synopsys.defensics.jenkins.result;
 
 import hudson.model.Action;
-import java.util.ArrayList;
-import java.util.List;
 import javax.annotation.CheckForNull;
 
 public class BuildResultAction implements Action {
 
   private final String reportUrl;
-  private final long failureCount;
-  private final List<String> resultPackages = new ArrayList<>();
+  private long failureCount;
 
   /**
    * Helps displaying Defensics run result in build page.
    *
    * @param reportUrl    url to Defensics html report
    * @param failureCount failure count to display as a summary
-   * @param resultFile   result package file name
    */
-  public BuildResultAction(String reportUrl, long failureCount, String resultFile) {
+  public BuildResultAction(String reportUrl, long failureCount) {
     this.reportUrl = reportUrl;
     this.failureCount = failureCount;
-    if (resultFile != null) {
-      resultPackages.add(resultFile);
-    }
-  }
-
-  /**
-   * Helps displaying Defensics run result in build page.
-   *
-   * @param reportUrl      url to Defensics html report
-   * @param failureCount   failure count to display as a summary
-   * @param resultPackages result package files as a list
-   */
-  public BuildResultAction(String reportUrl, long failureCount, List<String> resultPackages) {
-    this.reportUrl = reportUrl;
-    this.failureCount = failureCount;
-    if (resultPackages.size() > 0) {
-      this.resultPackages.addAll(resultPackages);
-    }
   }
 
   @CheckForNull
@@ -83,18 +61,7 @@ public class BuildResultAction implements Action {
     return failureCount;
   }
 
-  public List<String> getResultPackages() {
-    return resultPackages;
-  }
-
-  /**
-   * Add a result package.
-   *
-   * @param resultPackage if the param is null it won't be added.
-   */
-  public void addResultPackage(String resultPackage) {
-    if (resultPackage != null) {
-      resultPackages.add(resultPackage);
-    }
+  public void setFailureCount(long failureCount) {
+    this.failureCount = failureCount;
   }
 }

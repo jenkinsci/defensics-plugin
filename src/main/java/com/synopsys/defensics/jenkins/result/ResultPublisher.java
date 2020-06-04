@@ -35,19 +35,18 @@ public class ResultPublisher {
   /**
    * Publish HTML report from file in workspace.
    *
-   * @param jenkinsRun       The Jenkins run to publish report for.
-   * @param defensicsRun     The defensics run for which results are to be published.
-   * @param report           The html report to publish
-   * @param resultFile       The filename of the result package
-   * @param logger           The Defensics Plugin logger.
-   * @param workspace        The Jenkins workspace.
+   * @param jenkinsRun   The Jenkins run to publish report for.
+   * @param defensicsRun The defensics run for which results are to be published.
+   * @param report       The html report to publish
+   * @param logger       The Defensics Plugin logger.
+   * @param workspace    The Jenkins workspace.
    * @throws InterruptedException If publishing is interrupted.
    */
   public void publishResults(hudson.model.Run<?, ?> jenkinsRun, Run defensicsRun,
-      HtmlReport report, String resultFile, Logger logger, FilePath workspace)
+      HtmlReport report, Logger logger, FilePath workspace)
       throws InterruptedException {
     publishReportAction(jenkinsRun, workspace, logger, report, defensicsRun.getId());
-    publishBuildResultAction(jenkinsRun, DefensicsUtils.countRunFailures(defensicsRun), resultFile);
+    publishBuildResultAction(jenkinsRun, DefensicsUtils.countRunFailures(defensicsRun));
   }
 
   private void publishReportAction(hudson.model.Run<?, ?> run, FilePath workspace,
@@ -101,19 +100,15 @@ public class ResultPublisher {
     return joinedString.isEmpty() ? joinedString : joinedString + ",";
   }
 
-  private void publishBuildResultAction(hudson.model.Run<?, ?> jenkinsRun, long failureCount,
-      String resultFile) {
-    BuildResultAction existingBuildResultAction = jenkinsRun.getAction(BuildResultAction.class);
-    if (existingBuildResultAction == null) {
+  private void publishBuildResultAction(hudson.model.Run<?, ?> jenkinsRun, long failureCount) {
+    BuildResultAction buildResultAction = jenkinsRun.getAction(BuildResultAction.class);
+    if (buildResultAction == null) {
       HtmlReportAction reportAction = jenkinsRun.getAction(HtmlReportAction.class);
-      jenkinsRun.addAction(
-          new BuildResultAction(reportAction.getUrlName(), failureCount, resultFile));
+      buildResultAction = new BuildResultAction(reportAction.getUrlName(), failureCount);
     } else {
-      jenkinsRun.removeAction(existingBuildResultAction);
-      existingBuildResultAction.addResultPackage(resultFile);
-      jenkinsRun.addAction(new BuildResultAction(existingBuildResultAction.getReportUrl(),
-          existingBuildResultAction.getFailureCount() + failureCount,
-          existingBuildResultAction.getResultPackages()));
+      final long prevFailureCount = buildResultAction.getFailureCount();
+      buildResultAction.setFailureCount(prevFailureCount + failureCount);
     }
+    jenkinsRun.addOrReplaceAction(buildResultAction);
   }
 }

@@ -20,13 +20,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 import com.gargoylesoftware.htmlunit.Page;
 import com.gargoylesoftware.htmlunit.html.DomElement;
 import com.gargoylesoftware.htmlunit.html.HtmlAnchor;
 import com.gargoylesoftware.htmlunit.html.HtmlPage;
-import com.synopsys.defensics.api.ApiService;
 import com.synopsys.defensics.apiserver.model.RunState;
 import com.synopsys.defensics.jenkins.result.HtmlReportPublisherTarget.HtmlReportAction;
 import com.synopsys.defensics.jenkins.result.ResultPublisher;
@@ -71,7 +71,7 @@ public class ResultIT {
         CERTIFICATE_VALIDATION_DISABLED,
         CREDENTIALSID,
         TESTPLAN_NAME);
-    ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME);
+    ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME, false);
 
     EnvironmentVariablesNodeProperty prop = new EnvironmentVariablesNodeProperty();
     EnvVars env = prop.getEnvVars();
@@ -165,7 +165,7 @@ public class ResultIT {
     String credentialsId2 = "";
     ProjectUtils.addInstanceConfiguration(jenkinsRule, name2, url2,
         true, credentialsId2);
-    ProjectUtils.addBuildStep(project, name2, setFileName);
+    ProjectUtils.addBuildStep(project, name2, setFileName, false);
     ProjectUtils.copyFileToWorkspace(
         jenkinsRule,
         project,
@@ -256,6 +256,57 @@ public class ResultIT {
       assertThat(
           projectPage.getElementById("defensics-failure-trend-graph"),
           is(nullValue()));
+    }
+  }
+
+  @Test
+  public void testResultPackagePublishIsDisabledByDefault() throws Exception {
+    mockServer = ClientAndServer.startClientAndServer(1080);
+    DefensicsMockServer mockServer = new DefensicsMockServer(false, "PASS", RunState.COMPLETED);
+    mockServer.initServer(ResultIT.mockServer);
+
+    try (JenkinsRule.WebClient webClient = jenkinsRule.createWebClient()) {
+      final FreeStyleBuild build = project.scheduleBuild2(0).get();
+      final HtmlPage buildPage = webClient.getPage(build);
+
+      assertThat(buildPage.getElementById("defensics-results-package-list"), is(nullValue()));
+    }
+  }
+
+  @Test
+  public void testResultPackagePublish() throws Exception {
+    mockServer = ClientAndServer.startClientAndServer(1080);
+    DefensicsMockServer mockServer = new DefensicsMockServer(false, "PASS", RunState.COMPLETED);
+    mockServer.initServer(ResultIT.mockServer);
+
+    ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME, true);
+
+    try (JenkinsRule.WebClient webClient = jenkinsRule.createWebClient()) {
+      final FreeStyleBuild build = project.scheduleBuild2(0).get();
+      final HtmlPage buildPage = webClient.getPage(build);
+
+      final DomElement resultPackageList = buildPage.getElementById("defensics-results-package-list");
+      assertThat(resultPackageList, is(notNullValue()));
+      assertThat(resultPackageList.getChildElementCount(), is(1));
+    }
+  }
+
+  @Test
+  public void testMultipleResultPackages() throws Exception {
+    mockServer = ClientAndServer.startClientAndServer(1080);
+    DefensicsMockServer mockServer = new DefensicsMockServer(false, "PASS", RunState.COMPLETED);
+    mockServer.initServer(ResultIT.mockServer);
+
+    ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME, true);
+    ProjectUtils.addPostBuildStep(project, NAME, TESTPLAN_NAME, true);
+
+    try (JenkinsRule.WebClient webClient = jenkinsRule.createWebClient()) {
+      final FreeStyleBuild build = project.scheduleBuild2(0).get();
+      final HtmlPage buildPage = webClient.getPage(build);
+
+      final DomElement resultPackageList = buildPage.getElementById("defensics-results-package-list");
+      assertThat(resultPackageList, is(notNullValue()));
+      assertThat(resultPackageList.getChildElementCount(), is(2));
     }
   }
 }

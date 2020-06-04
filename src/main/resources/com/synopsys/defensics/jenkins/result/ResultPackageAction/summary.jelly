@@ -1,0 +1,15 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:t="/lib/hudson">
+  <t:summary icon="/plugin/defensics/images/48x48/defensics-logo.png">
+    <j:if test="${it.resultPackages.size() > 0}">
+      <p>Defensics Result Package Download(s):</p>
+      <ol id="defensics-results-package-list">
+        <j:forEach var="package" items="${it.resultPackages}">
+          <li>
+            <a href="${it.getUrlName()}/${package}">Result Package</a>
+          </li>
+        </j:forEach>
+      </ol>
+    </j:if>
+  </t:summary>
+</j:jelly>

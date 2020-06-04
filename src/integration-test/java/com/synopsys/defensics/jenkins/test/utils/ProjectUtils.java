@@ -17,7 +17,6 @@
 package com.synopsys.defensics.jenkins.test.utils;
 
 import com.synopsys.defensics.jenkins.FuzzBuildStep;
-import com.synopsys.defensics.jenkins.FuzzJobRunner;
 import com.synopsys.defensics.jenkins.FuzzPostBuildStep;
 import com.synopsys.defensics.jenkins.configuration.InstanceConfiguration;
 import com.synopsys.defensics.jenkins.configuration.PluginConfiguration;
@@ -29,10 +28,10 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 public class ProjectUtils {
   public static void setupProject(JenkinsRule jenkinsRule, TopLevelItem project,
-      String defensicsName, String defensicsUrl, boolean certiciateValidationDisabled,
+      String defensicsName, String defensicsUrl, boolean certificateValidationDisabled,
       String credentialsId,
       String settingFileName) throws Exception {
-    addInstanceConfiguration(jenkinsRule, defensicsName, defensicsUrl, certiciateValidationDisabled,
+    addInstanceConfiguration(jenkinsRule, defensicsName, defensicsUrl, certificateValidationDisabled,
         credentialsId);
 
     ProjectUtils.copyFileToWorkspace(jenkinsRule, project, settingFileName);
@@ -59,24 +58,26 @@ public class ProjectUtils {
 
   /**
    * Add a build step to a project.
-   *
    * @param project           Project to add build step to.
    * @param configurationName Name of Defensics to use.
    * @param settingFilePath   SettingFilePath relative to workspace.
+   * @param saveResultPackage Is result package saved to build folder
    */
   public static void addBuildStep(FreeStyleProject project, String configurationName,
-      String settingFilePath) {
+      String settingFilePath, boolean saveResultPackage) {
     FuzzBuildStep plugin =
         new FuzzBuildStep(settingFilePath);
     plugin.setDefensicsInstance(configurationName);
+    plugin.setSaveResultPackage(saveResultPackage);
     project.getBuildersList().add(plugin);
   }
 
   public static void addPostBuildStep(FreeStyleProject project, String configurationName,
-      String settingFilePath) {
+      String settingFilePath, boolean saveResultPackage) {
     FuzzPostBuildStep plugin =
         new FuzzPostBuildStep(settingFilePath);
     plugin.setDefensicsInstance(configurationName);
+    plugin.setSaveResultPackage(saveResultPackage);
     project.getPublishersList().add(plugin);
   }
 

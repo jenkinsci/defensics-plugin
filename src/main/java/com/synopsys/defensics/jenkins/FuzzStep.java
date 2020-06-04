@@ -54,8 +54,7 @@ public class FuzzStep {
       configuration = getDefensicsInstance(selectedDefensicsInstanceName);
     } catch (MissingConfigurationException e) {
       logger.logError(e.getMessage());
-      run.setResult(Result.FAILURE);
-      return;
+      throw new AbortException(e.getMessage());
     }
 
     new FuzzJobRunner().run(

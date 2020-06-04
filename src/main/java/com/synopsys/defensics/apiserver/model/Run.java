@@ -19,6 +19,7 @@ package com.synopsys.defensics.apiserver.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.crnk.core.resource.annotations.JsonApiField;
 import io.crnk.core.resource.annotations.JsonApiRelation;
+import io.crnk.core.resource.annotations.JsonApiRelationId;
 import io.crnk.core.resource.annotations.JsonApiResource;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.File;
@@ -46,9 +47,23 @@ public class Run extends BaseTestRun {
   @JsonApiField(postable = false, patchable = false)
   private RunVerdict verdict;
 
+  // Actual run configuration containing the settings used by run. Auto-created
+  // at run creation based on the shared configuration provided
+  // Can't be changed by user (contents itself can be modified)
+  @JsonApiRelation(mappedBy = "run")
+  @JsonApiField(postable = false, patchable = false)
+  protected RunTestConfiguration configuration;
+
   @JsonApiRelation(mappedBy = "run")
   @JsonApiField(postable = false, patchable = false)
   private List<FailureSummaryEntry> failureSummary;
+
+  @JsonApiRelation
+  @Schema(description = "Result corresponding this run")
+  private Result result;
+
+  @JsonApiRelationId
+  private String resultId;
 
   /**
    * Directory where the results are written to. Not used for serializing so transient.
@@ -78,7 +93,8 @@ public class Run extends BaseTestRun {
       int runIndex,
       RunState state,
       RunVerdict verdict,
-      List<FailureSummaryEntry> failureSummary
+      List<FailureSummaryEntry> failureSummary,
+      String resultId
   ) {
     this.id = id;
     this.projectId = projectId;
@@ -88,6 +104,7 @@ public class Run extends BaseTestRun {
     this.state = state;
     this.verdict = verdict;
     this.failureSummary = failureSummary;
+    this.resultId = resultId;
   }
 
   public Run(String runId) {
@@ -113,6 +130,18 @@ public class Run extends BaseTestRun {
 
   public RunVerdict getVerdict() {
     return verdict;
+  }
+
+  public RunTestConfiguration getConfiguration() {
+    return configuration;
+  }
+
+  public Result getResult() {
+    return result;
+  }
+
+  public String getResultId() {
+    return resultId;
   }
 
   public void setFailureSummary(List<FailureSummaryEntry> failureSummary) {
@@ -169,5 +198,17 @@ public class Run extends BaseTestRun {
 
   public void setProjectId(String projectId) {
     this.projectId = projectId;
+  }
+
+  public void setConfiguration(RunTestConfiguration configuration) {
+    this.configuration = configuration;
+  }
+
+  public void setResult(Result result) {
+    this.result = result;
+  }
+
+  public void setResultId(String resultId) {
+    this.resultId = resultId;
   }
 }

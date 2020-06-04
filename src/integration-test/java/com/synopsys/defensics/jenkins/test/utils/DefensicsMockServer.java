@@ -265,7 +265,7 @@ public class DefensicsMockServer {
       server.when(
           request()
               .withMethod("GET")
-              .withPath("/api/v1/reporting/report"))
+              .withPath("/api/v1/runs/" + RUN_ID + "/report"))
           .respond(HttpResponse.response()
               .withStatusCode(200)
               .withBody(Files.readAllBytes(Paths.get(REPORT_ZIP_PATH))));
@@ -279,7 +279,7 @@ public class DefensicsMockServer {
       server.when(
           request()
               .withMethod("GET")
-              .withPath("/api/v1/results/result-package"))
+              .withPath("/api/v1/run/" + RUN_ID + "/package"))
           .respond(HttpResponse.response()
               .withStatusCode(200)
               .withBody(Files.readAllBytes(Paths.get(RESULT_PACKAGE_PATH))));

@@ -114,11 +114,18 @@ public class FuzzJobRunner {
 
       if (defensicsRun.getVerdict().equals(RunVerdict.PASS)) {
         runResult = Result.SUCCESS;
+        defensicsClient.deleteRun(defensicsRun.getId());
+        defensicsRun = null;
       } else {
         runResult = Result.FAILURE;
+        RunVerdict verdict = defensicsRun.getVerdict();
+        int failureCount = DefensicsUtils.countRunFailures(defensicsRun);
+        defensicsClient.deleteRun(defensicsRun.getId());
+        defensicsRun = null;
+        throw new AbortException("Fuzzing completed with verdict " + verdict
+            + " and " + failureCount + " failures. "
+            + "See Defensics Results for details.");
       }
-      defensicsClient.deleteRun(defensicsRun.getId());
-      defensicsRun = null;
     } catch (InterruptedException | ClosedByInterruptException | InterruptedIOException e) {
       // Let's clear the thread interrupted flag now, otherwise e.g. OkHttpClient doesn't do
       // any of the cleanup requests. Reset interrupt flag after cleanup.
@@ -127,6 +134,10 @@ public class FuzzJobRunner {
       handleRunInterruption(defensicsRun);
       runResult = Result.ABORTED;
     } catch (Exception e) {
+      if (e instanceof AbortException) {
+        throw (AbortException)e;
+      }
+      runResult = Result.FAILURE;
       logger.logError(e.getMessage());
       // The reason this throws an exception instead of logging error and setting build result
       // to failure, is so that users can do exception handling in pipeline scripts when there
@@ -138,11 +149,17 @@ public class FuzzJobRunner {
           // Delete run if normal code path did not yet delete it.
           // If run is not deleted, the loaded suite and run will remain in the server
           defensicsClient.deleteRun(defensicsRun.getId());
+          logger.println("Unloaded suite and deleted the run from API server");
         } catch (DefensicsRequestException | InterruptedException e) {
           logger.logError("Could not delete run in API server: " + e.getMessage());
         }
       }
-      jenkinsRun.setResult(runResult != null ? runResult : Result.FAILURE);
+
+      if (runResult == null) {
+        throw new AbortException("Fuzzing failed for unknown reason.");
+      } else if (runResult != Result.FAILURE) {
+        jenkinsRun.setResult(runResult);
+      }
 
       if (wasInterrupted) {
         Thread.currentThread().interrupt();
@@ -190,6 +207,7 @@ public class FuzzJobRunner {
 
       switch (run.getState()) {
         case ERROR:
+          runLogger.log(run);
           throw new AbortException("Fuzzing failed.");
         case STARTING:
         case RUNNING:
@@ -199,6 +217,7 @@ public class FuzzJobRunner {
           break;
         case STOPPING:
         case COMPLETED:
+          runLogger.log(run);
           return run;
         default:
           nextSleepDuration = pollingIntervals.getRunPollingInterval();
@@ -277,11 +296,10 @@ public class FuzzJobRunner {
     logger.println("Downloading report.");
     final FilePath resultsDir = workspace.createTempDir("defensics-results", null);
     defensicsClient.saveResults(defensicsRun.getId(), resultsDir);
-    final String resultFile = String
-        .format("defensics-b%s-%s.zip", jenkinsRun.getId(), defensicsRun.getId());
-    String resultPackageUrl = null;
+    String resultFile = null;
     if (saveResultPackage) {
       logger.println("Downloading result package.");
+      resultFile = String.format("defensics-b%s-%s.zip", jenkinsRun.getId(), defensicsRun.getId());
       defensicsClient.saveResultPackage(resultsDir, resultFile, defensicsRun.getId());
     }
 
@@ -364,6 +382,9 @@ public class FuzzJobRunner {
       logger.logError(
           "Couldn't track that run was COMPLETED, there is a possibility that run configuration "
               + "can't be removed automatically and suite will be left loaded!");
+      if (exception.getMessage() != null) {
+        logger.logError("Error message: " + exception.getMessage());
+      }
     }
   }
 }

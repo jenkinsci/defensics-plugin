@@ -26,8 +26,6 @@ import java.time.ZonedDateTime;
 /**
  * Base class for Run (a test run that is currently running) and Result (a test run that has
  * finished, for which we only have data loaded from saved run info).
- *
- * @author syri.
  */
 public abstract class BaseTestRun {
 
@@ -61,13 +59,6 @@ public abstract class BaseTestRun {
   @JsonApiRelationId
   private String parentConfigurationId;
 
-  // Actual run configuration containing the settings used by run. Auto-created
-  // at run creation based on the shared configuration provided
-  // Can't be changed by user (contents itself can be modified)
-  @JsonApiRelation(mappedBy = "run")
-  @JsonApiField(postable = false, patchable = false)
-  protected RunTestConfiguration configuration;
-
   public String getId() {
     return id;
   }
@@ -99,14 +90,6 @@ public abstract class BaseTestRun {
 
   public void setParentConfigurationId(String parentConfigurationId) {
     this.parentConfigurationId = parentConfigurationId;
-  }
-
-  public RunTestConfiguration getConfiguration() {
-    return configuration;
-  }
-
-  public void setConfiguration(RunTestConfiguration configuration) {
-    this.configuration = configuration;
   }
 
   public Project getProject() {

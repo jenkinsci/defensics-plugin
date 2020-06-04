@@ -198,7 +198,7 @@ public class ApiService {
       throws IOException, DefensicsRequestException, InterruptedException {
 
     try (InputStream cloudReportStream = defensicsClient.downloadReport(
-          Collections.singletonList(runId),
+          runId,
           HtmlReport.Cloud.toString()
     )) {
       reportFolder.mkdirs();
@@ -224,7 +224,7 @@ public class ApiService {
       throws IOException, DefensicsRequestException, InterruptedException {
     try {
       final InputStream resultpackage = defensicsClient
-          .downloadResultPackage(Collections.singletonList(runId));
+          .downloadResultPackage(runId);
       resultFolder.child(fileName).copyFrom(resultpackage);
     } catch (DefensicsClientException e) {
       mapAndThrow(e);

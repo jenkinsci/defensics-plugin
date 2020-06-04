@@ -219,7 +219,10 @@ public class FailureScenarioIT {
     assertThat(project.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
     assertThat(project.getAction(HtmlReportAction.class).getUrlName(),
         is(equalTo(run.getActions(HtmlReportAction.class).get(0).getUrlName())));
-    assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(false));
+    assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(true));
+    assertThat(run.getLog(100).contains("ERROR: Fuzzing completed with verdict FAIL and 1 "
+        + "failures. See Defensics Results for details."), is(true));
+
     checkApiServerResourcesAreCleaned();
   }
 
@@ -252,7 +255,9 @@ public class FailureScenarioIT {
     assertThat(project.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
     assertThat(project.getAction(HtmlReportAction.class).getUrlName(),
         is(equalTo(run.getActions(HtmlReportAction.class).get(0).getUrlName())));
-    assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(false));
+    assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(true));
+    assertThat(run.getLog(100).contains("ERROR: Fuzzing completed with verdict WARNING "
+        + "and 0 failures. See Defensics Results for details."), is(true));
     checkApiServerResourcesAreCleaned();
   }
 
@@ -531,6 +536,7 @@ public class FailureScenarioIT {
   }
 
   private void checkRunOkAndReportPresent(WorkflowRun run) throws IOException {
+    assertThat(logHas(run, "100.0%"), is(true));
     assertThat(run.getResult(), is(equalTo(Result.SUCCESS)));
     assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
     assertThat(run.getActions(HTMLAction.class).size(), is(equalTo(0)));

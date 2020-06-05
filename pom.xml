@@ -20,7 +20,7 @@
   </properties>
   <name>Defensics</name>
   <description>Synopsys Defensics plugin for fuzz testing.</description>
-  <url>https://github.com/jenkinsci/${project.artifactId}/doc/user-guide.md</url>
+  <url>https://github.com/jenkinsci/defensics-plugin/blob/master/doc/user-guide.md</url>
   <licenses>
     <license>
       <name>Apache License Version 2.0</name>

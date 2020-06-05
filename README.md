@@ -62,5 +62,8 @@ To install the plugin manually to a Jenkins:
 
 ## Release notes
 
+### Version 1.0.1
+- Fix links to User Guide
+
 ### Version 1.0.0
  - Initial release

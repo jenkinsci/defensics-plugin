@@ -20,7 +20,7 @@
   </properties>
   <name>Defensics</name>
   <description>Synopsys Defensics plugin for fuzz testing.</description>
-  <url>https://github.com/jenkinsci/${project.artifactId}/doc/user-guide.md</url>
+  <url>https://github.com/jenkinsci/defensics-plugin/blob/master/doc/user-guide.md</url>
   <licenses>
     <license>
       <name>Apache License Version 2.0</name>
@@ -31,6 +31,12 @@
     <name>Synopsys</name>
     <url>https://www.synopsys.com/software-integrity.html</url>
   </organization>
+  <developers>
+    <developer>
+      <id>synopsys_oss</id>
+      <email>sig-rnd-defensics-oss@synopsys.com</email>
+    </developer>
+  </developers>
   <scm>
     <connection>scm:git:git://github.com/jenkinsci/${project.artifactId}-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:jenkinsci/${project.artifactId}-plugin.git</developerConnection>

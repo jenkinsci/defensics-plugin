@@ -23,17 +23,24 @@ import com.synopsys.defensics.apiserver.model.SettingCliArgs;
 import com.synopsys.defensics.apiserver.model.SuiteInstance;
 import com.synopsys.defensics.client.DefensicsRequestException;
 import com.synopsys.defensics.client.UnsafeTlsConfigurator;
+import com.synopsys.defensics.client.UserAgentConfigurator;
 import com.synopsys.defensics.client.model.HtmlReport;
+import com.synopsys.defensics.jenkins.util.DefensicsUtils;
 import hudson.FilePath;
+import hudson.Plugin;
+import hudson.PluginWrapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.net.URI;
 import java.nio.channels.ClosedByInterruptException;
-import java.util.Collections;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import jenkins.model.Jenkins;
+import okhttp3.OkHttpClient.Builder;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Intermediate API service class between Jenkins job and Defensics client. Does things which client
@@ -62,21 +69,22 @@ public class ApiService {
         ? URI.create(defensicsInstanceUrl + "api/v1")
         : URI.create(defensicsInstanceUrl + "/api/v1");
 
-    if (certificateValidationDisabled) {
-      // Disable strict TLS checking if user has checked "Disable TLS checking".
-      // Not preferred method, better would be to use TLS checking.
-      defensicsClient = new DefensicsJsonApiClient(
-          apiBaseUrl,
-          authenticationToken,
-          UnsafeTlsConfigurator::configureUnsafeTlsOkHttpClient
-      );
-    } else {
-      // Default client - use JVMs TLS configuration and its certificate truststore.
-      defensicsClient = new DefensicsJsonApiClient(
-          apiBaseUrl,
-          authenticationToken
-      );
-    }
+    final DefensicsUtils defensicsUtils = new DefensicsUtils();
+    Consumer<Builder> clientConfigurator = builder -> {
+      UserAgentConfigurator.configureUserAgent(builder, defensicsUtils.createUserAgentString());
+
+      if (certificateValidationDisabled) {
+        // Disable strict TLS checking if user has checked "Disable TLS checking".
+        // Not preferred method, better would be to use TLS checking.
+        UnsafeTlsConfigurator.configureUnsafeTlsOkHttpClient(builder);
+      }
+    };
+
+    defensicsClient = new DefensicsJsonApiClient(
+        apiBaseUrl,
+        authenticationToken,
+        clientConfigurator
+    );
   }
 
   /**

@@ -27,6 +27,8 @@ import org.kohsuke.stapler.StaplerRequest;
 
 @Extension
 public class PluginConfiguration extends GlobalConfiguration {
+  /** Plugin short name. Used e.g. when fetching plugin version number. */
+  public static final String DEFENSICS_PLUGIN_NAME = "defensics";
 
   private final transient InstanceConfigurationValidator instanceConfigurationValidator =
       new InstanceConfigurationValidator();

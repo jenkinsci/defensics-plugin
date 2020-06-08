@@ -40,6 +40,8 @@ public class DefensicsMockServer {
       "src/integration-test/resources/com/synopsys/defensics/jenkins/test/report.zip";
   private static final String RESULT_PACKAGE_PATH =
       "src/integration-test/resources/com/synopsys/defensics/jenkins/test/result-package.zip";
+
+  private static final String EXPECTED_USER_AGENT_REGEX = "Defensics-Jenkins-Plugin/.*";
   private final String verdict;
   private final RunState endState;
   private final boolean authentication;
@@ -78,6 +80,7 @@ public class DefensicsMockServer {
         .when(
             request()
                 .withMethod("GET")
+                .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
                 .withPath("/api/v1/healthcheck"))
         .respond(HttpResponse.response().withBody("{\"healthy\":true}").withStatusCode(200));
   }
@@ -88,6 +91,7 @@ public class DefensicsMockServer {
             request()
                 .withMethod("POST")
                 .withHeader("Content-Type", "application/vnd.api+json; charset=utf-8")
+                .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
                 .withPath("/api/v1/runs"))
         .respond(HttpResponse.response()
             .withHeader("Content-Type", "application/vnd.api+json")
@@ -147,6 +151,7 @@ public class DefensicsMockServer {
         .when(
             request()
                 .withMethod("POST")
+                .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
                 .withPath("/api/v1/runs/" + RUN_ID + "/configuration/upload-plan"))
         .respond(HttpResponse.response().withBody("").withStatusCode(204));
   }
@@ -156,6 +161,7 @@ public class DefensicsMockServer {
         .when(
             request()
                 .withMethod("POST")
+                .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
                 .withPath("/api/v1/runs/" + RUN_ID + "/configuration/arguments"))
         .respond(HttpResponse.response().withBody("Success").withStatusCode(200));
   }
@@ -165,6 +171,7 @@ public class DefensicsMockServer {
         .when(
             request()
                 .withMethod("GET")
+                .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
                 .withPath("/api/v1/runs/" + RUN_ID + "/configuration/suite-instance"),
             Times.exactly(1)) //First state is LOADING
         .respond(HttpResponse.response()
@@ -175,6 +182,7 @@ public class DefensicsMockServer {
         .when(
             request()
                 .withMethod("GET")
+                .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
                 .withPath("/api/v1/runs/" + RUN_ID + "/configuration/suite-instance"),
             Times.unlimited()) // Next state is LOADED
         .respond(HttpResponse.response()
@@ -186,6 +194,7 @@ public class DefensicsMockServer {
         .when(
             request()
                 .withMethod("POST")
+                .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
                 .withPath("/api/v1/runs/" + RUN_ID + "/start"))
         .respond(HttpResponse
             .response()
@@ -196,6 +205,7 @@ public class DefensicsMockServer {
     server
         .when(
             request()
+                .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
                 .withHeader(
                     (
                         header(
@@ -219,6 +229,7 @@ public class DefensicsMockServer {
         .when(
             request()
                 .withMethod("GET")
+                .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
                 .withPath("/api/v1/runs/" + RUN_ID),
             Times.exactly(1)) //First response is "STARTING"
         .respond(HttpResponse.response()
@@ -230,6 +241,7 @@ public class DefensicsMockServer {
         .when(
             request()
                 .withMethod("GET")
+                .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
                 .withPath("/api/v1/runs/" + RUN_ID),
                 Times.exactly(1)) //Following response is "RUNNING"
         .respond(HttpResponse.response()
@@ -240,6 +252,7 @@ public class DefensicsMockServer {
         .when(
             request()
                 .withMethod("GET")
+                .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
                 .withPath("/api/v1/runs/" + RUN_ID),
                 Times.unlimited()) //After this job is "COMPLETED"
         .respond(HttpResponse.response()
@@ -253,6 +266,7 @@ public class DefensicsMockServer {
         .when(
             request()
                 .withMethod("POST")
+                .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
                 .withPath("/api/v1/runs/" + RUN_ID + "/stop"))
         .respond(HttpResponse.response()
             .withHeader("Content-Type", "application/json")
@@ -265,6 +279,7 @@ public class DefensicsMockServer {
       server.when(
           request()
               .withMethod("GET")
+              .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
               .withPath("/api/v1/runs/" + RUN_ID + "/report"))
           .respond(HttpResponse.response()
               .withStatusCode(200)
@@ -279,6 +294,7 @@ public class DefensicsMockServer {
       server.when(
           request()
               .withMethod("GET")
+              .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
               .withPath("/api/v1/runs/" + RUN_ID + "/package"))
           .respond(HttpResponse.response()
               .withStatusCode(200)
@@ -293,6 +309,7 @@ public class DefensicsMockServer {
         .when(
             request()
                 .withMethod("DELETE")
+                .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
                 .withPath("/api/v1/runs/" + RUN_ID))
         .respond(HttpResponse.response().withStatusCode(204));
   }

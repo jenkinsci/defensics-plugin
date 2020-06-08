@@ -18,6 +18,12 @@ package com.synopsys.defensics.jenkins.util;
 
 import com.synopsys.defensics.apiserver.model.FailureSummaryEntry;
 import com.synopsys.defensics.apiserver.model.Run;
+import com.synopsys.defensics.jenkins.configuration.PluginConfiguration;
+import hudson.Plugin;
+import hudson.PluginWrapper;
+import java.util.Optional;
+import jenkins.model.Jenkins;
+import org.jetbrains.annotations.NotNull;
 
 public class DefensicsUtils {
 
@@ -29,5 +35,37 @@ public class DefensicsUtils {
    */
   public static int countRunFailures(Run run) {
     return run.getFailureSummary().stream().mapToInt(FailureSummaryEntry::getCount).sum();
+  }
+
+  /**
+   * Creates User-agent header value, e.g. Defensics-Jenkins-Plugin/1.2.3. or if version information
+   * was not available, only product name, e.g. Defensics-Jenkins-Plugin.
+   *
+   * @return User-agent header value.
+   */
+  public String createUserAgentString() {
+    final StringBuilder userAgentBuilder = new StringBuilder();
+    userAgentBuilder.append("Defensics-Jenkins-Plugin");
+
+    getPluginVersion(PluginConfiguration.DEFENSICS_PLUGIN_NAME)
+        .ifPresent(version -> {
+          userAgentBuilder.append("/").append(version);
+        });
+
+    return userAgentBuilder.toString();
+  }
+
+  /**
+   * Gets plugin's version.
+   *
+   * @param pluginName Short name of the plugin
+   * @return Version information wrapped in Optional, or empty optional if version was not available
+   */
+  @NotNull
+  public Optional<String> getPluginVersion(String pluginName) {
+    return Optional.ofNullable(Jenkins.getInstanceOrNull())
+        .map(e -> e.getPlugin(pluginName))
+        .map(Plugin::getWrapper)
+        .map(PluginWrapper::getVersion);
   }
 }

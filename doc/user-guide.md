@@ -43,7 +43,7 @@ restart** to install the plugin after the next Jenkins restart.
 
 Use the following process to configure the plugin.
 
-### <a name="global-config"></a>Global configuration
+### Global configuration
 
 Defensics Jenkins plugin supports connecting to multiple Defensics instances.  To add connections, use the following process.
 
@@ -55,8 +55,9 @@ Defensics Jenkins plugin supports connecting to multiple Defensics instances.  T
     * **Credentials**: Your authentication token for authenticating with your Defensics instance. In the **Credentials** drop-down list box, select correct credentials.  Selecting **Add** enables you to add encrypted credentials. Add your authentication token as credential of kind **Secret text**.
     ![Configuring Defensics instances](img/global-configuration-add-instance.png)
 3. Select **Test Connection** to verify that your settings are correct.  If the connection is valid, a confirmation message of *Success* is shown.
-    * [How do I start the Defensics API Server?](#faq-1)
-    * [I get an error "unable to find valid certification path to requested target", how do I fix it?](#faq-2)
+    * [How do I start the Defensics API Server?](#how-do-i-start-the-defensics-api-server)
+    * [I get an error "unable to find valid certification path to requested 
+target", how do I fix it?](#i-get-an-error-unable-to-find-valid-certification-path-to-requested-target-how-do-i-fix-it)
 4. Select **Save**.
 
 ### Deleting connections
@@ -65,7 +66,7 @@ To delete a Defensics instance, use the following process.
 1. Select **Dashboard > Manage Jenkins > Configure System > Defensics**.
 2. In the **Defensics** section, locate the instance to delete and select **Delete** below the connection to delete.  Proceed with caution, as there is no confirmation message at this point.
 
-### <a name="freestyle-config"></a>Configuring Defensics test steps for freestyle projects
+### Configuring Defensics test steps for freestyle projects
 
 You can integrate Defensics fuzz tests into your builds as a build or post-build step in your freestyle jobs. There can be one Defensics post-build step and as many Defensics build steps as needed, for example, to test with different test suites. In this example we configure a post-build step, but configuring a build step has the same options.
 
@@ -74,10 +75,10 @@ You can integrate Defensics fuzz tests into your builds as a build or post-build
    ![Add post-build action](img/post-build-action.png)
 3. Select the Defensics instance to use. By default, the first instance in the list is selected.
 4. Set the **Test configuration file path** to use for testing. The path is relative to the project's workspace. 
-    * [Where can I get a .set file?](#faq-3)
-    * [How do I get my .set file into my job's workspace?](#faq-4)
+    * [Where can I get a .set file?](#where-can-i-get-a-set-file)
+    * [How do I get my .set file into my job's workspace?](#how-do-i-get-my-set-file-into-my-jobs-workspace)
 5. If you want to override any settings from the test configuration file, you can do so in the **Test configuration setting overrides** text box.
-    * [How should I override test configuration file settings?](#faq-5)
+    * [How should I override test configuration file settings?](#how-should-i-override-test-configuration-file-settings)
 6. If you want Defensics result package zip files to be saved with each build, check the **Save Defensics result package for builds** checkbox. The files are quite big and storing many of them will take up disk space, so this is disabled by default. A result package can be imported into Defensics UI to re-run the tests.
 7. Select **Save**.
 
@@ -90,7 +91,7 @@ The full syntax is:
 
 `defensics configurationFilePath: 'my_suite_configuration.set', configurationOverrides: '--uri https://example.com', defensicsInstance: 'synopsys_defensics', saveResultPackage: true`
 
-The parameters are explained in [Configuring Defensics test steps for freestyle projects](#freestyle-config).
+The parameters are explained in [Configuring Defensics test steps for freestyle projects](#configuring-defensics-test-steps-for-freestyle-projects).
 
 **defensicsInstance** is optional, and when it's not specified, the first configured instance is used. It's recommended not to leave it out if there are more than one Defensics instances configured in Jenkins.
 
@@ -114,22 +115,22 @@ The project status page sidebar menu also contains a link to the latest build's 
 
 ## FAQ
 
-### <a name="faq-1"></a>How do I start the Defensics API Server?
+### How do I start the Defensics API Server?
 
 See [Using Defensics API Server](defensics-api-server.md).
 
-### <a name="faq-2"></a>I get an error "unable to find valid certification path to requested target", how do I fix it?
+### I get an error "unable to find valid certification path to requested target", how do I fix it?
 
 !["Unable to find valid certification path" when testing connection](img/global-configuration-test-connection-failed.png)
 This means your Defensics is using a certificate Jenkins doesn't trust, for example, a self-signed certificate. For instructions on how to make Jenkins trust your certificate, see [CloudBees documentation](https://support.cloudbees.com/hc/en-us/articles/203821254-How-to-install-a-new-SSL-certificate-). As a workaround, you can select the **Disable HTTPS certificate validation** check box, but that is not recommended as a permanent solution for security reasons.
 
-### <a name="faq-3"></a>Where can I get a .set file?
+### Where can I get a .set file?
 The suite and tests can be configured in Defensics. To save it as a `.set` file, select **File > Save Settings**. One `.set` file contains the test settings for one test suite.
 
-### <a name="faq-4"></a>How do I get my .set file into my job's workspace?
+### How do I get my .set file into my job's workspace?
 It depends on where the `.set` file is kept. If it's in a version control system, the repository can be cloned into your workspace by configuring the VCS for the job. If it's in Artifactory, a network drive, or other similar location reachable from Jenkins, a step can be added before the fuzzing step to copy the `.set` file to the workspace.
 
-### <a name="faq-5"></a>How should I override test configuration file settings?
+### How should I override test configuration file settings?
 You can override settings from the test configuration file using the Defensics CLI setting format. The format is **--key value**, where:
 - **value** should have double quotes around it, if it contains spaces.
 - some settings use only **key** and no **value**.

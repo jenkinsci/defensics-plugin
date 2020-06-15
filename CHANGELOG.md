@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+### Fixed
+- Show more information for runs in error state
 
 ## v1.0.1 - 2020-06-05
 ### Fixed

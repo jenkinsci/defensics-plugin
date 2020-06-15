@@ -211,18 +211,11 @@ public class FailureScenarioIT {
     WorkflowRun run = project.scheduleBuild2(0).get();
     dumpLogs(run);
 
-    // Ideally API server should say that connection was not working
-    assertThat(logHas(run, "Verdict: FAIL"), is(true));
+    String expectedMessage = "Suite error: Unknown host 'non-routable.invalid'";
+    assertThat(logHas(run, expectedMessage), is(true));
     assertThat(run.getResult(), is(equalTo(Result.FAILURE)));
-    assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
-    assertThat(run.getActions(HTMLAction.class).size(), is(equalTo(0)));
-    assertThat(project.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
-    assertThat(project.getAction(HtmlReportAction.class).getUrlName(),
-        is(equalTo(run.getActions(HtmlReportAction.class).get(0).getUrlName())));
-    assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(true));
-    assertThat(run.getLog(100).contains("ERROR: Fuzzing completed with verdict FAIL and 1 "
-        + "failures. See Defensics Results for details."), is(true));
 
+    checkNoReport(run);
     checkApiServerResourcesAreCleaned();
   }
 
@@ -244,20 +237,16 @@ public class FailureScenarioIT {
     WorkflowRun run = project.scheduleBuild2(0).get();
     dumpLogs(run);
 
-    // Ideally API server should say that connection was not working
-    assertThat(
-        logHas(run, "Verdict: WARNING"),
-        is(true)
-    );
-    assertThat(run.getResult(), is(equalTo(Result.FAILURE)));
-    assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
-    assertThat(run.getActions(HTMLAction.class).size(), is(equalTo(0)));
-    assertThat(project.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
-    assertThat(project.getAction(HtmlReportAction.class).getUrlName(),
-        is(equalTo(run.getActions(HtmlReportAction.class).get(0).getUrlName())));
+    String expectedMessage = "Suite error: Could not connect to 127.0.0.1:9999"
+        + ", please check target address and port.";
+    assertThat(logHas(run, expectedMessage), is(true));
     assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(true));
-    assertThat(run.getLog(100).contains("ERROR: Fuzzing completed with verdict WARNING "
-        + "and 0 failures. See Defensics Results for details."), is(true));
+    assertThat(run.getResult(), is(equalTo(Result.FAILURE)));
+
+    // NOTE: In this case first connection failed so there's no results but later on suite error
+    // can occur at later stage and we'd likely want to have report for already executed cases
+    // if report can be generated
+    checkNoReport(run);
     checkApiServerResourcesAreCleaned();
   }
 

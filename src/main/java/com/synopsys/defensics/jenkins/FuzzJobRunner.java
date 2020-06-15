@@ -102,6 +102,14 @@ public class FuzzJobRunner {
       logger.println("Fuzz testing is RUNNING.");
 
       defensicsRun = trackRunStatus(defensicsRun.getId(), logger);
+
+      if (defensicsRun.getState().equals(RunState.ERROR)) {
+        final String errorMessage = getRunErrorMessage(logger, defensicsRun);
+
+        runResult = Result.FAILURE;
+        throw new AbortException(errorMessage);
+      }
+
       logger.println("Fuzz testing is COMPLETED.");
       logger.println("Failures: " + DefensicsUtils.countRunFailures(defensicsRun));
       logger.println("Verdict: " + defensicsRun.getVerdict());
@@ -173,6 +181,36 @@ public class FuzzJobRunner {
   }
 
   /**
+   * Inspects given run and its suite in error state and creates suitable error message.
+   * This method can log additional information to console.
+   *
+   * @param logger Logger to print urgent information
+   * @param defensicsRun Run to inspect
+   * @return Error message
+   * @throws InterruptedException if processing was interrupted
+   */
+  private String getRunErrorMessage(Logger logger, Run defensicsRun) throws InterruptedException {
+    final StringBuilder errorMessageBuilder = new StringBuilder();
+
+    errorMessageBuilder.append("Fuzzing failed. ");
+    try {
+      // Check if there's more error information in suite record
+      final Optional<SuiteInstance> suiteInstanceMaybe =
+          defensicsClient.getConfigurationSuite(defensicsRun.getId());
+
+      suiteInstanceMaybe.ifPresent(suiteInstance -> {
+        if (suiteInstance.getError() != null && !suiteInstance.getError().isEmpty()) {
+          logger.logError("Suite error: " + suiteInstance.getError());
+          errorMessageBuilder.append("Suite error: ").append(suiteInstance.getError());
+        }
+      });
+    } catch (DefensicsRequestException e) {
+      errorMessageBuilder.append("Could not get suite information: ").append(e.getMessage());
+    }
+    return errorMessageBuilder.toString();
+  }
+
+  /**
    * Does Defensics instance configuration and sets up the ApiService.
    */
   private void setUpDefensicsConnection(InstanceConfiguration instanceConfiguration)
@@ -213,7 +251,9 @@ public class FuzzJobRunner {
       switch (run.getState()) {
         case ERROR:
           runLogger.log(run);
-          throw new AbortException("Fuzzing failed.");
+
+          logger.logError("Test run terminated with ERROR.");
+          return run;
         case STARTING:
         case RUNNING:
           runLogger.log(run);

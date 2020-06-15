@@ -412,7 +412,23 @@ public class FuzzJobRunner {
       ) {
         final String runId = run.getId();
         logger.println("Stopping run.");
-        defensicsClient.stopRun(runId);
+        try {
+          defensicsClient.stopRun(runId);
+        } catch (DefensicsRequestException e) {
+          // Some suite states doesn't yet allow immediate stopping, giving 409 Conflict so retry
+          // after brief delay. There's not yet apt exception for conflict state so check exception
+          // message for 409.
+          final boolean wasConflict = Optional.ofNullable(e.getCause())
+              .map(Throwable::getMessage)
+              .filter(message -> message.contains("409"))
+              .isPresent();
+
+          if (wasConflict) {
+            logger.println("Couldn't yet stop run. Retrying.");
+            TimeUnit.SECONDS.sleep(5);
+            defensicsClient.stopRun(runId);
+          }
+        }
         int errorCounter = 0;
         while (errorCounter <= 3) {
           TimeUnit.SECONDS.sleep(1);

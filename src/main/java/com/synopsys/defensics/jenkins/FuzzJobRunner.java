@@ -103,13 +103,6 @@ public class FuzzJobRunner {
 
       defensicsRun = trackRunStatus(defensicsRun.getId(), logger);
 
-      if (defensicsRun.getState().equals(RunState.ERROR)) {
-        final String errorMessage = getRunErrorMessage(logger, defensicsRun);
-
-        runResult = Result.FAILURE;
-        throw new AbortException(errorMessage);
-      }
-
       logger.println("Fuzz testing is COMPLETED.");
       logger.println("Failures: " + DefensicsUtils.countRunFailures(defensicsRun));
       logger.println("Verdict: " + defensicsRun.getVerdict());
@@ -130,7 +123,6 @@ public class FuzzJobRunner {
         defensicsClient.deleteRun(defensicsRun.getId());
         defensicsRun = null;
       } else {
-        runResult = Result.FAILURE;
         RunVerdict verdict = defensicsRun.getVerdict();
         int failureCount = DefensicsUtils.countRunFailures(defensicsRun);
         defensicsClient.deleteRun(defensicsRun.getId());
@@ -147,10 +139,10 @@ public class FuzzJobRunner {
       handleRunInterruption(defensicsRun);
       runResult = Result.ABORTED;
     } catch (Exception e) {
+      runResult = Result.FAILURE;
       if (e instanceof AbortException) {
         throw (AbortException) e;
       }
-      runResult = Result.FAILURE;
       logger.logError(e.getMessage());
       // The reason this throws an exception instead of logging error and setting build result
       // to failure, is so that users can do exception handling in pipeline scripts when there
@@ -251,9 +243,9 @@ public class FuzzJobRunner {
       switch (run.getState()) {
         case ERROR:
           runLogger.log(run);
-
           logger.logError("Test run terminated with ERROR.");
-          return run;
+          final String errorMessage = getRunErrorMessage(logger, run);
+          throw new AbortException(errorMessage);
         case STARTING:
         case RUNNING:
           runLogger.log(run);

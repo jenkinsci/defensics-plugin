@@ -180,7 +180,7 @@
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
-      <version>4.6.0</version>
+      <version>4.7.2</version>
     </dependency>
     <dependency>
         <groupId>io.swagger.core.v3</groupId>
@@ -239,11 +239,6 @@
   <dependencyManagement>
     <!-- These dependencies are for enforcing RequireUpperBoundDeps -->
     <dependencies>
-      <dependency> <!-- For OkHttp 4 -->
-        <groupId>com.squareup.okio</groupId>
-        <artifactId>okio</artifactId>
-        <version>2.6.0</version>
-      </dependency>
       <dependency> <!-- For OkHttp 4 -->
         <groupId>org.jetbrains.kotlin</groupId>
         <artifactId>kotlin-stdlib-common</artifactId>

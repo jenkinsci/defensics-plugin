@@ -41,7 +41,7 @@ public class DefensicsMockServer {
   private static final String RESULT_PACKAGE_PATH =
       "src/integration-test/resources/com/synopsys/defensics/jenkins/test/result-package.zip";
 
-  private static final String EXPECTED_USER_AGENT_REGEX = "Defensics-Jenkins-Plugin/.*";
+  private static final String EXPECTED_USER_AGENT_REGEX = "Defensics-Jenkins-Plugin.*";
   private final String verdict;
   private final RunState endState;
   private final boolean authentication;
@@ -81,6 +81,7 @@ public class DefensicsMockServer {
             request()
                 .withMethod("GET")
                 .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
+                .withHeader(HttpHeaders.AUTHORIZATION, AUTHENTICATION_TOKEN)
                 .withPath("/api/v1/healthcheck"))
         .respond(HttpResponse.response().withBody("{\"healthy\":true}").withStatusCode(200));
   }

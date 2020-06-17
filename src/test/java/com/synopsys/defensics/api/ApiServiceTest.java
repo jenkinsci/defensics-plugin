@@ -22,10 +22,10 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.fail;
 
-import com.synopsys.defensics.DefensicsMockServer;
 import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.RunState;
 import com.synopsys.defensics.client.DefensicsRequestException;
+import com.synopsys.defensics.jenkins.test.utils.DefensicsMockServer;
 import hudson.FilePath;
 import java.io.File;
 import org.junit.AfterClass;

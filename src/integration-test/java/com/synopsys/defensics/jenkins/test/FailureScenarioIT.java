@@ -23,23 +23,19 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
-import com.cloudbees.plugins.credentials.CredentialsProvider;
-import com.cloudbees.plugins.credentials.CredentialsScope;
-import com.cloudbees.plugins.credentials.CredentialsStore;
-import com.cloudbees.plugins.credentials.domains.Domain;
 import com.synopsys.defensics.api.ApiService;
 import com.synopsys.defensics.apiserver.client.DefensicsJsonApiClient;
 import com.synopsys.defensics.apiserver.model.SuiteInstance;
 import com.synopsys.defensics.client.DefensicsRequestException;
 import com.synopsys.defensics.client.UnsafeTlsConfigurator;
 import com.synopsys.defensics.jenkins.result.HtmlReportPublisherTarget.HtmlReportAction;
+import com.synopsys.defensics.jenkins.test.utils.CredentialsUtil;
 import com.synopsys.defensics.jenkins.test.utils.ProjectUtils;
 import htmlpublisher.HtmlPublisherTarget.HTMLAction;
 import hudson.EnvVars;
 import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
-import hudson.util.Secret;
 import io.crnk.client.CrnkClient;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.ResourceRepository;
@@ -50,7 +46,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
-import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -105,15 +100,11 @@ public class FailureScenarioIT {
    */
   private static final boolean API_SERVER_HAS_ENABLED_EXTERNAL_INSTRUMENTATION = false;
 
-  /** API Server authentication token. */
-  private static final String AUTH_TOKEN = "test-token";
-
   /** Used SUT address. */
   private static final String SUT_URI = "http://127.0.0.1:7000";
 
   private static final String NAME = "My Defensics";
   private static final boolean CERTIFICATE_VALIDATION_DISABLED = true;
-  private static final String CREDENTIAL_ID = "test-credential";
   private static final String SETTING_FILE_NAME = "http.testplan";
   private static final String PIPELINE_ERROR_TEXT = "Pipeline found error";
   private String pipelineScript = createPipelineScript(
@@ -122,6 +113,7 @@ public class FailureScenarioIT {
       String.format("--uri %s", SUT_URI)
   );
 
+  private String credentialsId;
   private int initialSuiteInstanceCount = -1;
 
   @Rule
@@ -173,10 +165,12 @@ public class FailureScenarioIT {
     env.put("DEFENSICS_MAX_POLLING_INTERVAL", "1");
     jenkinsRule.jenkins.getGlobalNodeProperties().add(prop);
 
-    setupCredentials();
+    credentialsId = CredentialsUtil.createValidCredentials(jenkinsRule.jenkins);
     project = jenkinsRule.createProject(WorkflowJob.class);
 
-    apiUtils = new ApiUtils(URI.create(API_SERVER_URL).resolve("/api/v1"), AUTH_TOKEN);
+    apiUtils = new ApiUtils(
+        URI.create(API_SERVER_URL).resolve("/api/v1"),
+        CredentialsUtil.VALID_TOKEN);
   }
 
   /**
@@ -315,7 +309,7 @@ public class FailureScenarioIT {
         NAME,
         API_SERVER_URL,
         CERTIFICATE_VALIDATION_DISABLED,
-        CREDENTIAL_ID,
+        credentialsId,
         SETTING_FILE_NAME);
 
     project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
@@ -348,7 +342,7 @@ public class FailureScenarioIT {
         NAME,
         API_SERVER_URL,
         CERTIFICATE_VALIDATION_DISABLED,
-        CREDENTIAL_ID,
+        credentialsId,
         SETTING_FILE_NAME);
 
     project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
@@ -380,7 +374,7 @@ public class FailureScenarioIT {
         NAME,
         API_SERVER_URL,
         CERTIFICATE_VALIDATION_DISABLED,
-        CREDENTIAL_ID,
+        credentialsId,
         SETTING_FILE_NAME);
 
     project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
@@ -412,7 +406,7 @@ public class FailureScenarioIT {
         NAME,
         API_SERVER_URL,
         CERTIFICATE_VALIDATION_DISABLED,
-        CREDENTIAL_ID,
+        credentialsId,
         SETTING_FILE_NAME);
 
     project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
@@ -444,7 +438,7 @@ public class FailureScenarioIT {
     );
     final ApiService apiService = new ApiService(
         API_SERVER_URL,
-        AUTH_TOKEN,
+        CredentialsUtil.VALID_TOKEN,
         false
     );
 
@@ -474,7 +468,7 @@ public class FailureScenarioIT {
     final boolean disableCertValidation = true;
     final ApiService apiService = new ApiService(
         API_SERVER_URL,
-        AUTH_TOKEN,
+        CredentialsUtil.VALID_TOKEN,
         disableCertValidation
     );
 
@@ -499,25 +493,9 @@ public class FailureScenarioIT {
         project,
         NAME,
         API_SERVER_URL,
-        true, CREDENTIAL_ID,
+        true, credentialsId,
         SETTING_FILE_NAME
     );
-  }
-
-  /**
-   * Set up common credentials into Jenkins.
-   * @throws IOException
-   */
-  private void setupCredentials() throws IOException {
-    CredentialsStore store = CredentialsProvider.lookupStores(jenkinsRule.jenkins)
-        .iterator()
-        .next();
-    StringCredentialsImpl credential = new StringCredentialsImpl(
-        CredentialsScope.GLOBAL,
-        CREDENTIAL_ID,
-        "Test Secret Text",
-        Secret.fromString(AUTH_TOKEN));
-    store.addCredentials(Domain.global(), credential);
   }
 
   private boolean logHas(WorkflowRun run, String s) throws IOException {

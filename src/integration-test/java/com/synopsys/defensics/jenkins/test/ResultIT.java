@@ -31,6 +31,7 @@ import com.synopsys.defensics.apiserver.model.RunState;
 import com.synopsys.defensics.jenkins.result.HtmlReportPublisherTarget.HtmlReportAction;
 import com.synopsys.defensics.jenkins.result.ResultPublisher;
 import com.synopsys.defensics.jenkins.result.history.ProjectHistoryAction;
+import com.synopsys.defensics.jenkins.test.utils.CredentialsUtil;
 import com.synopsys.defensics.jenkins.test.utils.DefensicsMockServer;
 import com.synopsys.defensics.jenkins.test.utils.ProjectUtils;
 import hudson.EnvVars;
@@ -53,15 +54,16 @@ public class ResultIT {
   public static final String NAME = "My Defensics";
   public static final String URL = "http://localhost:1080/";
   public static final boolean CERTIFICATE_VALIDATION_DISABLED = false;
-  public static final String CREDENTIALSID = "";
   public static final String TESTPLAN_NAME = "http.testplan";
   private static ClientAndServer mockServer;
   @Rule
   public JenkinsRule jenkinsRule = new JenkinsRule();
   private FreeStyleProject project;
+  private String credentialsId;
 
   @Before
   public void setup() throws Exception {
+    credentialsId = CredentialsUtil.createValidCredentials(jenkinsRule.jenkins);
     project = jenkinsRule.createFreeStyleProject();
     ProjectUtils.setupProject(
         jenkinsRule,
@@ -69,7 +71,7 @@ public class ResultIT {
         NAME,
         URL,
         CERTIFICATE_VALIDATION_DISABLED,
-        CREDENTIALSID,
+        credentialsId,
         TESTPLAN_NAME);
     ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME, false);
 
@@ -161,10 +163,8 @@ public class ResultIT {
   private void setupSecondDefensics(String setFileName) throws Exception {
     // Set up second build step with different Defensics configuration
     String name2 = "My Other Defensics";
-    String url2 = "http://localhost:1080/";
-    String credentialsId2 = "";
-    ProjectUtils.addInstanceConfiguration(jenkinsRule, name2, url2,
-        true, credentialsId2);
+    ProjectUtils.addInstanceConfiguration(jenkinsRule, name2, URL,
+        true, credentialsId);
     ProjectUtils.addBuildStep(project, name2, setFileName, false);
     ProjectUtils.copyFileToWorkspace(
         jenkinsRule,

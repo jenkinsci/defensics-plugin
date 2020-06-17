@@ -21,14 +21,11 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
-import com.cloudbees.plugins.credentials.CredentialsScope;
 import com.cloudbees.plugins.credentials.CredentialsStore;
-import com.cloudbees.plugins.credentials.domains.Domain;
 import com.synopsys.defensics.jenkins.configuration.AuthenticationTokenProvider;
-import hudson.util.Secret;
+import com.synopsys.defensics.jenkins.test.utils.CredentialsUtil;
 import java.io.IOException;
 import java.net.URL;
-import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -51,16 +48,9 @@ public class AuthenticationTokenIT {
 
   @Test
   public void testCredential() throws IOException {
-    StringCredentialsImpl credential = new StringCredentialsImpl(
-        CredentialsScope.GLOBAL,
-        CREDENTIAL_ID,
-        "Test Secret Text",
-        Secret.fromString(SECRET_TOKEN));
-
-    store.addCredentials(Domain.global(), credential);
+    String credentialsId = CredentialsUtil.createValidCredentials(jenkinsRule.jenkins);
     assertThat(AuthenticationTokenProvider.getAuthenticationToken(
-        new URL("http://www.doesnt.matter"), CREDENTIAL_ID), is(equalTo(SECRET_TOKEN)));
-
-
+        new URL("http://www.doesnt.matter"), credentialsId),
+        is(equalTo(CredentialsUtil.VALID_TOKEN)));
   }
 }

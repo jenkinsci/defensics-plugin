@@ -23,11 +23,13 @@ import static org.hamcrest.Matchers.startsWith;
 
 import com.synopsys.defensics.apiserver.model.RunState;
 import com.synopsys.defensics.jenkins.configuration.InstanceConfiguration.DefensicsInstanceConfigurationDescriptor;
+import com.synopsys.defensics.jenkins.test.utils.CredentialsUtil;
 import com.synopsys.defensics.jenkins.test.utils.DefensicsMockServer;
 import hudson.model.Item;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
 import hudson.util.ListBoxModel;
+import java.io.IOException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -40,17 +42,18 @@ public class InstanceConfigurationIT {
   private static final String NAME = "My Defensics";
   private static final String URL = "http://localhost:1080";
   private static final boolean CERTIFICATE_VALIDATION_DISABLED = false;
-  private static final String CREDENTIALS_ID = "test-credentials";
 
   @Rule
   public JenkinsRule jenkinsRule = new JenkinsRule();
 
   private DefensicsInstanceConfigurationDescriptor defensicsInstanceConfigurationDescriptor;
+  private String credentialsId;
 
   @Before
-  public void setup() {
+  public void setup() throws IOException {
     defensicsInstanceConfigurationDescriptor =
         jenkinsRule.get(DefensicsInstanceConfigurationDescriptor.class);
+    credentialsId = CredentialsUtil.createValidCredentials(jenkinsRule.jenkins);
   }
 
   @Test
@@ -91,9 +94,9 @@ public class InstanceConfigurationIT {
   public void testCredentialItem() {
     Item item = Mockito.mock(Item.class);
     ListBoxModel listBoxModel =
-        defensicsInstanceConfigurationDescriptor.doFillCredentialsIdItems(item, CREDENTIALS_ID);
+        defensicsInstanceConfigurationDescriptor.doFillCredentialsIdItems(item, credentialsId);
 
-    assertThat(listBoxModel.get(0).value, is(equalTo(CREDENTIALS_ID)));
+    assertThat(listBoxModel.get(0).value, is(equalTo(credentialsId)));
   }
 
   @Test
@@ -105,7 +108,7 @@ public class InstanceConfigurationIT {
 
     try {
       FormValidation result = defensicsInstanceConfigurationDescriptor.doTestConnection(
-          URL, CERTIFICATE_VALIDATION_DISABLED, "");
+          URL, CERTIFICATE_VALIDATION_DISABLED, credentialsId);
 
       assertThat(result.kind, is(equalTo(Kind.OK)));
     } finally {

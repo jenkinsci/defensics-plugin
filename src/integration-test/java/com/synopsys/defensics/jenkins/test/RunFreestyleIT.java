@@ -22,12 +22,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
-import com.cloudbees.plugins.credentials.CredentialsProvider;
-import com.cloudbees.plugins.credentials.CredentialsScope;
-import com.cloudbees.plugins.credentials.CredentialsStore;
-import com.cloudbees.plugins.credentials.domains.Domain;
 import com.synopsys.defensics.apiserver.model.RunState;
 import com.synopsys.defensics.jenkins.result.HtmlReportPublisherTarget.HtmlReportAction;
+import com.synopsys.defensics.jenkins.test.utils.CredentialsUtil;
 import com.synopsys.defensics.jenkins.test.utils.DefensicsMockServer;
 import com.synopsys.defensics.jenkins.test.utils.ProjectUtils;
 import htmlpublisher.HtmlPublisherTarget.HTMLAction;
@@ -37,8 +34,6 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
-import hudson.util.Secret;
-import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -52,26 +47,18 @@ public class RunFreestyleIT {
   static final String URL = "http://localhost:1080/";
   static final String TESTPLAN_NAME = "http.testplan";
   private static final boolean CERTIFICATE_VALIDATION_DISABLED = false;
-  private static final String CREDENTIAL_ID = "test-credential";
-  private static final String AUTH_TOKEN = "test-token";
+
   @Rule
   public JenkinsRule jenkinsRule = new JenkinsRule();
 
   private FreeStyleProject project;
   private ClientAndServer mockServer;
+  private String credentialsId;
 
   @Before
   public void setup() throws Exception {
     project = jenkinsRule.createFreeStyleProject();
-    CredentialsStore store = CredentialsProvider.lookupStores(jenkinsRule.jenkins)
-        .iterator()
-        .next();
-    StringCredentialsImpl credential = new StringCredentialsImpl(
-        CredentialsScope.GLOBAL,
-        CREDENTIAL_ID,
-        "Test Secret Text",
-        Secret.fromString(AUTH_TOKEN));
-    store.addCredentials(Domain.global(), credential);
+    credentialsId = CredentialsUtil.createValidCredentials(jenkinsRule.jenkins);
 
     EnvironmentVariablesNodeProperty prop = new EnvironmentVariablesNodeProperty();
     EnvVars env = prop.getEnvVars();
@@ -95,7 +82,7 @@ public class RunFreestyleIT {
         NAME,
         URL,
         CERTIFICATE_VALIDATION_DISABLED,
-        CREDENTIAL_ID,
+        credentialsId,
         TESTPLAN_NAME);
     ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME, false);
 
@@ -119,7 +106,7 @@ public class RunFreestyleIT {
         NAME,
         URL,
         CERTIFICATE_VALIDATION_DISABLED,
-        CREDENTIAL_ID,
+        credentialsId,
         TESTPLAN_NAME);
     ProjectUtils.addPostBuildStep(project, NAME, TESTPLAN_NAME, false);
 
@@ -143,7 +130,7 @@ public class RunFreestyleIT {
         NAME,
         URL,
         CERTIFICATE_VALIDATION_DISABLED,
-        CREDENTIAL_ID,
+        credentialsId,
         TESTPLAN_NAME);
     ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME, false);
 
@@ -171,7 +158,7 @@ public class RunFreestyleIT {
         NAME,
         URL,
         CERTIFICATE_VALIDATION_DISABLED,
-        CREDENTIAL_ID,
+        credentialsId,
         TESTPLAN_NAME);
     ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME, false);
 
@@ -202,7 +189,7 @@ public class RunFreestyleIT {
         NAME,
         URL,
         CERTIFICATE_VALIDATION_DISABLED,
-        CREDENTIAL_ID,
+        credentialsId,
         TESTPLAN_NAME);
     ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME, false);
 
@@ -227,7 +214,7 @@ public class RunFreestyleIT {
         NAME,
         URL,
         CERTIFICATE_VALIDATION_DISABLED,
-        CREDENTIAL_ID,
+        credentialsId,
         TESTPLAN_NAME);
     ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME, false);
 

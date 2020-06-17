@@ -22,13 +22,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
-import com.cloudbees.plugins.credentials.CredentialsProvider;
-import com.cloudbees.plugins.credentials.CredentialsScope;
-import com.cloudbees.plugins.credentials.CredentialsStore;
-import com.cloudbees.plugins.credentials.domains.Domain;
-import com.synopsys.defensics.api.ApiService;
 import com.synopsys.defensics.apiserver.model.RunState;
 import com.synopsys.defensics.jenkins.result.HtmlReportPublisherTarget.HtmlReportAction;
+import com.synopsys.defensics.jenkins.test.utils.CredentialsUtil;
 import com.synopsys.defensics.jenkins.test.utils.DefensicsMockServer;
 import com.synopsys.defensics.jenkins.test.utils.ProjectUtils;
 import htmlpublisher.HtmlPublisherTarget.HTMLAction;
@@ -36,8 +32,6 @@ import hudson.EnvVars;
 import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
-import hudson.util.Secret;
-import org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -53,8 +47,6 @@ public class RunPipelineIT {
   private static final String NAME = "My Defensics";
   private static final String URL = "http://localhost:1080/";
   private static final boolean CERTIFICATE_VALIDATION_DISABLED = false;
-  private static final String CREDENTIAL_ID = "test-credential";
-  private static final String AUTH_TOKEN = "test-token";
   private static final String SETTING_FILE_NAME = "http_1000.set";
   private static final String PIPELINE_ERROR_TEXT = "Pipeline found error";
   private static final String PIPELINE_SCRIPT =
@@ -65,19 +57,12 @@ public class RunPipelineIT {
   @Rule
   public JenkinsRule jenkinsRule = new JenkinsRule();
   private WorkflowJob project;
+  private String credentialsId;
 
   @Before
   public void setup() throws Exception {
     project = jenkinsRule.createProject(WorkflowJob.class);
-    CredentialsStore store = CredentialsProvider.lookupStores(jenkinsRule.jenkins)
-        .iterator()
-        .next();
-    StringCredentialsImpl credential = new StringCredentialsImpl(
-        CredentialsScope.GLOBAL,
-        CREDENTIAL_ID,
-        "Test Secret Text",
-        Secret.fromString(AUTH_TOKEN));
-    store.addCredentials(Domain.global(), credential);
+    credentialsId = CredentialsUtil.createValidCredentials(jenkinsRule.jenkins);
 
     EnvironmentVariablesNodeProperty prop = new EnvironmentVariablesNodeProperty();
     EnvVars env = prop.getEnvVars();
@@ -96,21 +81,13 @@ public class RunPipelineIT {
     mockServer = ClientAndServer.startClientAndServer(1080);
     DefensicsMockServer mockServer = new DefensicsMockServer(true, "PASS", RunState.COMPLETED);
     mockServer.initServer(RunPipelineIT.mockServer);
-    CredentialsStore store = CredentialsProvider.lookupStores(jenkinsRule.jenkins)
-        .iterator()
-        .next();
-    StringCredentialsImpl credential = new StringCredentialsImpl(
-        CredentialsScope.GLOBAL,
-        CREDENTIAL_ID,
-        "Test Secret Text",
-        Secret.fromString(AUTH_TOKEN));
-    store.addCredentials(Domain.global(), credential);
+
     ProjectUtils.setupProject(
         jenkinsRule,
         project,
         NAME,
         URL,
-        true, CREDENTIAL_ID,
+        true, credentialsId,
         SETTING_FILE_NAME);
     WorkflowRun run = project.scheduleBuild2(0).get();
 
@@ -134,7 +111,7 @@ public class RunPipelineIT {
         project,
         NAME,
         URL,
-        CERTIFICATE_VALIDATION_DISABLED, CREDENTIAL_ID,
+        CERTIFICATE_VALIDATION_DISABLED, credentialsId,
         SETTING_FILE_NAME);
 
     WorkflowRun run = project.scheduleBuild2(0).get();
@@ -162,7 +139,7 @@ public class RunPipelineIT {
         NAME,
         URL,
         CERTIFICATE_VALIDATION_DISABLED,
-        CREDENTIAL_ID,
+        credentialsId,
         SETTING_FILE_NAME);
 
     project.setDefinition(new CpsFlowDefinition(PIPELINE_SCRIPT, true));
@@ -197,7 +174,7 @@ public class RunPipelineIT {
         NAME,
         URL,
         CERTIFICATE_VALIDATION_DISABLED,
-        CREDENTIAL_ID,
+        credentialsId,
         SETTING_FILE_NAME);
 
     WorkflowRun run = project.scheduleBuild2(0).get();

@@ -79,6 +79,11 @@ To install the plugin manually to a Jenkins:
 
 ## Release notes
 
+### Version 1.0.2
+- Show more information for runs in error state
+- Improve run stopping in pipeline jobs
+- Fix internal links within User Guide
+
 ### Version 1.0.1
 - Fix links to User Guide
 

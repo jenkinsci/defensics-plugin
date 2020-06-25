@@ -112,7 +112,6 @@ public class FuzzBuildStep extends Builder implements SimpleBuildStep {
   }
 
   @Extension
-  @Symbol("defensics")
   public static final class FuzzBuildStepDescriptor extends BuildStepDescriptor<Builder>
       implements ExtensionPoint, FuzzStepDescriptor {
 

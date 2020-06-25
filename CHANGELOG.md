@@ -4,6 +4,8 @@
 ### Fixed
 - Fix Jenkins log warning `null not assignable to interface hudson.model.Action`
 - Update plugin test dependencies
+- Fix IllegalStateExceptions caused by multiple onSuccess/onComplete calls on newer workflow plugin
+  versions
 
 ## v1.0.2 - 2020-06-17
 ### Fixed

@@ -30,6 +30,8 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.Run;
 import hudson.model.TaskListener;
+import hudson.util.FormValidation;
+import hudson.util.ListBoxModel;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -308,6 +310,32 @@ public class FuzzPipelineStep extends Step {
 
     public void setFuzzJobRunner(FuzzJobRunner fuzzJobRunner) {
       this.fuzzJobRunner = fuzzJobRunner;
+    }
+
+    /**
+     * This method is called by Jenkins to get the options for selecting Defensics instance for a
+     * job.
+     *
+     * @return The items to present in the select.
+     */
+    public ListBoxModel doFillDefensicsInstanceItems() {
+      return pluginConfiguration.doFillDefensicsInstanceNameItems();
+    }
+
+    /**
+     * Validation method for settings file path in job configuration. Called by Jenkins.
+     *
+     * @param configurationFilePath The settings file path user has entered in the form control.
+     * @return Ok if the file path is set and has a valid extension, otherwise Error.
+     */
+    public FormValidation doCheckConfigurationFilePath(
+        @QueryParameter final String configurationFilePath) {
+      return stepConfigurationValidator.validateSettingFilePath(configurationFilePath);
+    }
+
+    public FormValidation doCheckConfigurationOverrides(
+        @QueryParameter final String configurationOverrides) {
+      return stepConfigurationValidator.validateConfigurationOverrides(configurationOverrides);
     }
   }
 }

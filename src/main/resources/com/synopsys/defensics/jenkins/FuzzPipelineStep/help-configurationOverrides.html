@@ -1,0 +1,11 @@
+<?jelly escape-by-default='true'?>
+<div>
+    <p>Additional test configuration settings that override the settings saved in the test
+        configuration file. This can be useful if, for example, the test target address needs to be
+        set dynamically.</p>
+
+    <p>The available settings are the same as the Defensics command line settings.
+        Each setting should follow the format '--setting-name value'. Multiple settings are
+        separated with spaces.</p>
+    <p>Example for HTTP Server Test Suite: <pre>--uri https://example.com --http-status-filter "1xx 2xx 3xx" </pre></p>
+</div>

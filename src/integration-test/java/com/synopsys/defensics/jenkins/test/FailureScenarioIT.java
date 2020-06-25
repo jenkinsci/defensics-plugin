@@ -461,6 +461,67 @@ public class FailureScenarioIT {
     checkApiServerResourcesAreCleaned();
   }
 
+  @Test
+  public void testParallelJobStop() throws Exception {
+    final String override = String.format("--uri %s", SUT_URI);
+    String script = String.join("\n", Arrays.asList(
+        "node {",
+        "  stage('Build') {",
+        "     parallel(",
+        "      job1: {",
+        "         defensics(",
+        "           defensicsInstance: '" + NAME + "',",
+        "           configurationFilePath: '" + SETTING_FILE_NAME + "',",
+        "           configurationOverrides: '" + override + "',",
+        "         )",
+        "      }, job2: {",
+        "         defensics(",
+        "           defensicsInstance: '" + NAME + "',",
+        "           configurationFilePath: '" + SETTING_FILE_NAME + "',",
+        "           configurationOverrides: '" + override + "'",
+        "         )",
+        "      }, job3: {",
+        "         defensics(",
+        "           defensicsInstance: '" + NAME + "',",
+        "           configurationFilePath: '" + SETTING_FILE_NAME + "',",
+        "           configurationOverrides: '" + override + "'",
+        "         )",
+        "      })",
+        "  }",
+        "}"
+      )
+    );
+    initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
+    ProjectUtils.setupProject(
+        jenkinsRule,
+        project,
+        NAME,
+        API_SERVER_URL,
+        CERTIFICATE_VALIDATION_DISABLED,
+        credentialsId,
+        SETTING_FILE_NAME);
+
+    project.setDefinition(new CpsFlowDefinition(script, true));
+
+    // Schedule build
+    final QueueTaskFuture<WorkflowRun> runFuture = project.scheduleBuild2(0);
+    Thread.sleep(100);
+
+    final WorkflowRun lastBuild = project.getLastBuild();
+    triggerAbortOnLogLine(runFuture, lastBuild, "Loading suite");
+
+    WorkflowRun run = runFuture.get();
+
+    final long suiteUnloadCount = run.getLog(999)
+        .stream()
+        .filter(line -> line.contains("Unloaded suite and deleted the run from API server"))
+        .count();
+
+    assertThat(suiteUnloadCount, is(3L));
+    checkRunAbortedCleanly(run);
+    checkApiServerResourcesAreCleaned();
+  }
+
   /**
    * Check that requests failing with TLS configuration mention that.
    */

@@ -34,7 +34,21 @@ public class Logger {
   }
 
   public void println(String message) {
-    listener.getLogger().println("[Defensics] " + message);
+    // The printstream used by logger doesn't print anything if thread interrupted flag
+    // is on, resulting in cases where the cleanup part of the job is not logged even though
+    // the job is still running.
+    //
+    // Workaround this by checking/clearing interrupted flag and resetting after print.
+    // There's likely better ways to handle this, but not yet known. Change if this proves to be
+    // problematic.
+    final boolean interrupted = Thread.interrupted();
+    try {
+      listener.getLogger().println("[Defensics] " + message);
+    } finally {
+      if (interrupted) {
+        Thread.currentThread().interrupt();
+      }
+    }
   }
 
   public void logError(String message) {

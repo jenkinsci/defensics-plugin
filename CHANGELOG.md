@@ -3,6 +3,7 @@
 ## [Unreleased]
 ### Fixed
 - Fix Jenkins log warning `null not assignable to interface hudson.model.Action`
+- Update plugin test dependencies
 
 ## v1.0.2 - 2020-06-17
 ### Fixed

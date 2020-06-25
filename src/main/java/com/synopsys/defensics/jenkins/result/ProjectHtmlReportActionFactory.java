@@ -26,12 +26,15 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.annotation.Nonnull;
 import jenkins.model.TransientActionFactory;
+import org.kohsuke.accmod.Restricted;
+import org.kohsuke.accmod.restrictions.DoNotUse;
 
 /**
  * This class provides a link to the left sidebar menu for freestyle projects. For pipeline
  * projects, this is handled by WorkflowActionsFactory calling {@link
  * HtmlReportPublisherTarget#getProjectAction(AbstractItem)}.
  */
+@Restricted(DoNotUse.class)
 @Extension
 public class ProjectHtmlReportActionFactory extends TransientActionFactory<Job> {
 
@@ -41,8 +44,9 @@ public class ProjectHtmlReportActionFactory extends TransientActionFactory<Job> 
   }
 
   @Override
+  @Nonnull
   public Collection<? extends Action> createFor(@Nonnull Job project) {
-    Run lastCompletedBuild = project.getLastCompletedBuild();
+    final Run<?,?> lastCompletedBuild = project.getLastCompletedBuild();
     if (lastCompletedBuild != null) {
       return lastCompletedBuild.getActions(HtmlReportAction.class);
     } else {

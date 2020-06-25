@@ -82,19 +82,16 @@ public final class HtmlReportPublisherTarget extends HtmlPublisherTarget {
   }
 
   /**
-   * This is overridden to return null, to avoid
-   * {@link htmlpublisher.workflow.WorkflowActionsFactory} creating a report link on project level.
-   * It would do it incorrectly for our purposes because: 1) it has the wrong icon for the report
-   * link (fixable) 2) it only shows the link for the latest successful build, and for us the link
-   * is especially important if there are fuzz test failures (did not find a way around this, other
-   * than returning null here and handling it in our own actionfactory,
-   * {@link ProjectHtmlReportActionFactory}.
-   *
+   * This is overridden to return an empty Action to avoid
+   * {@link htmlpublisher.workflow.WorkflowActionsFactory}
+   * creating a duplicate report link on project level.
+   * This is called for Pipeline projects.
+   * See {@link ProjectHtmlReportActionFactory} for Freestyle projects.
    * {@inheritDoc}
    */
   @Override
   public Action getProjectAction(AbstractItem item) {
-    return null;
+    return EmptyAction.getInstance();
   }
 
   /**
@@ -109,7 +106,7 @@ public final class HtmlReportPublisherTarget extends HtmlPublisherTarget {
    * {@link HtmlReportAction}.
    */
   public void customizeActionForDefensics(Run<?, ?> run) {
-    List<HTMLBuildAction> actions = run.getActions(HTMLBuildAction.class);
+    final List<HTMLBuildAction> actions = run.getActions(HTMLBuildAction.class);
     run.removeAction(actions.stream().filter(
         // Yes, we want to use == here instead of equals, because we want the exact same instance.
         // Equals would give true when report names are same even if the target instance is

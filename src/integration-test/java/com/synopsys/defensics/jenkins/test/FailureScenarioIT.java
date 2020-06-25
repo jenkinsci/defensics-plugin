@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
@@ -327,6 +328,40 @@ public class FailureScenarioIT {
 
     checkRunAbortedCleanly(run);
     checkNoReport(run);
+    checkApiServerResourcesAreCleaned();
+  }
+
+  /**
+   * Test that job abort is handled cleanly when suite is being loaded
+   */
+  @Test
+  public void testAbortJob_onFuzzSuiteLoading() throws Exception {
+    initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
+    ProjectUtils.setupProject(
+        jenkinsRule,
+        project,
+        NAME,
+        API_SERVER_URL,
+        CERTIFICATE_VALIDATION_DISABLED,
+        credentialsId,
+        SETTING_FILE_NAME);
+
+    project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
+
+    // Schedule build
+    final QueueTaskFuture<WorkflowRun> runFuture = project.scheduleBuild2(0);
+    Thread.sleep(100);
+
+    final WorkflowRun lastBuild = project.getLastBuild();
+    triggerAbortOnLogLine(runFuture, lastBuild, "Loading suite");
+
+    WorkflowRun run = runFuture.get();
+    Thread.sleep(1000);
+
+    dumpLogs(run);
+
+    checkNoReport(run);
+    checkRunAbortedCleanly(run);
     checkApiServerResourcesAreCleaned();
   }
 

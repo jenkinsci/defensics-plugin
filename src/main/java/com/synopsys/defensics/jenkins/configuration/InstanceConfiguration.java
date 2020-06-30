@@ -229,7 +229,7 @@ public class InstanceConfiguration extends
         return FormValidation.ok("Success");
       } catch (AuthenticationTokenNotFoundException e) {
         return FormValidation.error(e.getMessage());
-      } catch (InterruptedException| IOException | DefensicsRequestException e) {
+      } catch (InterruptedException | IOException | DefensicsRequestException e) {
         return FormValidation.error("Failed to connect to server: " + e.getMessage());
       }
     }

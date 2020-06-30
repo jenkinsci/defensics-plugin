@@ -16,6 +16,8 @@
 
 package com.synopsys.defensics.jenkins;
 
+import static com.synopsys.defensics.jenkins.test.utils.Constants.CONFIGURATION_OVERRIDES;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -28,8 +30,6 @@ import org.junit.Test;
 public class FuzzPostBuildStepTest {
 
   private static final String SETTING_FILE_PATH = "my_plan.set";
-  private static final String NAME = "My Defensics";
-  private static final String CONFIGURATION_OVERRIDES = "--test.setting=thisIsFakeSetting";
 
   private FuzzPostBuildStep postBuildStep;
 

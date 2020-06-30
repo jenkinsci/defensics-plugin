@@ -16,6 +16,10 @@
 
 package com.synopsys.defensics.jenkins.test;
 
+import static com.synopsys.defensics.jenkins.test.utils.Constants.CERTIFICATE_VALIDATION_ENABLED;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.LOCAL_URL;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.NAME;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.SETTING_FILE_PATH;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -51,10 +55,6 @@ import org.mockserver.integration.ClientAndServer;
 
 public class ResultIT {
 
-  public static final String NAME = "My Defensics";
-  public static final String URL = "http://localhost:1080/";
-  public static final boolean CERTIFICATE_VALIDATION_DISABLED = false;
-  public static final String TESTPLAN_NAME = "http.testplan";
   private static ClientAndServer mockServer;
   @Rule
   public JenkinsRule jenkinsRule = new JenkinsRule();
@@ -69,11 +69,11 @@ public class ResultIT {
         jenkinsRule,
         project,
         NAME,
-        URL,
-        CERTIFICATE_VALIDATION_DISABLED,
+        LOCAL_URL,
+        CERTIFICATE_VALIDATION_ENABLED,
         credentialsId,
-        TESTPLAN_NAME);
-    ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME, false);
+        SETTING_FILE_PATH);
+    ProjectUtils.addBuildStep(project, NAME, SETTING_FILE_PATH, false);
 
     EnvironmentVariablesNodeProperty prop = new EnvironmentVariablesNodeProperty();
     EnvVars env = prop.getEnvVars();
@@ -93,18 +93,16 @@ public class ResultIT {
     mockServer.initServer(ResultIT.mockServer);
 
     try (JenkinsRule.WebClient webClient = jenkinsRule.createWebClient()) {
-      List<String> expectedTabNames = Collections.singletonList(TESTPLAN_NAME);
+      List<String> expectedTabNames = Collections.singletonList(SETTING_FILE_PATH);
 
       FreeStyleBuild run = project.scheduleBuild2(0).get();
 
       assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
       doAssertionsOnReport(
           webClient.getPage(project),
-          ResultPublisher.REPORT_NAME,
           expectedTabNames);
       doAssertionsOnReport(
           webClient.getPage(run),
-          ResultPublisher.REPORT_NAME,
           expectedTabNames);
     }
   }
@@ -116,18 +114,16 @@ public class ResultIT {
     mockServer.initServer(ResultIT.mockServer);
 
     try (JenkinsRule.WebClient webClient = jenkinsRule.createWebClient()) {
-      List<String> expectedTabNames = Collections.singletonList(TESTPLAN_NAME);
+      List<String> expectedTabNames = Collections.singletonList(SETTING_FILE_PATH);
 
       FreeStyleBuild run = project.scheduleBuild2(0).get();
 
       assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
       doAssertionsOnReport(
           webClient.getPage(project),
-          ResultPublisher.REPORT_NAME,
           expectedTabNames);
       doAssertionsOnReport(
           webClient.getPage(run),
-          ResultPublisher.REPORT_NAME,
           expectedTabNames);
     }
   }
@@ -141,8 +137,8 @@ public class ResultIT {
     String setFileName = "http_1000.set";
     setupSecondDefensics(setFileName);
 
-    List<String> expectedTabNames = new ArrayList();
-    expectedTabNames.add(TESTPLAN_NAME);
+    List<String> expectedTabNames = new ArrayList<>();
+    expectedTabNames.add(SETTING_FILE_PATH);
     expectedTabNames.add(setFileName);
 
     try (JenkinsRule.WebClient webClient = jenkinsRule.createWebClient()) {
@@ -151,11 +147,9 @@ public class ResultIT {
       assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
       doAssertionsOnReport(
           webClient.getPage(project),
-          ResultPublisher.REPORT_NAME,
           expectedTabNames);
       doAssertionsOnReport(
           webClient.getPage(run),
-          ResultPublisher.REPORT_NAME,
           expectedTabNames);
     }
   }
@@ -163,7 +157,7 @@ public class ResultIT {
   private void setupSecondDefensics(String setFileName) throws Exception {
     // Set up second build step with different Defensics configuration
     String name2 = "My Other Defensics";
-    ProjectUtils.addInstanceConfiguration(jenkinsRule, name2, URL,
+    ProjectUtils.addInstanceConfiguration(jenkinsRule, name2, LOCAL_URL,
         true, credentialsId);
     ProjectUtils.addBuildStep(project, name2, setFileName, false);
     ProjectUtils.copyFileToWorkspace(
@@ -172,10 +166,9 @@ public class ResultIT {
         setFileName);
   }
 
-  private void doAssertionsOnReport(
-      HtmlPage page, String reportLinkText, List<String> expectedTabNames)
+  private void doAssertionsOnReport(HtmlPage page, List<String> expectedTabNames)
       throws IOException {
-    HtmlAnchor resultLink = page.getAnchorByText(reportLinkText);
+    HtmlAnchor resultLink = page.getAnchorByText(ResultPublisher.REPORT_NAME);
     Page resultPage = resultLink.openLinkInNewWindow();
 
     assertThat(resultPage.isHtmlPage(), is(true));
@@ -279,7 +272,7 @@ public class ResultIT {
     DefensicsMockServer mockServer = new DefensicsMockServer(false, "PASS", RunState.COMPLETED);
     mockServer.initServer(ResultIT.mockServer);
 
-    ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME, true);
+    ProjectUtils.addBuildStep(project, NAME, SETTING_FILE_PATH, true);
 
     try (JenkinsRule.WebClient webClient = jenkinsRule.createWebClient()) {
       final FreeStyleBuild build = project.scheduleBuild2(0).get();
@@ -297,8 +290,8 @@ public class ResultIT {
     DefensicsMockServer mockServer = new DefensicsMockServer(false, "PASS", RunState.COMPLETED);
     mockServer.initServer(ResultIT.mockServer);
 
-    ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME, true);
-    ProjectUtils.addPostBuildStep(project, NAME, TESTPLAN_NAME, true);
+    ProjectUtils.addBuildStep(project, NAME, SETTING_FILE_PATH, true);
+    ProjectUtils.addPostBuildStep(project, NAME, SETTING_FILE_PATH, true);
 
     try (JenkinsRule.WebClient webClient = jenkinsRule.createWebClient()) {
       final FreeStyleBuild build = project.scheduleBuild2(0).get();

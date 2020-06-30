@@ -16,6 +16,10 @@
 
 package com.synopsys.defensics.jenkins.test;
 
+import static com.synopsys.defensics.jenkins.test.utils.Constants.CERTIFICATE_VALIDATION_ENABLED;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.LOCAL_URL;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.NAME;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.PIPELINE_ERROR_TEXT;
 import static java.lang.Thread.sleep;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -44,11 +48,7 @@ import org.mockserver.integration.ClientAndServer;
 
 public class RunPipelineIT {
 
-  private static final String NAME = "My Defensics";
-  private static final String URL = "http://localhost:1080/";
-  private static final boolean CERTIFICATE_VALIDATION_DISABLED = false;
   private static final String SETTING_FILE_NAME = "http_1000.set";
-  private static final String PIPELINE_ERROR_TEXT = "Pipeline found error";
   private static final String PIPELINE_SCRIPT =
       "node { stage('Build') { try { defensics(defensicsInstance:'" + NAME
           + "', configurationFilePath:'" + SETTING_FILE_NAME + "')"
@@ -86,7 +86,7 @@ public class RunPipelineIT {
         jenkinsRule,
         project,
         NAME,
-        URL,
+        LOCAL_URL,
         true, credentialsId,
         SETTING_FILE_NAME);
     WorkflowRun run = project.scheduleBuild2(0).get();
@@ -110,8 +110,8 @@ public class RunPipelineIT {
         jenkinsRule,
         project,
         NAME,
-        URL,
-        CERTIFICATE_VALIDATION_DISABLED, credentialsId,
+        LOCAL_URL,
+        CERTIFICATE_VALIDATION_ENABLED, credentialsId,
         SETTING_FILE_NAME);
 
     WorkflowRun run = project.scheduleBuild2(0).get();
@@ -137,8 +137,8 @@ public class RunPipelineIT {
         jenkinsRule,
         project,
         NAME,
-        URL,
-        CERTIFICATE_VALIDATION_DISABLED,
+        LOCAL_URL,
+        CERTIFICATE_VALIDATION_ENABLED,
         credentialsId,
         SETTING_FILE_NAME);
 
@@ -172,8 +172,8 @@ public class RunPipelineIT {
         jenkinsRule,
         project,
         NAME,
-        URL,
-        CERTIFICATE_VALIDATION_DISABLED,
+        LOCAL_URL,
+        CERTIFICATE_VALIDATION_ENABLED,
         credentialsId,
         SETTING_FILE_NAME);
 

@@ -33,7 +33,7 @@ import org.kohsuke.stapler.StaplerResponse;
 public class ProjectHistoryAction implements Action {
 
   public static final int MAX_BUILDS = 20;
-  private List<Run> runs;
+  private List<Run<?,?>> runs;
 
   /**
    * Constructor.
@@ -41,10 +41,10 @@ public class ProjectHistoryAction implements Action {
    * @param job The job for which this action should be created. The failures of the job's each run
    *            are used to create the trend chart.
    */
-  public ProjectHistoryAction(Job job) {
+  public ProjectHistoryAction(Job<?,?> job) {
     runs = new ArrayList<>();
-    Run run = job.getLastCompletedBuild();
-    Boolean hasDefensicsResults = false;
+    Run<?,?> run = job.getLastCompletedBuild();
+    boolean hasDefensicsResults = false;
     for (int i = 0; i < MAX_BUILDS; i++) {
       if (run == null) {
         break;

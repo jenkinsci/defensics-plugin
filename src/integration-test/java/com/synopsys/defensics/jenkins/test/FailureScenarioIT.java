@@ -16,6 +16,10 @@
 
 package com.synopsys.defensics.jenkins.test;
 
+import static com.synopsys.defensics.jenkins.test.utils.Constants.CERTIFICATE_VALIDATION_DISABLED;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.NAME;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.PIPELINE_ERROR_TEXT;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.SETTING_FILE_PATH;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -104,13 +108,9 @@ public class FailureScenarioIT {
   /** Used SUT address. */
   private static final String SUT_URI = "http://127.0.0.1:7000";
 
-  private static final String NAME = "My Defensics";
-  private static final boolean CERTIFICATE_VALIDATION_DISABLED = true;
-  private static final String SETTING_FILE_NAME = "http.testplan";
-  private static final String PIPELINE_ERROR_TEXT = "Pipeline found error";
   private String pipelineScript = createPipelineScript(
       NAME,
-      SETTING_FILE_NAME,
+      SETTING_FILE_PATH,
       String.format("--uri %s", SUT_URI)
   );
 
@@ -197,7 +197,7 @@ public class FailureScenarioIT {
     final String wrongSutUri = "http://non-routable.invalid:9999";
     pipelineScript = createPipelineScript(
         NAME,
-        SETTING_FILE_NAME,
+        SETTING_FILE_PATH,
         String.format("--uri %s", wrongSutUri)
     );
     initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
@@ -223,7 +223,7 @@ public class FailureScenarioIT {
     final String wrongSutUri = "http://127.0.0.1:9999";
     pipelineScript = createPipelineScript(
         NAME,
-        SETTING_FILE_NAME,
+        SETTING_FILE_PATH,
         String.format("--uri %s", wrongSutUri)
     );
     initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
@@ -278,8 +278,8 @@ public class FailureScenarioIT {
     initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
     final String pipelineScriptDefiningExternalInstrumentation = createPipelineScript(
         NAME,
-        SETTING_FILE_NAME,
-        String.format("--exec-instrument echo 1", SUT_URI)
+        SETTING_FILE_PATH,
+        "--exec-instrument echo 1"
     );
     setupProject(pipelineScriptDefiningExternalInstrumentation);
 
@@ -311,7 +311,7 @@ public class FailureScenarioIT {
         API_SERVER_URL,
         CERTIFICATE_VALIDATION_DISABLED,
         credentialsId,
-        SETTING_FILE_NAME);
+        SETTING_FILE_PATH);
 
     project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
 
@@ -321,7 +321,7 @@ public class FailureScenarioIT {
     Thread.sleep(100);
 
     final WorkflowRun lastBuild = project.getLastBuild();
-    triggerAbortOnLogLine(runFuture, lastBuild, "Creating");
+    triggerAbortOnLogLine(lastBuild, "Creating");
 
     WorkflowRun run = runFuture.get();
     dumpLogs(run);
@@ -344,7 +344,7 @@ public class FailureScenarioIT {
         API_SERVER_URL,
         CERTIFICATE_VALIDATION_DISABLED,
         credentialsId,
-        SETTING_FILE_NAME);
+        SETTING_FILE_PATH);
 
     project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
 
@@ -353,7 +353,7 @@ public class FailureScenarioIT {
     Thread.sleep(100);
 
     final WorkflowRun lastBuild = project.getLastBuild();
-    triggerAbortOnLogLine(runFuture, lastBuild, "Loading suite");
+    triggerAbortOnLogLine(lastBuild, "Loading suite");
 
     WorkflowRun run = runFuture.get();
     Thread.sleep(1000);
@@ -378,7 +378,7 @@ public class FailureScenarioIT {
         API_SERVER_URL,
         CERTIFICATE_VALIDATION_DISABLED,
         credentialsId,
-        SETTING_FILE_NAME);
+        SETTING_FILE_PATH);
 
     project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
 
@@ -387,7 +387,7 @@ public class FailureScenarioIT {
     Thread.sleep(100);
 
     final WorkflowRun lastBuild = project.getLastBuild();
-    triggerAbortOnLogLine(runFuture, lastBuild, "Fuzz testing is starting");
+    triggerAbortOnLogLine(lastBuild, "Fuzz testing is starting");
 
     WorkflowRun run = runFuture.get();
     dumpLogs(run);
@@ -410,7 +410,7 @@ public class FailureScenarioIT {
         API_SERVER_URL,
         CERTIFICATE_VALIDATION_DISABLED,
         credentialsId,
-        SETTING_FILE_NAME);
+        SETTING_FILE_PATH);
 
     project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
 
@@ -419,7 +419,7 @@ public class FailureScenarioIT {
     Thread.sleep(100);
 
     final WorkflowRun lastBuild = project.getLastBuild();
-    triggerAbortOnLogLine(runFuture, lastBuild, "Fuzz testing is RUNNING.");
+    triggerAbortOnLogLine(lastBuild, "Fuzz testing is RUNNING.");
 
     WorkflowRun run = runFuture.get();
     dumpLogs(run);
@@ -442,7 +442,7 @@ public class FailureScenarioIT {
         API_SERVER_URL,
         CERTIFICATE_VALIDATION_DISABLED,
         credentialsId,
-        SETTING_FILE_NAME);
+        SETTING_FILE_PATH);
 
     project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
 
@@ -451,7 +451,7 @@ public class FailureScenarioIT {
     Thread.sleep(100);
 
     final WorkflowRun lastBuild = project.getLastBuild();
-    triggerAbortOnLogLine(runFuture, lastBuild, "Fuzz testing is COMPLETED");
+    triggerAbortOnLogLine(lastBuild, "Fuzz testing is COMPLETED");
 
     WorkflowRun run = runFuture.get();
     dumpLogs(run);
@@ -471,19 +471,19 @@ public class FailureScenarioIT {
         "      job1: {",
         "         defensics(",
         "           defensicsInstance: '" + NAME + "',",
-        "           configurationFilePath: '" + SETTING_FILE_NAME + "',",
+        "           configurationFilePath: '" + SETTING_FILE_PATH + "',",
         "           configurationOverrides: '" + override + "',",
         "         )",
         "      }, job2: {",
         "         defensics(",
         "           defensicsInstance: '" + NAME + "',",
-        "           configurationFilePath: '" + SETTING_FILE_NAME + "',",
+        "           configurationFilePath: '" + SETTING_FILE_PATH + "',",
         "           configurationOverrides: '" + override + "'",
         "         )",
         "      }, job3: {",
         "         defensics(",
         "           defensicsInstance: '" + NAME + "',",
-        "           configurationFilePath: '" + SETTING_FILE_NAME + "',",
+        "           configurationFilePath: '" + SETTING_FILE_PATH + "',",
         "           configurationOverrides: '" + override + "'",
         "         )",
         "      })",
@@ -499,7 +499,7 @@ public class FailureScenarioIT {
         API_SERVER_URL,
         CERTIFICATE_VALIDATION_DISABLED,
         credentialsId,
-        SETTING_FILE_NAME);
+        SETTING_FILE_PATH);
 
     project.setDefinition(new CpsFlowDefinition(script, true));
 
@@ -508,7 +508,7 @@ public class FailureScenarioIT {
     Thread.sleep(100);
 
     final WorkflowRun lastBuild = project.getLastBuild();
-    triggerAbortOnLogLine(runFuture, lastBuild, "Loading suite");
+    triggerAbortOnLogLine(lastBuild, "Loading suite");
 
     WorkflowRun run = runFuture.get();
 
@@ -590,7 +590,7 @@ public class FailureScenarioIT {
         NAME,
         API_SERVER_URL,
         true, credentialsId,
-        SETTING_FILE_NAME
+        SETTING_FILE_PATH
     );
   }
 
@@ -631,7 +631,6 @@ public class FailureScenarioIT {
   }
 
   private void triggerAbortOnLogLine(
-      QueueTaskFuture<WorkflowRun> runFuture,
       WorkflowRun lastBuild,
       String logString
   ) {

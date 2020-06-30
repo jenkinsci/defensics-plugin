@@ -25,17 +25,17 @@ public class BuildNumberComparabilityTestCase extends ComparabilityTestCase {
   }
 
   @Override
-  protected Comparable createLessInstance() throws Exception {
+  protected Comparable<BuildNumber> createLessInstance() {
     return new BuildNumber(-1);
   }
 
   @Override
-  protected Comparable createEqualInstance() throws Exception {
+  protected Comparable<BuildNumber> createEqualInstance() {
     return new BuildNumber(234);
   }
 
   @Override
-  protected Comparable createGreaterInstance() throws Exception {
+  protected Comparable<BuildNumber> createGreaterInstance() {
     return new BuildNumber(235);
   }
 }

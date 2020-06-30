@@ -16,6 +16,11 @@
 
 package com.synopsys.defensics.jenkins.test;
 
+import static com.synopsys.defensics.jenkins.test.utils.Constants.CERTIFICATE_VALIDATION_DISABLED;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.CREDENTIALS_ID;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.NAME;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.SETTING_FILE_PATH;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.URL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -36,16 +41,9 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 public class GlobalConfigurationIT {
 
-  private static final String NAME = "My Defensics";
-  private static final String URL = "http://my.defensics";
-  private static final boolean CERTIFICATE_VALIDATION_DISABLED = true;
-  private static final String CREDENTIAL_ID = "test-credentials";
-  private static final String SETTING_FILE_PATH = "http.testplan";
-
   @Rule
   public JenkinsRule jenkinsRule = new JenkinsRule();
 
-  private FuzzBuildStep plugin;
   private InstanceConfiguration instanceConfiguration;
   private List<InstanceConfiguration> defensicsInstances;
   private PluginConfiguration pluginConfiguration;
@@ -54,11 +52,11 @@ public class GlobalConfigurationIT {
   public void setup() {
     defensicsInstances = new ArrayList<>();
     instanceConfiguration = new InstanceConfiguration(
-        NAME, URL, CERTIFICATE_VALIDATION_DISABLED, CREDENTIAL_ID);
+        NAME, URL, CERTIFICATE_VALIDATION_DISABLED, CREDENTIALS_ID);
     defensicsInstances.add(instanceConfiguration);
     pluginConfiguration = jenkinsRule.get(PluginConfiguration.class);
     pluginConfiguration.setDefensicsInstances(defensicsInstances);
-    plugin = new FuzzBuildStep(SETTING_FILE_PATH);
+    final FuzzBuildStep plugin = new FuzzBuildStep(SETTING_FILE_PATH);
     plugin.setDefensicsInstance(NAME);
   }
 
@@ -77,7 +75,7 @@ public class GlobalConfigurationIT {
   @Test
   public void testMissingName() throws Exception {
     instanceConfiguration = new InstanceConfiguration(
-        null, URL, CERTIFICATE_VALIDATION_DISABLED, CREDENTIAL_ID);
+        null, URL, CERTIFICATE_VALIDATION_DISABLED, CREDENTIALS_ID);
     defensicsInstances = new ArrayList<>();
     defensicsInstances.add(instanceConfiguration);
     pluginConfiguration.setDefensicsInstances(defensicsInstances);
@@ -110,7 +108,7 @@ public class GlobalConfigurationIT {
   @Test
   public void testMissingUrl() throws Exception {
     instanceConfiguration = new InstanceConfiguration(
-        NAME, null, CERTIFICATE_VALIDATION_DISABLED, CREDENTIAL_ID);
+        NAME, null, CERTIFICATE_VALIDATION_DISABLED, CREDENTIALS_ID);
     defensicsInstances = new ArrayList<>();
     defensicsInstances.add(instanceConfiguration);
     pluginConfiguration.setDefensicsInstances(defensicsInstances);
@@ -128,7 +126,7 @@ public class GlobalConfigurationIT {
   @Test
   public void testInvalidUrl() throws Exception {
     instanceConfiguration = new InstanceConfiguration(NAME, "not_a_valid_url",
-        CERTIFICATE_VALIDATION_DISABLED, CREDENTIAL_ID);
+        CERTIFICATE_VALIDATION_DISABLED, CREDENTIALS_ID);
     defensicsInstances = new ArrayList<>();
     defensicsInstances.add(instanceConfiguration);
     pluginConfiguration.setDefensicsInstances(defensicsInstances);
@@ -147,7 +145,7 @@ public class GlobalConfigurationIT {
   public void testDefensicsConfigurationNameItems() {
     InstanceConfiguration instanceConfiguration2 =
         new InstanceConfiguration("Other instance", "http://other.url",
-            CERTIFICATE_VALIDATION_DISABLED, CREDENTIAL_ID);
+            CERTIFICATE_VALIDATION_DISABLED, CREDENTIALS_ID);
     defensicsInstances.add(instanceConfiguration2);
     pluginConfiguration.setDefensicsInstances(defensicsInstances);
 

@@ -21,7 +21,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
-import com.cloudbees.plugins.credentials.CredentialsStore;
 import com.synopsys.defensics.jenkins.configuration.AuthenticationTokenProvider;
 import com.synopsys.defensics.jenkins.test.utils.CredentialsUtil;
 import java.io.IOException;
@@ -33,17 +32,12 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 public class AuthenticationTokenIT {
 
-  private static final String CREDENTIAL_ID = "test-credentials";
-  private static final String SECRET_TOKEN = "test-token";
-
   @Rule
   public JenkinsRule jenkinsRule = new JenkinsRule();
 
-  private CredentialsStore store;
-
   @Before
   public void setup() {
-    store = CredentialsProvider.lookupStores(jenkinsRule.jenkins).iterator().next();
+    CredentialsProvider.lookupStores(jenkinsRule.jenkins).iterator().next();
   }
 
   @Test

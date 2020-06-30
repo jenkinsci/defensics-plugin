@@ -16,6 +16,10 @@
 
 package com.synopsys.defensics.jenkins.configuration;
 
+import static com.synopsys.defensics.jenkins.test.utils.Constants.CERTIFICATE_VALIDATION_ENABLED;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.CREDENTIALS_ID;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.NAME;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.URL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -27,45 +31,39 @@ import org.junit.Test;
 
 public class InstanceConfigurationTest {
 
-  public static final String CONFIGURATION_NAME = "Name of my Defensics";
-  public static final String CONFIGURATION_URL = "http://url.to.defensics";
-  public static final boolean CERTIFICATE_VALIDATION_DISABLED = false;
-  public static final String CONFIGURATION_CREDENTIALSID = "test-credential";
-
   private InstanceConfiguration configuration;
 
   @Before
   public void setup() {
-    configuration = new InstanceConfiguration(CONFIGURATION_NAME, CONFIGURATION_URL,
-        CERTIFICATE_VALIDATION_DISABLED, CONFIGURATION_CREDENTIALSID);
+    configuration = new InstanceConfiguration(NAME, URL, CERTIFICATE_VALIDATION_ENABLED,
+        CREDENTIALS_ID);
   }
 
   @Test
   public void testGetName() {
-    assertThat(configuration.getName(), is(equalTo(CONFIGURATION_NAME)));
+    assertThat(configuration.getName(), is(equalTo(NAME)));
   }
 
   @Test
   public void testGetUrl() {
-    assertThat(configuration.getUrl(), is(equalTo(CONFIGURATION_URL)));
+    assertThat(configuration.getUrl(), is(equalTo(URL)));
   }
 
   @Test
   public void testGetCertificateValidationDisabled() {
-    assertThat(
-        configuration.isCertificateValidationDisabled(),
-        is(equalTo(CERTIFICATE_VALIDATION_DISABLED)));
+    assertThat(configuration.isCertificateValidationDisabled(),
+        is(equalTo(CERTIFICATE_VALIDATION_ENABLED)));
   }
 
   @Test
   public void testGetCredentialsId() {
-    assertThat(configuration.getCredentialsId(), is(equalTo(CONFIGURATION_CREDENTIALSID)));
+    assertThat(configuration.getCredentialsId(), is(equalTo(CREDENTIALS_ID)));
   }
 
   @Test
   public void testGetDisplayName() {
-    assertThat(configuration.getDisplayName(), containsString(CONFIGURATION_NAME));
-    assertThat(configuration.getDisplayName(), containsString(CONFIGURATION_URL));
+    assertThat(configuration.getDisplayName(), containsString(NAME));
+    assertThat(configuration.getDisplayName(), containsString(URL));
   }
 
   @Test

@@ -16,6 +16,10 @@
 
 package com.synopsys.defensics.jenkins.configuration;
 
+import static com.synopsys.defensics.jenkins.test.utils.Constants.CERTIFICATE_VALIDATION_DISABLED;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.CREDENTIALS_ID;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.NAME;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.URL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -36,11 +40,9 @@ public class InstanceConfigurationValidatorTest {
   @Before
   public void setup() {
     instanceConfigurationValidator = new InstanceConfigurationValidator();
-    defensicsInstances = new ArrayList();
-    configuration = new InstanceConfiguration(
-        "myDefensics",
-        "http://my.defensics",
-        true, "test-credential");
+    defensicsInstances = new ArrayList<>();
+    configuration = new InstanceConfiguration(NAME, URL, CERTIFICATE_VALIDATION_DISABLED,
+        CREDENTIALS_ID);
   }
 
   @Test
@@ -57,7 +59,7 @@ public class InstanceConfigurationValidatorTest {
   @Test
   public void testValidateEmptyName() {
     InstanceConfiguration invalidConfiguration =
-        new InstanceConfiguration("", "", true, "");
+        new InstanceConfiguration("", "", CERTIFICATE_VALIDATION_DISABLED, "");
     defensicsInstances.add(configuration);
     defensicsInstances.add(invalidConfiguration);
 
@@ -74,7 +76,7 @@ public class InstanceConfigurationValidatorTest {
   @Test
   public void testValidateEmptyUrl() {
     InstanceConfiguration invalidConfiguration =
-        new InstanceConfiguration("myDefensics", "", true, "test-credential");
+        new InstanceConfiguration(NAME, "", CERTIFICATE_VALIDATION_DISABLED, CREDENTIALS_ID);
     defensicsInstances.add(configuration);
     defensicsInstances.add(invalidConfiguration);
     try {
@@ -91,7 +93,7 @@ public class InstanceConfigurationValidatorTest {
   public void testValidateInvalidUrl() {
     String invalidUrl = "myInvalidUrl";
     InstanceConfiguration invalidConfiguration = new InstanceConfiguration(
-        "myDefensics", invalidUrl, true, "test-credential");
+        NAME, invalidUrl, CERTIFICATE_VALIDATION_DISABLED, CREDENTIALS_ID);
     defensicsInstances.add(configuration);
     defensicsInstances.add(invalidConfiguration);
     try {

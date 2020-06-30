@@ -31,14 +31,13 @@ public class HtmlReportTest {
 
   public static final String JOB_ID = "1";
   public static final String REPORT_TITLE = "my testplan";
-  private FilePath workspace;
   private HtmlReport report;
 
   @Before
   public void setup() throws Exception {
     TemporaryFolder temporaryFolder = new TemporaryFolder();
     temporaryFolder.create();
-    workspace = new FilePath(temporaryFolder.getRoot());
+    FilePath workspace = new FilePath(temporaryFolder.getRoot());
 
     // "Download" the report to result folder
     FilePath resultFolder = workspace.child("results");

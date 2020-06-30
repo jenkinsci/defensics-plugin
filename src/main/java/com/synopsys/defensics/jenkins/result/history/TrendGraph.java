@@ -38,7 +38,7 @@ import org.jfree.data.category.CategoryDataset;
  */
 public class TrendGraph extends Graph {
 
-  private final List<Run> runs;
+  private final List<Run<?,?>> runs;
 
   /**
    * Constructor.
@@ -46,7 +46,7 @@ public class TrendGraph extends Graph {
    * @param runs List of runs to use for the graph. A run is not required to contain Defenscis
    *             steps, for those runs 0 is shown in the chart.
    */
-  TrendGraph(List<Run> runs) {
+  TrendGraph(List<Run<?,?>> runs) {
     super(runs.get(0).getTime().getTime(), 500, 200);
     this.runs = runs;
   }
@@ -72,10 +72,10 @@ public class TrendGraph extends Graph {
     return chart;
   }
 
-  private DataSetBuilder getDataSetBuilder() {
-    DataSetBuilder dataSetBuilder = new DataSetBuilder();
+  private DataSetBuilder<String, BuildNumber> getDataSetBuilder() {
+    DataSetBuilder<String, BuildNumber> dataSetBuilder = new DataSetBuilder<>();
 
-    for (Run run : runs) {
+    for (Run<?,?> run : runs) {
       BuildResultAction buildResultAction = run.getAction(BuildResultAction.class);
       if (buildResultAction == null) {
         dataSetBuilder.add(0, "Failures", new BuildNumber(run.getNumber()));

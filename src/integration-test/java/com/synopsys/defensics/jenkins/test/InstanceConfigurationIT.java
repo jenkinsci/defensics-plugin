@@ -16,6 +16,9 @@
 
 package com.synopsys.defensics.jenkins.test;
 
+import static com.synopsys.defensics.jenkins.test.utils.Constants.CERTIFICATE_VALIDATION_ENABLED;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.LOCAL_URL;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -38,10 +41,6 @@ import org.mockito.Mockito;
 import org.mockserver.integration.ClientAndServer;
 
 public class InstanceConfigurationIT {
-
-  private static final String NAME = "My Defensics";
-  private static final String URL = "http://localhost:1080";
-  private static final boolean CERTIFICATE_VALIDATION_DISABLED = false;
 
   @Rule
   public JenkinsRule jenkinsRule = new JenkinsRule();
@@ -72,7 +71,7 @@ public class InstanceConfigurationIT {
 
   @Test
   public void testCheckUrl() {
-    assertThat(defensicsInstanceConfigurationDescriptor.doCheckUrl(URL).kind, is(equalTo(Kind.OK)));
+    assertThat(defensicsInstanceConfigurationDescriptor.doCheckUrl(LOCAL_URL).kind, is(equalTo(Kind.OK)));
   }
 
   @Test
@@ -100,7 +99,7 @@ public class InstanceConfigurationIT {
   }
 
   @Test
-  public void testConnectionTest() throws Exception {
+  public void testConnectionTest() {
     ClientAndServer mockServer = ClientAndServer.startClientAndServer(1080);
     DefensicsMockServer defensicsMockServer = new DefensicsMockServer(
         true, "PASS", RunState.COMPLETED);
@@ -108,7 +107,7 @@ public class InstanceConfigurationIT {
 
     try {
       FormValidation result = defensicsInstanceConfigurationDescriptor.doTestConnection(
-          URL, CERTIFICATE_VALIDATION_DISABLED, credentialsId);
+          LOCAL_URL, CERTIFICATE_VALIDATION_ENABLED, credentialsId);
 
       assertThat(result.kind, is(equalTo(Kind.OK)));
     } finally {
@@ -119,7 +118,7 @@ public class InstanceConfigurationIT {
   @Test
   public void testConnectionTestInvalidUrl() {
     FormValidation result = defensicsInstanceConfigurationDescriptor.doTestConnection(
-        "not_a_valid_url", CERTIFICATE_VALIDATION_DISABLED, "");
+        "not_a_valid_url", CERTIFICATE_VALIDATION_ENABLED, "");
     assertThat(result.kind, is(equalTo(Kind.ERROR)));
     assertThat(result.getMessage(),
         is(equalTo("Failed to connect to server: no protocol: not_a_valid_url")));
@@ -128,7 +127,7 @@ public class InstanceConfigurationIT {
   @Test
   public void testConnectionTestUnreachableUrl() {
     FormValidation result = defensicsInstanceConfigurationDescriptor.doTestConnection(
-        URL, CERTIFICATE_VALIDATION_DISABLED, "");
+        LOCAL_URL, CERTIFICATE_VALIDATION_ENABLED, "");
     assertThat(result.kind, is(equalTo(Kind.ERROR)));
     assertThat(
         result.getMessage(),
@@ -138,7 +137,7 @@ public class InstanceConfigurationIT {
   @Test
   public void testConnectionTestInvalidCredential() {
     FormValidation result = defensicsInstanceConfigurationDescriptor.doTestConnection(
-        URL, CERTIFICATE_VALIDATION_DISABLED, "invalid-id");
+        LOCAL_URL, CERTIFICATE_VALIDATION_ENABLED, "invalid-id");
     assertThat(result.kind, is(equalTo(Kind.ERROR)));
     assertThat(result.getMessage(), is(equalTo(
         "ERROR: Cannot find credential: &#039;invalid-id&#039;")));

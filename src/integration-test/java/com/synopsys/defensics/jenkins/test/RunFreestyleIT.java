@@ -16,6 +16,10 @@
 
 package com.synopsys.defensics.jenkins.test;
 
+import static com.synopsys.defensics.jenkins.test.utils.Constants.CERTIFICATE_VALIDATION_ENABLED;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.LOCAL_URL;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.NAME;
+import static com.synopsys.defensics.jenkins.test.utils.Constants.SETTING_FILE_PATH;
 import static java.lang.Thread.sleep;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -42,11 +46,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.mockserver.integration.ClientAndServer;
 
 public class RunFreestyleIT {
-
-  static final String NAME = "My Defensics";
-  static final String URL = "http://localhost:1080/";
-  static final String TESTPLAN_NAME = "http.testplan";
-  private static final boolean CERTIFICATE_VALIDATION_DISABLED = false;
 
   @Rule
   public JenkinsRule jenkinsRule = new JenkinsRule();
@@ -80,11 +79,11 @@ public class RunFreestyleIT {
         jenkinsRule,
         project,
         NAME,
-        URL,
-        CERTIFICATE_VALIDATION_DISABLED,
+        LOCAL_URL,
+        CERTIFICATE_VALIDATION_ENABLED,
         credentialsId,
-        TESTPLAN_NAME);
-    ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME, false);
+        SETTING_FILE_PATH);
+    ProjectUtils.addBuildStep(project, NAME, SETTING_FILE_PATH, false);
 
     FreeStyleBuild run = project.scheduleBuild2(0).get();
 
@@ -104,11 +103,11 @@ public class RunFreestyleIT {
         jenkinsRule,
         project,
         NAME,
-        URL,
-        CERTIFICATE_VALIDATION_DISABLED,
+        LOCAL_URL,
+        CERTIFICATE_VALIDATION_ENABLED,
         credentialsId,
-        TESTPLAN_NAME);
-    ProjectUtils.addPostBuildStep(project, NAME, TESTPLAN_NAME, false);
+        SETTING_FILE_PATH);
+    ProjectUtils.addPostBuildStep(project, NAME, SETTING_FILE_PATH, false);
 
     FreeStyleBuild run = project.scheduleBuild2(0).get();
 
@@ -128,11 +127,11 @@ public class RunFreestyleIT {
         jenkinsRule,
         project,
         NAME,
-        URL,
-        CERTIFICATE_VALIDATION_DISABLED,
+        LOCAL_URL,
+        CERTIFICATE_VALIDATION_ENABLED,
         credentialsId,
-        TESTPLAN_NAME);
-    ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME, false);
+        SETTING_FILE_PATH);
+    ProjectUtils.addBuildStep(project, NAME, SETTING_FILE_PATH, false);
 
     jenkinsRule.configRoundtrip(project);
 
@@ -156,11 +155,11 @@ public class RunFreestyleIT {
         jenkinsRule,
         project,
         NAME,
-        URL,
-        CERTIFICATE_VALIDATION_DISABLED,
+        LOCAL_URL,
+        CERTIFICATE_VALIDATION_ENABLED,
         credentialsId,
-        TESTPLAN_NAME);
-    ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME, false);
+        SETTING_FILE_PATH);
+    ProjectUtils.addBuildStep(project, NAME, SETTING_FILE_PATH, false);
 
     // Schedule build
     QueueTaskFuture<FreeStyleBuild> runFuture = project.scheduleBuild2(0);
@@ -187,11 +186,11 @@ public class RunFreestyleIT {
         jenkinsRule,
         project,
         NAME,
-        URL,
-        CERTIFICATE_VALIDATION_DISABLED,
+        LOCAL_URL,
+        CERTIFICATE_VALIDATION_ENABLED,
         credentialsId,
-        TESTPLAN_NAME);
-    ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME, false);
+        SETTING_FILE_PATH);
+    ProjectUtils.addBuildStep(project, NAME, SETTING_FILE_PATH, false);
 
     FreeStyleBuild run = project.scheduleBuild2(0).get();
 
@@ -212,11 +211,11 @@ public class RunFreestyleIT {
         jenkinsRule,
         project,
         NAME,
-        URL,
-        CERTIFICATE_VALIDATION_DISABLED,
+        LOCAL_URL,
+        CERTIFICATE_VALIDATION_ENABLED,
         credentialsId,
-        TESTPLAN_NAME);
-    ProjectUtils.addBuildStep(project, NAME, TESTPLAN_NAME, false);
+        SETTING_FILE_PATH);
+    ProjectUtils.addBuildStep(project, NAME, SETTING_FILE_PATH, false);
 
     FreeStyleBuild run = project.scheduleBuild2(0).get();
 
@@ -226,6 +225,5 @@ public class RunFreestyleIT {
     assertThat(project.getAction(HtmlReportAction.class).getUrlName(),
         is(equalTo(run.getActions(HtmlReportAction.class).get(0).getUrlName())));
   }
-
 
 }

@@ -36,14 +36,14 @@ import org.junit.Test;
 
 public class TrendGraphTest {
 
-  private List<Run> runs;
+  private List<Run<?,?>> runs;
   private TrendGraph trendGraph;
 
   @Before
   public void setup() {
-    runs = new ArrayList();
+    runs = new ArrayList<>();
     for (int i = 0; i < 10; i++) {
-      Run run = mock(Run.class);
+      Run<?,?> run = mock(Run.class);
       when(run.getTime()).thenReturn(new Date());
       when(run.getNumber()).thenReturn(i + 1);
       BuildResultAction buildResultAction = mock(BuildResultAction.class);
@@ -116,9 +116,9 @@ public class TrendGraphTest {
   @Test
   public void testUrlGeneration() {
     DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-    dataset.addValue(0, new Integer(0), "#0");
-    dataset.addValue(3, new Integer(0), "#1");
-    dataset.addValue(3, new Integer(0), "#2");
+    dataset.addValue(0, Integer.valueOf(0), "#0");
+    dataset.addValue(3, Integer.valueOf(0), "#1");
+    dataset.addValue(3, Integer.valueOf(0), "#2");
     JFreeChart chart = trendGraph.createGraph();
 
     assertThat(
@@ -134,8 +134,8 @@ public class TrendGraphTest {
     TrendGraph trendGraph = new TrendGraph(runs);
     JFreeChart chart = trendGraph.createGraph();
     DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-    dataset.addValue(0, new Integer(0), "#0");
-    dataset.addValue(3, new Integer(0), "#1");
+    dataset.addValue(0, Integer.valueOf(0), "#0");
+    dataset.addValue(3, Integer.valueOf(0), "#1");
 
     assertThat(
         chart.getCategoryPlot().getRenderer().getBaseItemURLGenerator().generateURL(
@@ -149,8 +149,8 @@ public class TrendGraphTest {
   public void testTooltipGeneration() {
     JFreeChart chart = trendGraph.createGraph();
     DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-    dataset.addValue(0, new Integer(0), "#0");
-    dataset.addValue(3, new Integer(0), "#1");
+    dataset.addValue(0, Integer.valueOf(0), "#0");
+    dataset.addValue(3, Integer.valueOf(0), "#1");
 
     assertThat(
         chart.getCategoryPlot().getRenderer().getBaseToolTipGenerator().generateToolTip(
@@ -163,9 +163,9 @@ public class TrendGraphTest {
   @Test
   public void testTooltipGenerationDefensicsNotRun() {
     DefaultCategoryDataset dataset = new DefaultCategoryDataset();
-    dataset.addValue(0, new Integer(0), "#0");
-    dataset.addValue(3, new Integer(0), "#1");
-    dataset.addValue(3, new Integer(0), "#2");
+    dataset.addValue(0, Integer.valueOf(0), "#0");
+    dataset.addValue(3, Integer.valueOf(0), "#1");
+    dataset.addValue(3, Integer.valueOf(0), "#2");
     JFreeChart chart = trendGraph.createGraph();
 
     assertThat(

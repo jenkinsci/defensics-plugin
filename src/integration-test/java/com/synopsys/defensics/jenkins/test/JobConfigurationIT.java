@@ -16,6 +16,7 @@
 
 package com.synopsys.defensics.jenkins.test;
 
+import static com.synopsys.defensics.jenkins.test.utils.Constants.SETTING_FILE_PATH;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -35,7 +36,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 public class JobConfigurationIT {
 
-  public static final String SETTING_FILE_PATH = "http.testplan";
   public final InstanceConfiguration configuration1 =
       new InstanceConfiguration("My Defensics", "http://my.defensics",
           true, "test-credentials");
@@ -45,8 +45,6 @@ public class JobConfigurationIT {
   @Rule
   public JenkinsRule jenkinsRule = new JenkinsRule();
   private FuzzBuildStep fuzzBuildStep;
-  private List<InstanceConfiguration> defensicsInstances;
-  private PluginConfiguration pluginConfiguration;
   private FuzzBuildStepDescriptor stepConfigurationDescriptor;
 
   @Before
@@ -54,11 +52,11 @@ public class JobConfigurationIT {
     fuzzBuildStep = new FuzzBuildStep(SETTING_FILE_PATH);
     fuzzBuildStep.setDefensicsInstance(configuration1.getName());
 
-    defensicsInstances = new ArrayList<>();
+    final List<InstanceConfiguration> defensicsInstances = new ArrayList<>();
     defensicsInstances.add(configuration1);
     defensicsInstances.add(configuration2);
 
-    pluginConfiguration = jenkinsRule.get(PluginConfiguration.class);
+    final PluginConfiguration pluginConfiguration = jenkinsRule.get(PluginConfiguration.class);
     pluginConfiguration.setDefensicsInstances(defensicsInstances);
 
     stepConfigurationDescriptor =

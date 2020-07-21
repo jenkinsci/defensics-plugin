@@ -27,7 +27,7 @@ machine.
 - **PORT** is the port you want the API Server to run in.
 
 When configuring the Defensics instance in [Jenkins' global 
-configuration](user-guide.md#global-config), use for example, 
+configuration](user-guide.md#global-configuration), use for example, 
 `https://HOST:PORT`.
 
 When you start the API Server for the first time, an API token is generated and 

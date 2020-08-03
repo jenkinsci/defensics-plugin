@@ -18,9 +18,7 @@ package com.synopsys.defensics.jenkins;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
-import com.synopsys.defensics.jenkins.FuzzBuildStep.FuzzBuildStepDescriptor;
 import com.synopsys.defensics.jenkins.configuration.InstanceConfiguration;
-import com.synopsys.defensics.jenkins.configuration.MissingConfigurationException;
 import com.synopsys.defensics.jenkins.configuration.PluginConfiguration;
 import com.synopsys.defensics.jenkins.configuration.StepConfigurationValidator;
 import hudson.AbortException;
@@ -126,19 +124,18 @@ public class FuzzPipelineStep extends Step {
   }
 
   @Override
-  public StepExecution start(StepContext context) throws Exception {
-    final Execution execution = new Execution(
+  public StepExecution start(StepContext context) {
+    final FuzzPipelineStepExecution fuzzPipelineStepExecution = new FuzzPipelineStepExecution(
         context,
-        this,
-        getInstanceConfiguration(this.selectedDefensicsInstanceName)
+        this
     );
-    return execution;
+    return fuzzPipelineStepExecution;
   }
 
   /**
    * Actual Execution class. Handles step lifecycle.
    */
-  private static class Execution extends StepExecution {
+  private static class FuzzPipelineStepExecution extends StepExecution {
     /** Serial Version UID as recommended by https://plugins.jenkins.io/workflow-step-api/ .*/
     private static final long serialVersionUID = 1L;
 
@@ -148,22 +145,16 @@ public class FuzzPipelineStep extends Step {
     private final transient FuzzPipelineStep fuzzPipelineStep;
 
     /**
-     * Defensics instance.
-     */
-    private final transient InstanceConfiguration defensicsInstance;
-
-    /**
      * Fuzz job future to monitor and control fuzz job lifecycle.
      */
     private transient Future<?> future;
 
-    protected Execution(
+    protected FuzzPipelineStepExecution(
         @Nonnull StepContext context,
-        FuzzPipelineStep fuzzPipelineStep,
-        InstanceConfiguration defensicsInstance) {
+        FuzzPipelineStep fuzzPipelineStep
+    ) {
       super(context);
       this.fuzzPipelineStep = fuzzPipelineStep;
-      this.defensicsInstance = defensicsInstance;
     }
 
     /**
@@ -178,8 +169,6 @@ public class FuzzPipelineStep extends Step {
       final FilePath workspace = getContext().get(FilePath.class);
       final Launcher launcher = getContext().get(Launcher.class);
       final TaskListener listener = getContext().get(TaskListener.class);
-      final FuzzJobRunner fuzzJobRunner = new FuzzJobRunner();
-
       if (workspace == null) {
         throw new IllegalArgumentException("Workspace was null");
       }
@@ -187,15 +176,18 @@ public class FuzzPipelineStep extends Step {
       final ExecutorService executorService = Executors.newSingleThreadExecutor();
       future = executorService.submit(() -> {
         try {
-          fuzzJobRunner.run(
+          final FuzzStep fuzzStep = new FuzzStep(
+              fuzzPipelineStep.getDescriptor(),
+              fuzzPipelineStep.getDefensicsInstance(),
+              fuzzPipelineStep.configurationFilePath,
+              fuzzPipelineStep.configurationOverrides,
+              fuzzPipelineStep.saveResultPackage
+          );
+          fuzzStep.perform(
               run,
               workspace,
               launcher,
-              new Logger(listener),
-              new FilePath(workspace, fuzzPipelineStep.configurationFilePath),
-              fuzzPipelineStep.configurationOverrides,
-              defensicsInstance,
-              fuzzPipelineStep.saveResultPackage
+              listener
           );
           // NOTE: The resultValue for onSuccess is not clearly defined, so returning null
           // for now since similar getContext().onSuccess(run()) has been used in other plugins
@@ -217,34 +209,6 @@ public class FuzzPipelineStep extends Step {
     public void stop(@Nonnull Throwable cause) {
       future.cancel(true);
     }
-  }
-
-  /**
-   * Get Defensics instance matching the instance name.
-   *
-   * @param defensicsInstanceName Instance name. Can be null, and then first instance is returned.
-   * @return Defensics instance
-   * @throws MissingConfigurationException if instance was not found
-   */
-  private InstanceConfiguration getInstanceConfiguration(String defensicsInstanceName)
-      throws MissingConfigurationException {
-    List<InstanceConfiguration> defensicsInstances = getDescriptor().getDefensicsInstances();
-    if (defensicsInstances.size() == 0) {
-      throw new MissingConfigurationException("No Defensics instances configured.");
-    }
-
-    if (defensicsInstanceName == null) {
-      return defensicsInstances.get(0);
-    }
-
-    return defensicsInstances
-        .stream()
-        .filter(
-            instanceConfiguration -> instanceConfiguration.getName().equals(defensicsInstanceName)
-        ).findFirst()
-        .orElseThrow(() -> new MissingConfigurationException(
-            "Defensics instance '" + defensicsInstanceName + "' doesn't exist.")
-        );
   }
 
   @Override

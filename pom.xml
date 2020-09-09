@@ -195,6 +195,13 @@
       <groupId>io.crnk</groupId>
       <artifactId>crnk-client</artifactId>
       <version>3.2.20200419165537</version>
+      <exclusions>
+        <!-- Unused dependency in crnk-client, only used in crnk-operations -->
+        <exclusion>
+          <groupId>javax.xml.bind</groupId>
+          <artifactId>jaxb-api</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>

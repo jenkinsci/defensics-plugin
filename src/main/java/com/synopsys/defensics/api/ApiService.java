@@ -267,7 +267,7 @@ public class ApiService {
   public Optional<SuiteInstance> getConfigurationSuite(String id)
       throws DefensicsRequestException, InterruptedException {
     try {
-      return defensicsClient.getConfigurationSuite(id);
+      return defensicsClient.getRunSuiteInstance(id);
     } catch (DefensicsClientException e) {
       mapAndThrow(e);
       // Should not reach this

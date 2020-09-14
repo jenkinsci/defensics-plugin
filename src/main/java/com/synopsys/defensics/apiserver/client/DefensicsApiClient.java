@@ -16,9 +16,11 @@
 
 package com.synopsys.defensics.apiserver.client;
 
+import com.synopsys.defensics.apiserver.model.Result;
 import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.RunTestConfiguration;
 import com.synopsys.defensics.apiserver.model.SettingCliArgs;
+import com.synopsys.defensics.apiserver.model.Suite;
 import com.synopsys.defensics.apiserver.model.SuiteInstance;
 import java.io.InputStream;
 import java.util.List;
@@ -73,10 +75,17 @@ public interface DefensicsApiClient {
 
   /**
    * Get suite instance currently assigned to run configuration.
-   * @param configurationId Configuration id
+   * @param runId Run id
    * @return Suite instance assigned to configuration
    */
-  Optional<SuiteInstance> getConfigurationSuite(String configurationId);
+  Optional<SuiteInstance> getRunSuiteInstance(String runId);
+
+  /**
+   * Get suite instances.
+   *
+   * @return Suite instances
+   */
+  List<SuiteInstance> getSuiteInstances();
 
   /**
    * Get suite instance by id.
@@ -100,6 +109,29 @@ public interface DefensicsApiClient {
    * @return Run object
    */
   Optional<Run> getRun(String runId);
+
+  /**
+   * Get all runs.
+   *
+   * @return Runs
+   */
+  List<Run> getRuns();
+
+  /**
+   * Get all results
+   *
+   * @return List of results
+   */
+  List<Result> getResults();
+
+  /**
+   * Get all results matching given URL query string.
+   *
+   * @param query URL query string to add into URL. Actual functionality not yet done, and this can
+   * change to some QuerySpec-style model.
+   * @return Results matching given query
+   */
+  List<Result> getResults(String query);
 
   /**
    * Removes the Run. Also removes related RunTestConfiguration and unloads any assigned suites
@@ -151,6 +183,36 @@ public interface DefensicsApiClient {
    * @param runId Run ID which is to be resumed.
    */
   void resumeRun(String runId);
+
+  /**
+   * Get all suites
+   *
+   * @return List of suites
+   */
+  List<Suite> getSuites();
+
+  /**
+   * Load a new suite instance of suite/version given in suiteId.
+   *
+   * @param suiteId Suite id
+   * @return Suite instance.
+   */
+  SuiteInstance loadSuite(String suiteId);
+
+  /**
+   * Unload given suiteInstance
+   *
+   * @param suiteInstanceId Suite instance ID
+   */
+  void unloadSuiteInstance(String suiteInstanceId);
+
+  /**
+   * Assign given suite instance to run.
+   *
+   * @param suiteInstanceId Suite instance ID
+   * @param runId Run ID where to assign the suite instance
+   */
+  void assignSuiteToRun(String suiteInstanceId, String runId);
 
   /**
    * High level exception thrown when Defensics API client cannot do given operation succesfully.

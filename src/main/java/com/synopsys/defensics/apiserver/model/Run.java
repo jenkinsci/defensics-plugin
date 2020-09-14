@@ -23,6 +23,7 @@ import io.crnk.core.resource.annotations.JsonApiRelationId;
 import io.crnk.core.resource.annotations.JsonApiResource;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.File;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @JsonApiResource(type = "runs")
@@ -77,7 +78,11 @@ public class Run extends BaseTestRun {
   /**
    * Constructor.
    * @param id Run id
+   * @param name Name of the run
    * @param projectId Project id
+   * @param runType type of the run
+   * @param startTime start time of the run
+   * @param parentConfigurationId Id of the parent configuration of this run
    * @param casesToBeExecuted How many cases are to be executed in this run.
    * @param caseIndex Case index.
    * @param runIndex Run index.
@@ -87,7 +92,11 @@ public class Run extends BaseTestRun {
    */
   public Run(
       String id,
+      String name,
       String projectId,
+      RunType runType,
+      ZonedDateTime startTime,
+      String parentConfigurationId,
       int casesToBeExecuted,
       int caseIndex,
       int runIndex,
@@ -96,8 +105,15 @@ public class Run extends BaseTestRun {
       List<FailureSummaryEntry> failureSummary,
       String resultId
   ) {
+    super(
+        id,
+        name,
+        projectId,
+        runType,
+        startTime,
+        parentConfigurationId
+    );
     this.id = id;
-    this.projectId = projectId;
     this.casesToBeExecuted = casesToBeExecuted;
     this.caseIndex = caseIndex;
     this.runIndex = runIndex;

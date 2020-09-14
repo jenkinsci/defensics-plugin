@@ -24,9 +24,11 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.io.ByteStreams;
 import com.synopsys.defensics.apiserver.model.HealthCheckResult;
+import com.synopsys.defensics.apiserver.model.Result;
 import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.RunTestConfiguration;
 import com.synopsys.defensics.apiserver.model.SettingCliArgs;
+import com.synopsys.defensics.apiserver.model.Suite;
 import com.synopsys.defensics.apiserver.model.SuiteInstance;
 import io.crnk.client.CrnkClient;
 import io.crnk.client.TransportException;
@@ -38,9 +40,11 @@ import io.crnk.core.queryspec.PathSpec;
 import io.crnk.core.queryspec.QuerySpec;
 import io.crnk.core.repository.OneRelationshipRepository;
 import io.crnk.core.repository.ResourceRepository;
+import io.crnk.core.resource.list.ResourceList;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +75,7 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
   private final ResourceRepository<RunTestConfiguration, String> testConfigurationRepository;
   private final ResourceRepository<Run, String> runRepository;
   private final ResourceRepository<SuiteInstance, String> suiteInstanceRepository;
+  private final ResourceRepository<Suite, String> suiteRepository;
   private final OneRelationshipRepository<RunTestConfiguration, String, SuiteInstance, String>
       runConfigurationSuiteRepository;
   private final OkHttpClient okHttpClient;
@@ -165,6 +170,7 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
     this.runConfigurationSuiteRepository = this.crnkClient.getOneRepositoryForType(
         RunTestConfiguration.class, SuiteInstance.class
     );
+    this.suiteRepository = this.crnkClient.getRepositoryForType(Suite.class);
   }
 
   @Override
@@ -289,6 +295,24 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
           e
       );
     }
+  }
+
+  @Override
+  public List<Run> getRuns() {
+    notImplemented();
+    return null;
+  }
+
+  @Override
+  public List<Result> getResults() {
+    notImplemented();
+    return null;
+  }
+
+  @Override
+  public List<Result> getResults(String query) {
+    notImplemented();
+    return null;
   }
 
   @Override
@@ -423,23 +447,29 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
   }
 
   @Override
-  public Optional<SuiteInstance> getConfigurationSuite(String configurationId) {
+  public Optional<SuiteInstance> getRunSuiteInstance(String runId) {
     try {
       Map<String, SuiteInstance> result = runConfigurationSuiteRepository.findOneRelations(
-          Collections.singleton(configurationId),
+          Collections.singleton(runId),
           "suite-instance",
           new QuerySpec(SuiteInstance.class)
       );
-      return Optional.ofNullable(result.get(configurationId));
+      return Optional.ofNullable(result.get(runId));
     } catch (TransportException | CrnkException e) {
       throw new DefensicsClientException(
           errorMessageForFailingCrnkRequest(
-              "Could not get suite-instance for configuration " + configurationId,
+              "Could not get suite-instance for configuration " + runId,
               e
           ),
           e
       );
     }
+  }
+
+  @Override
+  public List<SuiteInstance> getSuiteInstances() {
+    notImplemented();
+    return null;
   }
 
   @Override
@@ -565,6 +595,31 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
     }
   }
 
+  @Override
+  public List<Suite> getSuites() {
+    final ResourceList<Suite> results = suiteRepository.findAll(new QuerySpec(Suite.class));
+    return new ArrayList<>(results);
+  }
+
+  @Override
+  public SuiteInstance loadSuite(String suiteId) {
+    notImplemented();
+    return null;
+  }
+
+  @Override
+  public void unloadSuiteInstance(String suiteInstanceId) {
+    notImplemented();
+  }
+
+  @Override
+  public void assignSuiteToRun(String id, String id1) {
+    notImplemented();
+  }
+
+  private void notImplemented() {
+    throw new IllegalStateException("Method not implemented in JSON:API client");
+  }
 
   /**
    * Makes all HTTP requests to contain given token in the Authorization header.

@@ -86,15 +86,11 @@ public class Result extends BaseTestRun {
       BigDecimal completionPercentage, RunStoppingStatus stoppingStatus, RunType runType,
       RunVerdict runVerdict, ZonedDateTime runStartTime, ZonedDateTime runEndTime,
       Duration runDuration) {
-    this.id = id;
-    this.runName = runName;
-    this.projectId = projectId;
+    super(id, runName, projectId, runType, runStartTime, null);
     this.testCasesExecuted = testCasesExecuted;
     this.completionPercentage = completionPercentage;
     this.stoppingStatus = stoppingStatus;
-    this.runType = runType;
     this.runVerdict = runVerdict;
-    this.runStartTime = runStartTime;
     this.runEndTime = runEndTime;
     this.runDuration = runDuration;
   }

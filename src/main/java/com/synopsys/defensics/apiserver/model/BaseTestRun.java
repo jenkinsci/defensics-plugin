@@ -59,6 +59,19 @@ public abstract class BaseTestRun {
   @JsonApiRelationId
   private String parentConfigurationId;
 
+  public BaseTestRun() {
+  }
+
+  public BaseTestRun(String id, String runName, String projectId,
+      RunType runType, ZonedDateTime runStartTime, String parentConfigurationId) {
+    this.id = id;
+    this.runName = runName;
+    this.projectId = projectId;
+    this.runType = runType;
+    this.runStartTime = runStartTime;
+    this.parentConfigurationId = parentConfigurationId;
+  }
+
   public String getId() {
     return id;
   }

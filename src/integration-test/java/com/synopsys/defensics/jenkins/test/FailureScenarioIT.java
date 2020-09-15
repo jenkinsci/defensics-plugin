@@ -57,6 +57,7 @@ import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -432,6 +433,7 @@ public class FailureScenarioIT {
   /**
    * Test that job abort is handled cleanly when Fuzzing has just been completed.
    */
+  @Ignore("Job finishes too fast after run has completed")
   @Test
   public void testAbortJob_onCompletion() throws Exception {
     initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();

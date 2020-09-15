@@ -91,7 +91,9 @@ public class ApiServiceTest {
       api.healthCheck();
       fail("Test connection authentication did not return DefensicsRequestException");
     } catch (DefensicsRequestException exception) {
-      final String apiAddress = "http://localhost:1080/api/v1/healthcheck";
+      final String apiAddress = api.isUseV2Client()
+          ? "http://localhost:1080/api/v2/healthcheck"
+          : "http://localhost:1080/api/v1/healthcheck";
       assertThat(
           exception.getMessage(),
           is(equalTo("Unable to connect Defensics server healthcheck at address " + apiAddress

@@ -170,9 +170,13 @@ public class FailureScenarioIT {
     credentialsId = CredentialsUtil.createValidCredentials(jenkinsRule.jenkins);
     project = jenkinsRule.createProject(WorkflowJob.class);
 
+    // Use ApiUtils for now since it's used to fetch only suite-instance count. APIv2 client has
+    // already this functionality so this can be removed when APIv1 is removed.
     apiUtils = new ApiUtils(
         URI.create(API_SERVER_URL).resolve("/api/v1"),
         CredentialsUtil.VALID_TOKEN);
+
+    System.out.println("Using API version " + (ApiService.isUseV2Client() ? "2" : "1"));
   }
 
   /**

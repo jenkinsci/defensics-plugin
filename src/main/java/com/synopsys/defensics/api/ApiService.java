@@ -16,7 +16,9 @@
 
 package com.synopsys.defensics.api;
 
+import com.synopsys.defensics.apiserver.client.DefensicsApiClient;
 import com.synopsys.defensics.apiserver.client.DefensicsApiClient.DefensicsClientException;
+import com.synopsys.defensics.apiserver.client.DefensicsApiV2Client;
 import com.synopsys.defensics.apiserver.client.DefensicsJsonApiClient;
 import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.SettingCliArgs;
@@ -27,8 +29,6 @@ import com.synopsys.defensics.client.UserAgentConfigurator;
 import com.synopsys.defensics.client.model.HtmlReport;
 import com.synopsys.defensics.jenkins.util.DefensicsUtils;
 import hudson.FilePath;
-import hudson.Plugin;
-import hudson.PluginWrapper;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -37,10 +37,8 @@ import java.nio.channels.ClosedByInterruptException;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import jenkins.model.Jenkins;
 import okhttp3.OkHttpClient.Builder;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Intermediate API service class between Jenkins job and Defensics client. Does things which client
@@ -53,8 +51,14 @@ import org.jetbrains.annotations.NotNull;
  */
 public class ApiService {
 
-  private final DefensicsJsonApiClient defensicsClient;
+  private final DefensicsApiClient defensicsClient;
   private final URI apiBaseUrl;
+
+  /**
+   * Denotes whether the API v2 should be used. The APIv2 is upcoming, non-released API so default
+   * to JSON:API based APIv1. Switch to APIv2 when released.
+   */
+  private static final boolean useV2Client = false;
 
   /**
    * Constructor for Job object. Job will be created but not started.
@@ -64,10 +68,6 @@ public class ApiService {
       String authenticationToken,
       boolean certificateValidationDisabled
   ) {
-    // FIXME: Better slash handling, and client should check if /api/v1 is supplied already
-    apiBaseUrl = defensicsInstanceUrl.endsWith("/")
-        ? URI.create(defensicsInstanceUrl + "api/v1")
-        : URI.create(defensicsInstanceUrl + "/api/v1");
 
     final DefensicsUtils defensicsUtils = new DefensicsUtils();
     Consumer<Builder> clientConfigurator = builder -> {
@@ -80,11 +80,31 @@ public class ApiService {
       }
     };
 
-    defensicsClient = new DefensicsJsonApiClient(
-        apiBaseUrl,
-        authenticationToken,
-        clientConfigurator
-    );
+    if (useV2Client) {
+      // FIXME: Better slash handling, and client should check if /api/v1 is supplied already
+      apiBaseUrl = defensicsInstanceUrl.endsWith("/")
+          ? URI.create(defensicsInstanceUrl + "api/v2")
+          : URI.create(defensicsInstanceUrl + "/api/v2");
+      defensicsClient = new DefensicsApiV2Client(
+          apiBaseUrl,
+          authenticationToken,
+          clientConfigurator
+      );
+    } else {
+      // FIXME: Better slash handling, and client should check if /api/v1 is supplied already
+      apiBaseUrl = defensicsInstanceUrl.endsWith("/")
+          ? URI.create(defensicsInstanceUrl + "api/v1")
+          : URI.create(defensicsInstanceUrl + "/api/v1");
+      defensicsClient = new DefensicsJsonApiClient(
+          apiBaseUrl,
+          authenticationToken,
+          clientConfigurator
+      );
+    }
+  }
+
+  public static boolean isUseV2Client() {
+    return useV2Client;
   }
 
   /**

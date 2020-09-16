@@ -424,12 +424,12 @@ public class DefensicsJsonApiClient implements DefensicsApiClient {
 
   @Override
   public Optional<SuiteInstance> getConfigurationSuite(String configurationId) {
-    Map<String, SuiteInstance> result = runConfigurationSuiteRepository.findOneRelations(
-        Collections.singleton(configurationId),
-        "suite-instance",
-        new QuerySpec(SuiteInstance.class)
-    );
     try {
+      Map<String, SuiteInstance> result = runConfigurationSuiteRepository.findOneRelations(
+          Collections.singleton(configurationId),
+          "suite-instance",
+          new QuerySpec(SuiteInstance.class)
+      );
       return Optional.ofNullable(result.get(configurationId));
     } catch (TransportException | CrnkException e) {
       throw new DefensicsClientException(

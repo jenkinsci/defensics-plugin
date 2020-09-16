@@ -465,7 +465,9 @@ public class FailureScenarioIT {
 
   @Test
   public void testParallelJobStop() throws Exception {
-    final String override = String.format("--uri %s", SUT_URI);
+    // Configure concurrent suite runs have more cases so the first suite doesn't stop before last
+    // suite has started loading
+    final String override = String.format("--uri %s --index 0-5000 --tg-text high", SUT_URI);
     String script = String.join("\n", Arrays.asList(
         "node {",
         "  stage('Build') {",
@@ -507,10 +509,13 @@ public class FailureScenarioIT {
 
     // Schedule build
     final QueueTaskFuture<WorkflowRun> runFuture = project.scheduleBuild2(0);
-    Thread.sleep(100);
+
+    Thread.sleep(500);
 
     final WorkflowRun lastBuild = project.getLastBuild();
-    triggerAbortOnLogLine(lastBuild, "Loading suite");
+
+    // All three suite loads need to be started before triggering interrupt.
+    triggerAbortOnLogLine(lastBuild, "Waiting for suite to load", 3);
 
     WorkflowRun run = runFuture.get();
 
@@ -518,6 +523,8 @@ public class FailureScenarioIT {
         .stream()
         .filter(line -> line.contains("Unloaded suite and deleted the run from API server"))
         .count();
+
+    dumpLogs(run);
 
     assertThat(suiteUnloadCount, is(3L));
     checkRunAbortedCleanly(run);
@@ -636,16 +643,31 @@ public class FailureScenarioIT {
       WorkflowRun lastBuild,
       String logString
   ) {
+    triggerAbortOnLogLine(lastBuild, logString, 1);
+  }
+
+  /**
+   * Watches build log and trigger job interrupt if given logString has occurred
+   * requiredOccurenceCount times.
+   *
+   * @param lastBuild Build to watch
+   * @param logString String to look for in lines
+   * @param requiredOccurenceCount How many lines should have this to cause job interrupt
+   */
+  private void triggerAbortOnLogLine(
+      WorkflowRun lastBuild,
+      String logString,
+      int requiredOccurenceCount
+  ) {
     Executors.newSingleThreadExecutor().submit(() -> {
           try {
             while (true) {
-              final boolean hasLogString = Stream
-                  .of(lastBuild.getLog(100))
-                  .anyMatch(line -> line.toString().contains(logString));
+              final boolean containsLogStrings = lastBuild.getLog(999)
+                  .stream()
+                  .filter(line -> line.contains(logString))
+                  .count() == requiredOccurenceCount;
 
-              if (hasLogString) {
-
-                dumpLogs(lastBuild);
+              if (containsLogStrings) {
                 System.out.println("===");
                 System.out.println("Found line, aborting");
                 // Use Jenkins' own Stop request instead of cancelling future

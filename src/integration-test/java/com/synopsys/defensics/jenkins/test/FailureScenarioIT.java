@@ -34,6 +34,7 @@ import com.synopsys.defensics.client.DefensicsRequestException;
 import com.synopsys.defensics.client.UnsafeTlsConfigurator;
 import com.synopsys.defensics.jenkins.result.HtmlReportPublisherTarget.HtmlReportAction;
 import com.synopsys.defensics.jenkins.test.utils.CredentialsUtil;
+import com.synopsys.defensics.jenkins.test.utils.JenkinsJobUtils;
 import com.synopsys.defensics.jenkins.test.utils.ProjectUtils;
 import htmlpublisher.HtmlPublisherTarget.HTMLAction;
 import hudson.EnvVars;
@@ -49,7 +50,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
@@ -322,7 +322,7 @@ public class FailureScenarioIT {
     Thread.sleep(100);
 
     final WorkflowRun lastBuild = project.getLastBuild();
-    triggerAbortOnLogLine(lastBuild, "Creating");
+    JenkinsJobUtils.triggerAbortOnLogLine(lastBuild, "Creating");
 
     WorkflowRun run = runFuture.get();
     dumpLogs(run);
@@ -354,7 +354,7 @@ public class FailureScenarioIT {
     Thread.sleep(100);
 
     final WorkflowRun lastBuild = project.getLastBuild();
-    triggerAbortOnLogLine(lastBuild, "Loading suite");
+    JenkinsJobUtils.triggerAbortOnLogLine(lastBuild, "Loading suite");
 
     WorkflowRun run = runFuture.get();
     Thread.sleep(1000);
@@ -388,7 +388,7 @@ public class FailureScenarioIT {
     Thread.sleep(100);
 
     final WorkflowRun lastBuild = project.getLastBuild();
-    triggerAbortOnLogLine(lastBuild, "Fuzz testing is starting");
+    JenkinsJobUtils.triggerAbortOnLogLine(lastBuild, "Fuzz testing is starting");
 
     WorkflowRun run = runFuture.get();
     dumpLogs(run);
@@ -420,7 +420,7 @@ public class FailureScenarioIT {
     Thread.sleep(100);
 
     final WorkflowRun lastBuild = project.getLastBuild();
-    triggerAbortOnLogLine(lastBuild, "Fuzz testing is RUNNING.");
+    JenkinsJobUtils.triggerAbortOnLogLine(lastBuild, "Fuzz testing is RUNNING.");
 
     WorkflowRun run = runFuture.get();
     dumpLogs(run);
@@ -453,7 +453,7 @@ public class FailureScenarioIT {
     Thread.sleep(100);
 
     final WorkflowRun lastBuild = project.getLastBuild();
-    triggerAbortOnLogLine(lastBuild, "Fuzz testing is COMPLETED");
+    JenkinsJobUtils.triggerAbortOnLogLine(lastBuild, "Fuzz testing is COMPLETED");
 
     WorkflowRun run = runFuture.get();
     dumpLogs(run);
@@ -515,7 +515,7 @@ public class FailureScenarioIT {
     final WorkflowRun lastBuild = project.getLastBuild();
 
     // All three suite loads need to be started before triggering interrupt.
-    triggerAbortOnLogLine(lastBuild, "Waiting for suite to load", 3);
+    JenkinsJobUtils.triggerAbortOnLogLine(lastBuild, "Waiting for suite to load", 3);
 
     WorkflowRun run = runFuture.get();
 
@@ -637,54 +637,6 @@ public class FailureScenarioIT {
     if(logHas(run, "Stopping run")) {
       assertThat(logHas(run, "Stopping succeeded"), is(true));
     }
-  }
-
-  private void triggerAbortOnLogLine(
-      WorkflowRun lastBuild,
-      String logString
-  ) {
-    triggerAbortOnLogLine(lastBuild, logString, 1);
-  }
-
-  /**
-   * Watches build log and trigger job interrupt if given logString has occurred
-   * requiredOccurenceCount times.
-   *
-   * @param lastBuild Build to watch
-   * @param logString String to look for in lines
-   * @param requiredOccurenceCount How many lines should have this to cause job interrupt
-   */
-  private void triggerAbortOnLogLine(
-      WorkflowRun lastBuild,
-      String logString,
-      int requiredOccurenceCount
-  ) {
-    Executors.newSingleThreadExecutor().submit(() -> {
-          try {
-            while (true) {
-              final boolean containsLogStrings = lastBuild.getLog(999)
-                  .stream()
-                  .filter(line -> line.contains(logString))
-                  .count() == requiredOccurenceCount;
-
-              if (containsLogStrings) {
-                System.out.println("===");
-                System.out.println("Found line, aborting");
-                // Use Jenkins' own Stop request instead of cancelling future
-                lastBuild.doStop();
-                //runFuture.cancel(true);
-                return;
-              }
-              // Busy loop, replace this triggering with better one if found. Two problems:
-              // 1) Doesn't allow precise abort on given step
-              // 2) Extraneous log polling
-              Thread.sleep(50);
-            }
-          } catch (InterruptedException | IOException e) {
-            e.printStackTrace();
-          }
-        }
-    );
   }
 
   private void checkApiServerResourcesAreCleaned() {

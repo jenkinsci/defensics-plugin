@@ -30,6 +30,7 @@ import com.synopsys.defensics.apiserver.model.RunState;
 import com.synopsys.defensics.jenkins.result.HtmlReportPublisherTarget.HtmlReportAction;
 import com.synopsys.defensics.jenkins.test.utils.CredentialsUtil;
 import com.synopsys.defensics.jenkins.test.utils.DefensicsMockServer;
+import com.synopsys.defensics.jenkins.test.utils.JenkinsJobUtils;
 import com.synopsys.defensics.jenkins.test.utils.ProjectUtils;
 import htmlpublisher.HtmlPublisherTarget.HTMLAction;
 import hudson.EnvVars;
@@ -148,8 +149,10 @@ public class RunPipelineIT {
     QueueTaskFuture<WorkflowRun> runFuture = project.scheduleBuild2(0);
 
     // Wait for client.getJob to be called once, then interrupt build.
-    sleep(2000);
-    runFuture.cancel(true);
+    Thread.sleep(1000);
+
+    final WorkflowRun lastBuild = project.getLastBuild();
+    JenkinsJobUtils.triggerAbortOnLogLine(lastBuild, "Fuzz testing is RUNNING");
 
     WorkflowRun run = runFuture.get();
 

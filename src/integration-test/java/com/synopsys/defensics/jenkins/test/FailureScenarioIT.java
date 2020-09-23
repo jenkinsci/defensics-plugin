@@ -195,6 +195,40 @@ public class FailureScenarioIT {
   }
 
   /**
+   * Test that failure count is reported.
+   */
+  @Test
+  public void testRun_hasInstrumentationFailure() throws Exception {
+    initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
+    // Configure run use instrumentation: Since we have dummy HTTP server, easiest is to abuse
+    // status filter to expect 500 instead of normal 1xx 2xx 3xx.
+    String instrumentationString = String.join(" ", Arrays.asList(
+        "--index 1",
+        "--instrument",
+        "--http-status-filter 500",
+        "--instrumentation-stop-limit 1"
+    ));
+
+    pipelineScript = createPipelineScript(
+        NAME,
+        SETTING_FILE_PATH,
+        String.format("--uri %s %s", SUT_URI, instrumentationString)
+    );
+
+    setupProject(pipelineScript);
+
+    WorkflowRun run = project.scheduleBuild2(0).get();
+    dumpLogs(run);
+
+    assertThat(logHas(run, "100.0% (1/1) of tests run. Some FAILED."), is(true));
+    assertThat(logHas(run, "Failures: 1"), is(true));
+    assertThat(logHas(run, "Fuzzing completed with verdict FAIL and 1 failures."), is(true));
+
+    checkRunAndReportPresent(run, Result.FAILURE, true);
+    checkApiServerResourcesAreCleaned();
+  }
+
+  /**
    * Test that Jenkins runs report at least WARNING if SUT URI was wrong.
    */
   @Test
@@ -612,14 +646,22 @@ public class FailureScenarioIT {
   }
 
   private void checkRunOkAndReportPresent(WorkflowRun run) throws IOException {
+    checkRunAndReportPresent(run, Result.SUCCESS, false);
+  }
+
+  private void checkRunAndReportPresent(
+      WorkflowRun run,
+      Result expectedResult,
+      boolean shouldLogPipelineError
+  ) throws IOException {
     assertThat(logHas(run, "100.0%"), is(true));
-    assertThat(run.getResult(), is(equalTo(Result.SUCCESS)));
+    assertThat(run.getResult(), is(equalTo(expectedResult)));
     assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
     assertThat(run.getActions(HTMLAction.class).size(), is(equalTo(0)));
     assertThat(project.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
     assertThat(project.getAction(HtmlReportAction.class).getUrlName(),
         is(equalTo(run.getActions(HtmlReportAction.class).get(0).getUrlName())));
-    assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(false));
+    assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(shouldLogPipelineError));
   }
 
   private void dumpLogs(WorkflowRun run) throws IOException {

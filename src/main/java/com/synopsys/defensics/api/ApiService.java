@@ -81,20 +81,28 @@ public class ApiService {
     };
 
     if (useV2Client) {
-      // FIXME: Better slash handling, and client should check if /api/v1 is supplied already
-      apiBaseUrl = defensicsInstanceUrl.endsWith("/")
-          ? URI.create(defensicsInstanceUrl + "api/v2")
-          : URI.create(defensicsInstanceUrl + "/api/v2");
+      if (defensicsInstanceUrl.endsWith("api/v2")) {
+        apiBaseUrl = URI.create(defensicsInstanceUrl);
+      } else {
+        // Add correct API version if only base address is given
+        apiBaseUrl = defensicsInstanceUrl.endsWith("/")
+            ? URI.create(defensicsInstanceUrl + "api/v2")
+            : URI.create(defensicsInstanceUrl + "/api/v2");
+      }
       defensicsClient = new DefensicsApiV2Client(
           apiBaseUrl,
           authenticationToken,
           clientConfigurator
       );
     } else {
-      // FIXME: Better slash handling, and client should check if /api/v1 is supplied already
-      apiBaseUrl = defensicsInstanceUrl.endsWith("/")
-          ? URI.create(defensicsInstanceUrl + "api/v1")
-          : URI.create(defensicsInstanceUrl + "/api/v1");
+      if (defensicsInstanceUrl.endsWith("api/v1")) {
+        apiBaseUrl = URI.create(defensicsInstanceUrl);
+      }  else {
+        // Add correct API version if only base address is given
+        apiBaseUrl = defensicsInstanceUrl.endsWith("/")
+            ? URI.create(defensicsInstanceUrl + "api/v1")
+            : URI.create(defensicsInstanceUrl + "/api/v1");
+      }
       defensicsClient = new DefensicsJsonApiClient(
           apiBaseUrl,
           authenticationToken,

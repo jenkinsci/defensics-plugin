@@ -49,7 +49,7 @@ public class DefensicsMockServer {
     // NOTE: This creates new server instance every initServer(.). If problematic, better would
     // be to change actual mockservers to inherit this, and change this class to use factory method
     // to create desired server.
-    if (ApiService.isUseV2Client()) {
+    if (ApiService.isUseApiV2Client()) {
       final DefensicsMockServerApiV2 apiV2Server = new DefensicsMockServerApiV2(
           authentication,
           verdict,

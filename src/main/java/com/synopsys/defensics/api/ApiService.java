@@ -58,7 +58,7 @@ public class ApiService {
    * Denotes whether the API v2 should be used. The APIv2 is upcoming, non-released API so default
    * to JSON:API based APIv1. Switch to APIv2 when released.
    */
-  private static final boolean useV2Client = false;
+  private static final boolean USE_API_V2_CLIENT = false;
 
   /**
    * Constructor for Job object. Job will be created but not started.
@@ -80,7 +80,7 @@ public class ApiService {
       }
     };
 
-    if (useV2Client) {
+    if (USE_API_V2_CLIENT) {
       if (defensicsInstanceUrl.endsWith("api/v2")) {
         apiBaseUrl = URI.create(defensicsInstanceUrl);
       } else {
@@ -111,8 +111,8 @@ public class ApiService {
     }
   }
 
-  public static boolean isUseV2Client() {
-    return useV2Client;
+  public static boolean isUseApiV2Client() {
+    return USE_API_V2_CLIENT;
   }
 
   /**

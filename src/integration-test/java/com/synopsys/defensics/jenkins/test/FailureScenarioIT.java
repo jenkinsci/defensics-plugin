@@ -176,7 +176,7 @@ public class FailureScenarioIT {
         URI.create(API_SERVER_URL).resolve("/api/v1"),
         CredentialsUtil.VALID_TOKEN);
 
-    System.out.println("Using API version " + (ApiService.isUseV2Client() ? "2" : "1"));
+    System.out.println("Using API version " + (ApiService.isUseApiV2Client() ? "2" : "1"));
   }
 
   /**

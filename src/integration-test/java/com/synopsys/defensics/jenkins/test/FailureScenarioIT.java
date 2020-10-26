@@ -28,7 +28,8 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
 import com.synopsys.defensics.api.ApiService;
-import com.synopsys.defensics.apiserver.client.DefensicsJsonApiClient;
+import com.synopsys.defensics.apiserver.client.DefensicsApiClient;
+import com.synopsys.defensics.apiserver.client.DefensicsApiV2Client;
 import com.synopsys.defensics.apiserver.model.SuiteInstance;
 import com.synopsys.defensics.client.DefensicsRequestException;
 import com.synopsys.defensics.client.UnsafeTlsConfigurator;
@@ -41,13 +42,9 @@ import hudson.EnvVars;
 import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
-import io.crnk.client.CrnkClient;
-import io.crnk.core.queryspec.QuerySpec;
-import io.crnk.core.repository.ResourceRepository;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
@@ -173,10 +170,8 @@ public class FailureScenarioIT {
     // Use ApiUtils for now since it's used to fetch only suite-instance count. APIv2 client has
     // already this functionality so this can be removed when APIv1 is removed.
     apiUtils = new ApiUtils(
-        URI.create(API_SERVER_URL).resolve("/api/v1"),
+        URI.create(API_SERVER_URL).resolve("/api/v2"),
         CredentialsUtil.VALID_TOKEN);
-
-    System.out.println("Using API version " + (ApiService.isUseApiV2Client() ? "2" : "1"));
   }
 
   /**
@@ -703,18 +698,18 @@ public class FailureScenarioIT {
    * these tests.
    */
   public static class ApiUtils {
-    private final DefensicsJsonApiClient defensicsJsonApiClient;
+    private final DefensicsApiClient defensicsApiClient;
 
     /** Default constructor. */
     public ApiUtils(URI apiBaseUri, String authToken) {
       if (CERTIFICATE_VALIDATION_DISABLED) {
-        defensicsJsonApiClient = new DefensicsJsonApiClient(
+        defensicsApiClient = new DefensicsApiV2Client(
             apiBaseUri,
             authToken,
             UnsafeTlsConfigurator::configureUnsafeTlsOkHttpClient
         );
       } else {
-        defensicsJsonApiClient = new DefensicsJsonApiClient(
+        defensicsApiClient = new DefensicsApiV2Client(
             apiBaseUri,
             authToken
         );
@@ -727,10 +722,7 @@ public class FailureScenarioIT {
      * @return List of suite instances
      */
     public List<SuiteInstance> getSuiteInstances() {
-      final CrnkClient crnkClient = defensicsJsonApiClient.getCrnkClient();
-      final ResourceRepository<SuiteInstance, String> suiteInstanceRepository = crnkClient
-          .getRepositoryForType(SuiteInstance.class);
-      return new ArrayList<>(suiteInstanceRepository.findAll(new QuerySpec(SuiteInstance.class)));
+      return defensicsApiClient.getSuiteInstances();
     }
   }
 }

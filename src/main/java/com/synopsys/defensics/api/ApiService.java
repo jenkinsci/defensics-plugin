@@ -19,7 +19,6 @@ package com.synopsys.defensics.api;
 import com.synopsys.defensics.apiserver.client.DefensicsApiClient;
 import com.synopsys.defensics.apiserver.client.DefensicsApiClient.DefensicsClientException;
 import com.synopsys.defensics.apiserver.client.DefensicsApiV2Client;
-import com.synopsys.defensics.apiserver.client.DefensicsJsonApiClient;
 import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.SettingCliArgs;
 import com.synopsys.defensics.apiserver.model.SuiteInstance;
@@ -55,12 +54,6 @@ public class ApiService {
   private final URI apiBaseUrl;
 
   /**
-   * Denotes whether the API v2 should be used. The APIv2 is upcoming, non-released API so default
-   * to JSON:API based APIv1. Switch to APIv2 when released.
-   */
-  private static final boolean USE_API_V2_CLIENT = true;
-
-  /**
    * Constructor for Job object. Job will be created but not started.
    */
   public ApiService(
@@ -80,39 +73,19 @@ public class ApiService {
       }
     };
 
-    if (USE_API_V2_CLIENT) {
-      if (defensicsInstanceUrl.endsWith("api/v2")) {
-        apiBaseUrl = URI.create(defensicsInstanceUrl);
-      } else {
-        // Add correct API version if only base address is given
-        apiBaseUrl = defensicsInstanceUrl.endsWith("/")
-            ? URI.create(defensicsInstanceUrl + "api/v2")
-            : URI.create(defensicsInstanceUrl + "/api/v2");
-      }
-      defensicsClient = new DefensicsApiV2Client(
-          apiBaseUrl,
-          authenticationToken,
-          clientConfigurator
-      );
+    if (defensicsInstanceUrl.endsWith("api/v2")) {
+      apiBaseUrl = URI.create(defensicsInstanceUrl);
     } else {
-      if (defensicsInstanceUrl.endsWith("api/v1")) {
-        apiBaseUrl = URI.create(defensicsInstanceUrl);
-      }  else {
-        // Add correct API version if only base address is given
-        apiBaseUrl = defensicsInstanceUrl.endsWith("/")
-            ? URI.create(defensicsInstanceUrl + "api/v1")
-            : URI.create(defensicsInstanceUrl + "/api/v1");
-      }
-      defensicsClient = new DefensicsJsonApiClient(
-          apiBaseUrl,
-          authenticationToken,
-          clientConfigurator
-      );
+      // Add correct API version if only base address is given
+      apiBaseUrl = defensicsInstanceUrl.endsWith("/")
+          ? URI.create(defensicsInstanceUrl + "api/v2")
+          : URI.create(defensicsInstanceUrl + "/api/v2");
     }
-  }
-
-  public static boolean isUseApiV2Client() {
-    return USE_API_V2_CLIENT;
+    defensicsClient = new DefensicsApiV2Client(
+        apiBaseUrl,
+        authenticationToken,
+        clientConfigurator
+    );
   }
 
   /**

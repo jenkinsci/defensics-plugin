@@ -58,7 +58,7 @@ public class ApiService {
    * Denotes whether the API v2 should be used. The APIv2 is upcoming, non-released API so default
    * to JSON:API based APIv1. Switch to APIv2 when released.
    */
-  private static final boolean USE_API_V2_CLIENT = false;
+  private static final boolean USE_API_V2_CLIENT = true;
 
   /**
    * Constructor for Job object. Job will be created but not started.

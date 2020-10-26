@@ -19,9 +19,11 @@ package com.synopsys.defensics.apiserver.client;
 import com.synopsys.defensics.apiserver.model.Result;
 import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.RunTestConfiguration;
+import com.synopsys.defensics.apiserver.model.Setting;
 import com.synopsys.defensics.apiserver.model.SettingCliArgs;
 import com.synopsys.defensics.apiserver.model.Suite;
 import com.synopsys.defensics.apiserver.model.SuiteInstance;
+import com.synopsys.defensics.apiserver.model.VersionInformation;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
@@ -38,6 +40,14 @@ public interface DefensicsApiClient {
    *     server was not possible.
    */
   boolean healthcheck();
+
+  /**
+   * Fetches API server version information. In future may contain some other component version
+   * information as well.
+   *
+   * @return VersionInformation containing server version.
+   */
+  Optional<VersionInformation> getServerVersion();
 
   /**
    * Gets test configuration for given Run.

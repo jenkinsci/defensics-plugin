@@ -16,22 +16,12 @@
 
 package com.synopsys.defensics.apiserver.model;
 
-import io.crnk.core.resource.annotations.JsonApiExposed;
-import io.crnk.core.resource.annotations.JsonApiId;
-import io.crnk.core.resource.annotations.JsonApiRelation;
-import io.crnk.core.resource.annotations.JsonApiRelationId;
-import io.crnk.core.resource.annotations.JsonApiResource;
-
 /**
  * Entry for a single failure summary.
  */
-@JsonApiResource(type = "failure-summary-entry", nested = true)
-@JsonApiExposed(false)
 public class FailureSummaryEntry {
 
   // For nested resource with to-many relation, we must use id-class
-  @JsonApiId
-  @JsonApiRelationId
   private FailureSummaryEntryId id;
 
   /**
@@ -49,10 +39,6 @@ public class FailureSummaryEntry {
    */
   private int count;
 
-  @JsonApiRelation
-  private Run run;
-
-  @JsonApiRelationId
   private String runId;
 
   /**
@@ -106,14 +92,6 @@ public class FailureSummaryEntry {
 
   public void setLevel(FailureLevel level) {
     this.level = level;
-  }
-
-  public Run getRun() {
-    return run;
-  }
-
-  public void setRun(Run run) {
-    this.run = run;
   }
 
   public String getRunId() {

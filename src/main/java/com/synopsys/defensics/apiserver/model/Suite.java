@@ -16,10 +16,6 @@
 
 package com.synopsys.defensics.apiserver.model;
 
-import io.crnk.core.resource.annotations.JsonApiField;
-import io.crnk.core.resource.annotations.JsonApiId;
-import io.crnk.core.resource.annotations.JsonApiRelation;
-import io.crnk.core.resource.annotations.JsonApiResource;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.List;
 
@@ -31,13 +27,10 @@ import java.util.List;
  * <p>Information on this is mostly read-only for clients; suiteInstance relation can be altered
  * to launch new instances of a suite.</p>
  */
-@JsonApiResource(type = "suites", postable = false, patchable = true)
 public class Suite {
 
-  @JsonApiId
   @Schema(description = "Identifies the suite/version combination",
       example = "d3-http-server:4.13.0-rel-2020-03-22478")
-  @JsonApiField(postable = false, patchable = false)
   private String id;
 
   /**
@@ -45,30 +38,19 @@ public class Suite {
    */
   @Schema(description = "Suite specifier (basically the id of a specific type of suite)",
       example = "d3-http-server")
-  @JsonApiField(postable = false, patchable = false)
   private String specifier;
 
   /**
    * Version of the suite.
    */
   @Schema(description = "Suite version", example = "4.13.0-rel-2020-03-22478")
-  @JsonApiField(postable = false, patchable = false)
   private String version;
 
   /**
    * Name of the suite.
    */
   @Schema(description = "Human-readable name of the suite", example = "HTTP Server Test Suite")
-  @JsonApiField(postable = false, patchable = false)
   private String name;
-
-  @JsonApiRelation(mappedBy = "suite")
-  @JsonApiField(postable = false, patchable = true)
-  private List<SuiteInstance> suiteInstances;
-
-  @JsonApiRelation(mappedBy = "suite")
-  @JsonApiField(postable = false, patchable = false)
-  private List<Sequence> sequences;
 
   /**
    * Constructor for suite.
@@ -121,22 +103,5 @@ public class Suite {
 
   public void setName(String name) {
     this.name = name;
-  }
-
-  public List<SuiteInstance> getSuiteInstances() {
-    return suiteInstances;
-  }
-
-  public void setSuiteInstances(
-      List<SuiteInstance> suiteInstances) {
-    this.suiteInstances = suiteInstances;
-  }
-
-  public List<Sequence> getSequences() {
-    return sequences;
-  }
-
-  public void setSequences(List<Sequence> sequences) {
-    this.sequences = sequences;
   }
 }

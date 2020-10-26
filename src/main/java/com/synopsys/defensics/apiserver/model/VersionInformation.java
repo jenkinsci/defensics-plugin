@@ -16,16 +16,21 @@
 
 package com.synopsys.defensics.apiserver.model;
 
+/**
+ * Response returned from the /api/v2/version endpoint. Currently returns only main monitor version
+ * but later on can include other components as well.
+ */
+public class VersionInformation {
+  private String monitorVersion;
 
-public class Project {
-
-  private String id;
-
-  public String getId() {
-    return id;
+  public VersionInformation() {
   }
 
-  public void setId(String id) {
-    this.id = id;
+  public void setMonitorVersion(String monitorVersion) {
+    this.monitorVersion = monitorVersion;
+  }
+
+  public String getMonitorVersion() {
+    return monitorVersion;
   }
 }

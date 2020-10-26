@@ -18,9 +18,6 @@ package com.synopsys.defensics.apiserver.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import io.crnk.core.resource.annotations.JsonApiEmbeddable;
-import io.crnk.core.resource.annotations.JsonApiId;
-import io.crnk.core.resource.annotations.JsonApiRelationId;
 import java.io.Serializable;
 import java.util.Objects;
 
@@ -28,7 +25,6 @@ import java.util.Objects;
  * ID class for {@link FailureSummaryEntry}.
  */
 @JsonSerialize(using = ToStringSerializer.class)
-@JsonApiEmbeddable
 public class FailureSummaryEntryId implements Serializable {
 
   /**
@@ -41,10 +37,8 @@ public class FailureSummaryEntryId implements Serializable {
    */
   private static final String ID_STRING_FORMAT = "%s:%s";
 
-  @JsonApiId
   private String id;
 
-  @JsonApiRelationId
   private String runId;
 
   public FailureSummaryEntryId() {

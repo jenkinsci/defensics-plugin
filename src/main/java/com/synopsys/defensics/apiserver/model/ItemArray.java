@@ -31,8 +31,12 @@ public class ItemArray<T> {
   public ItemArray() {}
   public ItemArray(List<T> data) {
     this.data = data;
-    // Indexing starts from 1 and end range is exclusive
-    this.pagination = new Pagination(1, this.data.size()+1, this.data.size());
+    this.pagination = new Pagination(0, this.data.size(), this.data.size());
+  }
+
+  public ItemArray(List<T> data, long startIndex, long endIndex, long totalCount) {
+    this.data = data;
+    this.pagination = new Pagination(startIndex, endIndex, totalCount);
   }
 
   public ItemArray(
@@ -52,28 +56,28 @@ public class ItemArray<T> {
   }
 
   public static class Pagination {
-    int startIndex;
-    int endIndex;
-    int totalCount;
+    long startIndex;
+    long endIndex;
+    long totalCount;
 
     public Pagination() {
     }
 
-    public Pagination(int startIndex, int endIndex, int totalCount) {
+    public Pagination(long startIndex, long endIndex, long totalCount) {
       this.startIndex = startIndex;
       this.endIndex = endIndex;
       this.totalCount = totalCount;
     }
 
-    public int getStartIndex() {
+    public long getStartIndex() {
       return startIndex;
     }
 
-    public int getEndIndex() {
+    public long getEndIndex() {
       return endIndex;
     }
 
-    public int getTotalCount() {
+    public long getTotalCount() {
       return totalCount;
     }
   }

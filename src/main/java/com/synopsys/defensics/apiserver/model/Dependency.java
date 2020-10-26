@@ -16,16 +16,8 @@
 
 package com.synopsys.defensics.apiserver.model;
 
-
-public class Project {
-
-  private String id;
-
-  public String getId() {
-    return id;
-  }
-
-  public void setId(String id) {
-    this.id = id;
-  }
+/**
+ * Class for setting dependency. Still just a placeholder without any content.
+ */
+public class Dependency {
 }

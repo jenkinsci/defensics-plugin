@@ -16,9 +16,6 @@
 
 package com.synopsys.defensics.apiserver.model;
 
-import io.crnk.core.resource.annotations.JsonApiField;
-import io.crnk.core.resource.annotations.JsonApiRelation;
-import io.crnk.core.resource.annotations.JsonApiResource;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -28,40 +25,31 @@ import java.time.ZonedDateTime;
  * Information about some past test run. As this describes data about past event, (nearly)
  * everything here should be read-only.
  */
-@JsonApiResource(type = "results")
 public class Result extends BaseTestRun {
 
   @Schema(description = "Number of test cases executed", example = "42321")
-  @JsonApiField(postable = false, patchable = false)
   private Long testCasesExecuted;
 
   @Schema(
       description = "Percentage of planned run completed (null for unlimited runs)",
       example = "43.5"
   )
-  @JsonApiField(postable = false, patchable = false)
   private BigDecimal completionPercentage;
 
   @Schema(description = "How run execution ended (finished, not finished))", example = "FINISHED")
-  @JsonApiField(postable = false, patchable = false)
   private RunStoppingStatus stoppingStatus;
 
   @Schema(description = "Total verdict of the test run", example = "FAIL")
-  @JsonApiField(postable = false, patchable = false)
   private RunVerdict runVerdict;
 
   @Schema(description = "When test run ended")
-  @JsonApiField(postable = false, patchable = false)
   private ZonedDateTime runEndTime;
 
   // TODO ideally Duration would get automatically documented properly, and this wouldn't be needed
   @Schema(description = "Run duration in seconds", type = "number", example = "255.421")
-  @JsonApiField(postable = false, patchable = false)
   private Duration runDuration;
 
   @Schema(description = "Information about configuration that was used on the run")
-  @JsonApiRelation(mappedBy = "result")
-  @JsonApiField(postable = false, patchable = false)
   protected ResultTestConfiguration configuration;
 
   public Result() {

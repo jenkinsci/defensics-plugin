@@ -16,8 +16,6 @@
 
 package com.synopsys.defensics.apiserver.model;
 
-import io.crnk.core.resource.annotations.JsonApiRelation;
-import io.crnk.core.resource.annotations.JsonApiRelationId;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
@@ -31,11 +29,7 @@ public abstract class BaseTestConfiguration {
       example = "Example configuration")
   protected String name;
 
-  @Schema(description = "Project this configuration belongs to")
-  @JsonApiRelation
-  protected Project project;
-
-  @JsonApiRelationId
+  @Schema(description = "Id of the project this configuration belongs to")
   protected String projectId;
 
   /**
@@ -59,10 +53,6 @@ public abstract class BaseTestConfiguration {
     return name;
   }
 
-  public Project getProject() {
-    return project;
-  }
-
   public String getProjectId() {
     return projectId;
   }
@@ -71,25 +61,7 @@ public abstract class BaseTestConfiguration {
     this.name = name;
   }
 
-  public void setProject(Project project) {
-    this.project = project;
-  }
-
   public void setProjectId(String projectId) {
     this.projectId = projectId;
   }
-
-  /**
-   * As various configurations have different id schemes, sequence relation can't be specified on
-   * the base class, instead we'll just specify getter and setter here.
-   * @return Sequence of this test configuration.
-   */
-  abstract Sequence getSequence();
-
-  /**
-   * As various configurations have different id schemes, sequence relation can't be specified on
-   * the base class, instead we'll just specify getter and setter here.
-   * @param sequence Sequence of this test configuration.
-   */
-  abstract void setSequence(Sequence sequence);
 }

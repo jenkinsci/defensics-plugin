@@ -16,10 +16,6 @@
 
 package com.synopsys.defensics.apiserver.model;
 
-import io.crnk.core.resource.annotations.JsonApiId;
-import io.crnk.core.resource.annotations.JsonApiRelation;
-import io.crnk.core.resource.annotations.JsonApiRelationId;
-import io.crnk.core.resource.annotations.JsonApiResource;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
@@ -27,22 +23,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * assigned project). This is a shared configuration that can be used as basis when creating new
  * test runs.
  */
-@JsonApiResource(type = "test-configurations")
 public class TestConfiguration extends BaseTestConfiguration {
   @Schema(description = "Id of the TestConfiguration",
       example = "1669947d-0969-4da4-8d31-880fada73815")
-  @JsonApiId
   private String id;
 
   @Schema(description = "Suite that is used on this configuration")
-  @JsonApiRelation
   protected Suite suite;
 
-  @Schema(description = "Sequence used in this configuration")
-  @JsonApiRelation
-  private Sequence sequence;
-
-  @JsonApiRelationId
+  @Schema(description = "Id of the sequence used in this configuration")
   private String sequenceId;
 
   /**
@@ -74,10 +63,12 @@ public class TestConfiguration extends BaseTestConfiguration {
     return id;
   }
 
+  @Override
   public String getName() {
     return name;
   }
 
+  @Override
   public String getProjectId() {
     return projectId;
   }
@@ -90,13 +81,11 @@ public class TestConfiguration extends BaseTestConfiguration {
     this.id = id;
   }
 
-  @Override
-  Sequence getSequence() {
-    return sequence;
+  public String getSequenceId() {
+    return sequenceId;
   }
 
-  @Override
-  void setSequence(Sequence sequence) {
-    this.sequence = sequence;
+  public void setSequenceId(String sequenceId) {
+    this.sequenceId = sequenceId;
   }
 }

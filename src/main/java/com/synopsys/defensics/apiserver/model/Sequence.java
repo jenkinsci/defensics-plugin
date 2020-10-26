@@ -16,27 +16,17 @@
 
 package com.synopsys.defensics.apiserver.model;
 
-import io.crnk.core.resource.annotations.JsonApiField;
-import io.crnk.core.resource.annotations.JsonApiId;
-import io.crnk.core.resource.annotations.JsonApiRelation;
-import io.crnk.core.resource.annotations.JsonApiRelationId;
-import io.crnk.core.resource.annotations.JsonApiResource;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.List;
 
-@JsonApiResource(type = "sequences")
 public class Sequence {
 
-  @JsonApiId
   private String id;
 
   @Schema(description = "File containing the sequence", example = "user/request-response.seq")
-  @JsonApiField(postable = false, patchable = false)
   private String file;
 
   @Schema(description = "Human-readable name of the sequence",
       example = "HTTP request and response")
-  @JsonApiField(postable = false, patchable = false)
   private String name;
 
   @Schema(
@@ -44,21 +34,10 @@ public class Sequence {
         + "include newlines)",
       example = "Send HTTP request and wait for HTTP response."
   )
-  @JsonApiField(postable = false, patchable = false)
   private String description;
 
-  @Schema(description = "Suite this file belongs to")
-  @JsonApiRelation
-  @JsonApiField(postable = false, patchable = false)
-  private Suite suite;
-
-  @JsonApiRelationId
+  @Schema(description = "Id of the suite this file belongs to")
   private String suiteId;
-
-  @Schema(description = "Run configurations using this sequence")
-  @JsonApiRelation(mappedBy = "sequence")
-  @JsonApiField(postable = true, patchable = true)
-  private List<RunTestConfiguration> runTestConfigurations;
 
   public Sequence() {
   }
@@ -111,28 +90,11 @@ public class Sequence {
     this.description = description;
   }
 
-  public Suite getSuite() {
-    return suite;
-  }
-
-  public void setSuite(Suite suite) {
-    this.suite = suite;
-  }
-
   public String getSuiteId() {
     return suiteId;
   }
 
   public void setSuiteId(String suiteId) {
     this.suiteId = suiteId;
-  }
-
-  public List<RunTestConfiguration> getRunTestConfigurations() {
-    return runTestConfigurations;
-  }
-
-  public void setRunTestConfigurations(
-      List<RunTestConfiguration> runTestConfigurations) {
-    this.runTestConfigurations = runTestConfigurations;
   }
 }

@@ -16,40 +16,18 @@
 
 package com.synopsys.defensics.apiserver.model;
 
-import io.crnk.core.resource.annotations.JsonApiField;
-import io.crnk.core.resource.annotations.JsonApiId;
-import io.crnk.core.resource.annotations.JsonApiRelation;
-import io.crnk.core.resource.annotations.JsonApiRelationId;
-import io.crnk.core.resource.annotations.JsonApiResource;
-import io.crnk.core.resource.annotations.LookupIncludeBehavior;
-import io.crnk.core.resource.annotations.RelationshipRepositoryBehavior;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * Information about configuration used on some past test run
  * As this describes data about past event, (nearly) everything here should be read-only.
  */
-@JsonApiResource(type = "result-test-configurations", nested = true)
 public class ResultTestConfiguration extends BaseTestConfiguration {
 
-  @JsonApiId
-  @JsonApiRelationId
+  @Schema(description = "Id of the result this configuration was used in")
   private String resultId;
 
-  @JsonApiRelation(
-      lookUp = LookupIncludeBehavior.AUTOMATICALLY_WHEN_NULL,
-      repositoryBehavior = RelationshipRepositoryBehavior.FORWARD_OWNER
-  )
-  @Schema(description = "Result this configuration was used in")
-  @JsonApiField(postable = false, patchable = false)
-  private Result result;
-
-  @JsonApiRelation
-  @Schema(description = "Main suite that was used")
-  @JsonApiField(postable = false, patchable = false)
-  private Suite suite;
-
-  @JsonApiRelationId
+  @Schema(description = "Id of the used main suite")
   private String suiteId;
 
   /**
@@ -59,10 +37,6 @@ public class ResultTestConfiguration extends BaseTestConfiguration {
    * sequence.
    */
   @Schema(description = "Sequence this configuration uses")
-  @JsonApiRelation
-  private Sequence sequence;
-
-  @JsonApiRelationId
   private String sequenceId;
 
   public ResultTestConfiguration() {
@@ -93,38 +67,12 @@ public class ResultTestConfiguration extends BaseTestConfiguration {
     this.resultId = resultId;
   }
 
-  public Result getResult() {
-    return result;
-  }
-
-  public void setResult(Result result) {
-    this.result = result;
-  }
-
-  public Suite getSuite() {
-    return suite;
-  }
-
-  public void setSuite(Suite suite) {
-    this.suite = suite;
-  }
-
   public String getSuiteId() {
     return suiteId;
   }
 
   public void setSuiteId(String suiteId) {
     this.suiteId = suiteId;
-  }
-
-  @Override
-  public Sequence getSequence() {
-    return sequence;
-  }
-
-  @Override
-  public void setSequence(Sequence sequence) {
-    this.sequence = sequence;
   }
 
   public String getSequenceId() {

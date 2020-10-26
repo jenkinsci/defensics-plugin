@@ -29,10 +29,12 @@ import com.synopsys.defensics.apiserver.model.ItemArray;
 import com.synopsys.defensics.apiserver.model.Result;
 import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.RunTestConfiguration;
+import com.synopsys.defensics.apiserver.model.Setting;
 import com.synopsys.defensics.apiserver.model.SettingCliArgs;
 import com.synopsys.defensics.apiserver.model.Suite;
 import com.synopsys.defensics.apiserver.model.SuiteInstance;
 import com.synopsys.defensics.apiserver.model.SuiteInstanceRequest;
+import com.synopsys.defensics.apiserver.model.VersionInformation;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -107,7 +109,7 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
     final OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder();
 
     if (clientConfigurator != null) {
-        clientConfigurator.accept(okHttpBuilder);
+      clientConfigurator.accept(okHttpBuilder);
     }
 
     okHttpBuilder.readTimeout(60, TimeUnit.SECONDS);
@@ -142,11 +144,11 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
   @Override
   public void setTestConfigurationSettings(String runId, SettingCliArgs settings) {
     final HttpUrl uploadUrl = apiBaseUrl.newBuilder()
-         .addPathSegments("runs")
-         .addPathSegment(runId)
-         .addPathSegments("configuration")
-         .addPathSegment("arguments")
-         .build();
+        .addPathSegments("runs")
+        .addPathSegment(runId)
+        .addPathSegments("configuration")
+        .addPathSegment("arguments")
+        .build();
 
     final String operation = "update test configuration";
     try {
@@ -281,6 +283,19 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
     } catch (IOException e) {
       throw new DefensicsClientException(baseErrorMessage + ": " + e.getMessage(), e);
     }
+  }
+
+  @Override
+  public Optional<VersionInformation> getServerVersion() {
+    final HttpUrl versionUrl = apiBaseUrl.newBuilder()
+        .addPathSegments("version")
+        .build();
+
+    return getSingleItem(
+        versionUrl,
+        "get version information",
+        new TypeReference<Item<VersionInformation>>() {}
+    );
   }
 
   @Override
@@ -679,7 +694,7 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
    * @param mapper ObjectMapper to configure
    */
   static void configureObjectMapper(ObjectMapper mapper) {
-    mapper.setPropertyNamingStrategy(PropertyNamingStrategy.KEBAB_CASE);
+    mapper.setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE);
     mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     mapper.registerModule(new JavaTimeModule());
   }

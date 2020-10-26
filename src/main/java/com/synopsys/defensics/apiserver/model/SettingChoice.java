@@ -16,16 +16,34 @@
 
 package com.synopsys.defensics.apiserver.model;
 
+/**
+ * Class for setting choice.
+ */
+public class SettingChoice {
 
-public class Project {
+  /**
+   * Name of the choice.
+   */
+  String name;
 
-  private String id;
+  /**
+   * Description of the choice.
+   */
+  String description;
 
-  public String getId() {
-    return id;
+  public void setName(String name) {
+    this.name = name;
   }
 
-  public void setId(String id) {
-    this.id = id;
+  public String getName() {
+    return name;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public String getDescription() {
+    return description;
   }
 }

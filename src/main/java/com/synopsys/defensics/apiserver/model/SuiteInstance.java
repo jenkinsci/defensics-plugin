@@ -16,38 +16,20 @@
 
 package com.synopsys.defensics.apiserver.model;
 
-import io.crnk.core.resource.annotations.JsonApiField;
-import io.crnk.core.resource.annotations.JsonApiId;
-import io.crnk.core.resource.annotations.JsonApiRelation;
-import io.crnk.core.resource.annotations.JsonApiRelationId;
-import io.crnk.core.resource.annotations.JsonApiResource;
-
 /**
  * Suite instance, e.g. loaded or running suite with id. The available and installed suites are
  * defined with {@link Suite}.
  */
-@JsonApiResource(type = "suite-instances")
 public class SuiteInstance {
-  @JsonApiId
   private String id;
 
-  // These are read-only status info
-  @JsonApiField(postable = false, patchable = false)
   private SuiteRunState state;
-  @JsonApiField(postable = false, patchable = false)
   private String error;
 
   // Must be specified on creation, can't be updated afterwards
-  @JsonApiRelation
-  @JsonApiField(postable = true, patchable = false)
   private Suite suite;
 
-  @JsonApiRelationId
-  @JsonApiField(postable = true, patchable = false)
   private String suiteId;
-
-  @JsonApiRelation(mappedBy = "suiteInstance")
-  private RunTestConfiguration runTestConfiguration;
 
   /**
    * Constructor for suite instance.
@@ -112,14 +94,5 @@ public class SuiteInstance {
 
   public void setSuiteId(String suiteId) {
     this.suiteId = suiteId;
-  }
-
-  public RunTestConfiguration getRunTestConfiguration() {
-    return runTestConfiguration;
-  }
-
-  public void setRunTestConfiguration(
-      RunTestConfiguration runTestConfiguration) {
-    this.runTestConfiguration = runTestConfiguration;
   }
 }

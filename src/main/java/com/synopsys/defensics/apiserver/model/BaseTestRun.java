@@ -16,10 +16,6 @@
 
 package com.synopsys.defensics.apiserver.model;
 
-import io.crnk.core.resource.annotations.JsonApiField;
-import io.crnk.core.resource.annotations.JsonApiId;
-import io.crnk.core.resource.annotations.JsonApiRelation;
-import io.crnk.core.resource.annotations.JsonApiRelationId;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.time.ZonedDateTime;
 
@@ -29,34 +25,20 @@ import java.time.ZonedDateTime;
  */
 public abstract class BaseTestRun {
 
-  @JsonApiId
   @Schema(description = "Id of the Result", example = "1a21fb37-d173-41af-8a71-5bbe06249f7f")
   protected String id;
 
   @Schema(description = "Name of the Run", example = "20200305-1217-58")
   protected String runName;
 
-  @Schema(description = "Project this run belongs")
-  @JsonApiRelation
-  protected Project project;
-
-  @JsonApiRelationId
+  @Schema(description = "Id of the project this run belongs")
   protected String projectId;
 
   protected RunType runType;
 
   // Auto-generated field, not modifiable by user
-  @JsonApiField(postable = false, patchable = false)
   protected ZonedDateTime runStartTime;
 
-  // Reference to the shared configuration that was used to create the run
-  // and used as reference for creating the actual run configuration.
-  // Must be specified at creation, can't be changed after that
-  @JsonApiRelation
-  @JsonApiField(postable = true, patchable = false)
-  protected TestConfiguration parentConfiguration;
-
-  @JsonApiRelationId
   private String parentConfigurationId;
 
   public BaseTestRun() {
@@ -88,29 +70,12 @@ public abstract class BaseTestRun {
     this.runName = runName;
   }
 
-  public TestConfiguration getParentConfiguration() {
-    return parentConfiguration;
-  }
-
-  public void setParentConfiguration(
-      TestConfiguration parentConfiguration) {
-    this.parentConfiguration = parentConfiguration;
-  }
-
   public String getParentConfigurationId() {
     return parentConfigurationId;
   }
 
   public void setParentConfigurationId(String parentConfigurationId) {
     this.parentConfigurationId = parentConfigurationId;
-  }
-
-  public Project getProject() {
-    return project;
-  }
-
-  public void setProject(Project project) {
-    this.project = project;
   }
 
   public String getProjectId() {

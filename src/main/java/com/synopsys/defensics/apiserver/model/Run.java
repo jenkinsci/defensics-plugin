@@ -17,53 +17,35 @@
 package com.synopsys.defensics.apiserver.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.crnk.core.resource.annotations.JsonApiField;
-import io.crnk.core.resource.annotations.JsonApiRelation;
-import io.crnk.core.resource.annotations.JsonApiRelationId;
-import io.crnk.core.resource.annotations.JsonApiResource;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.File;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-@JsonApiResource(type = "runs")
 public class Run extends BaseTestRun {
 
   @Schema(description = "Number of test cases that are going to be executed on the run")
-  @JsonApiField(postable = false, patchable = false)
   private int casesToBeExecuted;
 
   // Case index changes during the run. Client can't specify these, so it's not postable/patchable.
   @Schema(description = "Index of the case run is currently executing")
-  @JsonApiField(postable = false, patchable = false)
   private int caseIndex;
 
   @Schema(description = "Number of cases already executed on run")
-  @JsonApiField(postable = false, patchable = false)
   private int runIndex;
 
-  @JsonApiField(postable = false, patchable = false)
   private RunState state;
 
-  @JsonApiField(postable = false, patchable = false)
   private RunVerdict verdict;
 
   // Actual run configuration containing the settings used by run. Auto-created
   // at run creation based on the shared configuration provided
   // Can't be changed by user (contents itself can be modified)
-  @JsonApiRelation(mappedBy = "run")
-  @JsonApiField(postable = false, patchable = false)
   protected RunTestConfiguration configuration;
 
-  @JsonApiRelation(mappedBy = "run")
-  @JsonApiField(postable = false, patchable = false)
   private List<FailureSummaryEntry> failureSummary;
 
-  @JsonApiRelation
-  @Schema(description = "Result corresponding this run")
-  private Result result;
-
-  @JsonApiRelationId
+  @Schema(description = "Id of the result corresponding this run")
   private String resultId;
 
   /**
@@ -132,6 +114,7 @@ public class Run extends BaseTestRun {
     this.projectId = projectId;
   }
 
+  @Override
   public String getId() {
     return id;
   }
@@ -140,6 +123,7 @@ public class Run extends BaseTestRun {
     return state;
   }
 
+  @Override
   public String getProjectId() {
     return projectId;
   }
@@ -150,10 +134,6 @@ public class Run extends BaseTestRun {
 
   public RunTestConfiguration getConfiguration() {
     return configuration;
-  }
-
-  public Result getResult() {
-    return result;
   }
 
   public String getResultId() {
@@ -208,20 +188,18 @@ public class Run extends BaseTestRun {
     this.casesToBeExecuted = casesToBeExecuted;
   }
 
+  @Override
   public void setId(String id) {
     this.id = id;
   }
 
+  @Override
   public void setProjectId(String projectId) {
     this.projectId = projectId;
   }
 
   public void setConfiguration(RunTestConfiguration configuration) {
     this.configuration = configuration;
-  }
-
-  public void setResult(Result result) {
-    this.result = result;
   }
 
   public void setResultId(String resultId) {

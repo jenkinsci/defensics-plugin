@@ -18,7 +18,6 @@ package com.synopsys.defensics.jenkins;
 
 import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.jenkins.util.DefensicsUtils;
-import java.math.BigDecimal;
 
 public class RunLogger {
 
@@ -36,17 +35,24 @@ public class RunLogger {
   public void log(Run run) {
     final int totalCases = run.getCasesToBeExecuted();
     final int paddingSize = getNumberLength(totalCases);
-    final String status = String
-        .format("%4s%% (%" + paddingSize + "d/%d) of tests run. %s", getPercentage(run),
-            run.getRunIndex(), totalCases, getFailureStatus(run));
+    final String status = String.format(
+        "%4.1f%% (%" + paddingSize + "d/%d) of tests run. %s",
+        getPercentage(run),
+        run.getRunIndex(),
+        totalCases,
+        getFailureStatus(run)
+    );
     logger.println(status);
   }
 
-  private String getPercentage(Run run) {
+  private float getPercentage(Run run) {
     final int runIndex = run.getRunIndex();
     final int total = run.getCasesToBeExecuted();
-    final float percentage = runIndex * 100f / total;
-    return BigDecimal.valueOf(percentage).setScale(1, BigDecimal.ROUND_HALF_UP).toPlainString();
+    if (total == 0) {
+      // Return 100% in cases where zero cases meant to be run.
+      return 100f;
+    }
+    return runIndex * 100f / total;
   }
 
   private String getFailureStatus(Run run) {
@@ -57,16 +63,9 @@ public class RunLogger {
   }
 
   /**
-   * Returns count of digits in a number. Uses repeated multiplication which is faster than String
-   * based solution or logarithmic approach.
+   * Returns count of digits in a number.
    */
   private int getNumberLength(int number) {
-    int length = 0;
-    long temp = 1;
-    while (temp <= number) {
-      length++;
-      temp *= 10;
-    }
-    return length;
+    return Integer.toString(number, 10).length();
   }
 }

@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fix 'Failed to create a temp directory' error on report download
+- Fix run status errors when total case count was zero
 
 ## v1.0.3 - 2020-09-22
 ### Fixed

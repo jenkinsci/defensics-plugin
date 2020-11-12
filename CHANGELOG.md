@@ -5,6 +5,9 @@
 - Change Jenkins plugin use APIv2 which requires Defensics 2020.12. APIv1 is not used anymore.
 - Update plugin dependencies
 
+### Fixed
+- Fix 'Failed to create a temp directory' error on report download
+
 ## v1.0.3 - 2020-09-22
 ### Fixed
 - Fix Jenkins log warning `null not assignable to interface hudson.model.Action`

@@ -329,6 +329,7 @@ public class FuzzJobRunner {
     }
 
     logger.println("Downloading report.");
+    workspace.mkdirs();
     final FilePath resultsDir = workspace.createTempDir("defensics-results", null);
     defensicsClient.saveResults(defensicsRun.getId(), resultsDir);
 

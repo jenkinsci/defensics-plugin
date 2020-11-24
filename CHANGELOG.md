@@ -1,6 +1,7 @@
 # Changelog
 
 ## [Unreleased]
+- Change Jenkins plugin use APIv2 which requires Defensics 2020.12. APIv1 is not used anymore.
 
 ## v1.0.3 - 2020-09-22
 ### Fixed

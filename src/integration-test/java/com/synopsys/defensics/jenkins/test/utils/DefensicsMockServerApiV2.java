@@ -22,10 +22,21 @@ import static org.mockserver.model.JsonBody.json;
 import static org.mockserver.model.NottableString.not;
 import static org.mockserver.model.NottableString.string;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.synopsys.defensics.apiserver.model.Item;
+import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.RunState;
+import com.synopsys.defensics.apiserver.model.RunVerdict;
+import com.synopsys.defensics.apiserver.model.SuiteInstance;
+import com.synopsys.defensics.apiserver.model.SuiteRunState;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collections;
 import javax.ws.rs.core.HttpHeaders;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.matchers.Times;
@@ -50,6 +61,9 @@ public class DefensicsMockServerApiV2 {
   private final RunState endState;
   private final boolean authentication;
 
+  /** Object mapper to serialize API response. */
+  private final ObjectMapper objectMapper;
+
   public DefensicsMockServerApiV2(
       boolean authentication,
       String verdict,
@@ -58,10 +72,16 @@ public class DefensicsMockServerApiV2 {
     this.authentication = authentication;
     this.verdict = verdict;
     this.endState = endState;
+
+    // Configure objectmapper to match API server configuration (check from DefensicsApiV2Client)
+    this.objectMapper = new ObjectMapper();
+    this.objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE);
+    this.objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+    this.objectMapper.registerModule(new JavaTimeModule());
   }
 
   /**
-   * Initializes functional (succesful) mock server with authentication enabled. All needed queries
+   * Initializes functional (succesfull) mock server with authentication enabled. All needed queries
    * are supported.
    *
    * @param server Server instance to be initialized.
@@ -115,22 +135,7 @@ public class DefensicsMockServerApiV2 {
                 .withPath("/api/v2/runs"))
         .respond(HttpResponse.response()
             .withHeader("Content-Type", CONTENT_TYPE_JSON)
-            .withBody(json("{\n"
-                    + "  \"data\": {\n"
-                    + "    \"id\": \"" + RUN_ID +"\",\n"
-                    + "    \"type\": \"run\",\n"
-                    + "      \"cases-to-be-executed\": 0,\n"
-                    + "      \"case-index\": 0,\n"
-                    + "      \"run-index\": 0,\n"
-                    + "      \"state\": \"IDLE\",\n"
-                    + "      \"verdict\": null,\n"
-                    + "      \"run-name\": null,\n"
-                    + "      \"run-type\": null,\n"
-                    + "      \"run-start-time\": null,\n"
-                    + "      \"failure-summary\": []\n"
-                    + "  }\n"
-                    + "}")
-            )
+            .withBody(json(getRunJson(null, RunState.IDLE, 0)))
             .withStatusCode(201));
   }
 
@@ -163,8 +168,7 @@ public class DefensicsMockServerApiV2 {
                 .withPath("/api/v2/runs/" + RUN_ID + "/configuration/suite-instance"),
             Times.exactly(1)) //First state is LOADING
         .respond(HttpResponse.response()
-            .withBody(json(
-                suiteInstanceContent("LOADING"))).withStatusCode(200));
+            .withBody(json(getSuiteInstanceJson("LOADING"))).withStatusCode(200));
 
     server
         .when(
@@ -174,7 +178,7 @@ public class DefensicsMockServerApiV2 {
                 .withPath("/api/v2/runs/" + RUN_ID + "/configuration/suite-instance"),
             Times.unlimited()) // Next state is LOADED
         .respond(HttpResponse.response()
-            .withBody(json(suiteInstanceContent("LOADED"))).withStatusCode(200));
+            .withBody(json(getSuiteInstanceJson("LOADED"))).withStatusCode(200));
   }
 
   private void initStartRun(ClientAndServer server) {
@@ -218,11 +222,12 @@ public class DefensicsMockServerApiV2 {
             request()
                 .withMethod("GET")
                 .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
-                .withPath("/api/v2/runs/" + RUN_ID),
+                .withPath("/api/v2/runs/" + RUN_ID)
+                .withQueryStringParameter("include", "failure-summary"),
             Times.exactly(1)) //First response is "STARTING"
         .respond(HttpResponse.response()
             .withHeader("Content-Type", CONTENT_TYPE_JSON)
-            .withBody(json(runContent("PASS", RunState.STARTING, 0)))
+            .withBody(json(getRunJson("PASS", RunState.STARTING, 0)))
             .withStatusCode(200));
 
     server
@@ -230,22 +235,24 @@ public class DefensicsMockServerApiV2 {
             request()
                 .withMethod("GET")
                 .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
-                .withPath("/api/v2/runs/" + RUN_ID),
-                Times.exactly(1)) //Following response is "RUNNING"
+                .withPath("/api/v2/runs/" + RUN_ID)
+                .withQueryStringParameter("include", "failure-summary"),
+            Times.exactly(1)) //Following response is "RUNNING"
         .respond(HttpResponse.response()
             .withHeader("Content-Type", CONTENT_TYPE_JSON)
-            .withBody(json(runContent("PASS", RunState.RUNNING, 300)))
+            .withBody(json(getRunJson("PASS", RunState.RUNNING, 300)))
             .withStatusCode(200));
     server
         .when(
             request()
                 .withMethod("GET")
                 .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
-                .withPath("/api/v2/runs/" + RUN_ID),
-                Times.unlimited()) //After this job is "COMPLETED"
+                .withPath("/api/v2/runs/" + RUN_ID)
+                .withQueryStringParameter("include", "failure-summary"),
+            Times.unlimited()) //After this job is "COMPLETED"
         .respond(HttpResponse.response()
             .withHeader("Content-Type", CONTENT_TYPE_JSON)
-            .withBody(json(runContent(verdict, endState, TOTAL)))
+            .withBody(json(getRunJson(verdict, endState, TOTAL)))
             .withStatusCode(200));
   }
 
@@ -302,32 +309,44 @@ public class DefensicsMockServerApiV2 {
         .respond(HttpResponse.response().withStatusCode(204));
   }
 
-  private String runContent(String verdict, RunState runState, long runIndex) {
-    return "{\n"
-        + "  \"data\": {\n"
-        + "    \"id\": \"" + RUN_ID + "\",\n"
-        + "      \"cases-to-be-executed\": " + TOTAL + ",\n"
-        + "      \"case-index\": " + runIndex + ",\n"
-        + "      \"run-index\": " + runIndex + ",\n"
-        + "      \"state\": \"" + runState + "\",\n"
-        + "      \"verdict\": \"" + verdict + "\",\n"
-        + "      \"run-name\": null,\n"
-        + "      \"run-type\": null,\n"
-        + "      \"run-start-time\": null,\n"
-        + "      \"failure-summary\": []\n"
-        + "    }\n"
-        + "  }\n"
-        + "}";
+  private String getRunJson(String verdict, RunState runState, long runIndex) {
+    Run run = new Run(RUN_ID);
+    run.setState(runState);
+    run.setRunIndex((int)runIndex);
+    run.setCaseIndex((int)runIndex);
+    run.setCasesToBeExecuted((int)TOTAL);
+    if (verdict != null) {
+      run.setVerdict(RunVerdict.valueOf(verdict));
+    }
+    run.setFailureSummary(Collections.emptyList());
+
+    return toJsonString(new Item<Run>(run));
   }
 
-  private String suiteInstanceContent(String suiteInstanceState) {
-    return "{\n"
-        + "  \"data\": {\n"
-        + "    \"id\": \"" + SUITE_INSTANCE_ID + "\",\n"
-        + "      \"state\": \"" + suiteInstanceState + "\",\n"
-        + "      \"error\": null\n"
-        + "    }\n"
-        + "  }\n"
-        + "}";
+
+  private String getSuiteInstanceJson(String suiteInstanceState) {
+    SuiteInstance suiteInstance = new SuiteInstance(
+        SUITE_INSTANCE_ID,
+        SuiteRunState.valueOf(suiteInstanceState),
+        null,
+        "suite-id"
+    );
+
+    return toJsonString(new Item<SuiteInstance>(suiteInstance));
+  }
+
+  /**
+   * Serialize given object into JSON string which can be returned as the mocked API response.
+   *
+   * @param object to serialize
+   * @return JSON presentation
+   * @throws IllegalArgumentException if object could not be serialized
+   */
+  private String toJsonString(Object object) {
+    try {
+      return objectMapper.writeValueAsString(object);
+    } catch (JsonProcessingException e) {
+      throw new IllegalArgumentException("Cannot serialize object", e);
+    }
   }
 }

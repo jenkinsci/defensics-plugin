@@ -193,7 +193,7 @@
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
-      <version>4.7.2</version>
+      <version>4.9.0</version>
     </dependency>
     <dependency>
         <groupId>io.swagger.core.v3</groupId>
@@ -296,7 +296,7 @@
       <dependency> <!-- For OkHttp 4 -->
         <groupId>org.jetbrains.kotlin</groupId>
         <artifactId>kotlin-stdlib-common</artifactId>
-        <version>1.3.71</version>
+        <version>1.4.10</version>
       </dependency>
       <dependency>
         <groupId>xerces</groupId>

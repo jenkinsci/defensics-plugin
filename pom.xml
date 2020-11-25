@@ -236,12 +236,6 @@
       <version>1.4</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>javax.ws.rs</groupId>
-      <artifactId>javax.ws.rs-api</artifactId>
-      <version>2.1</version>
-      <scope>test</scope>
-    </dependency>
     <!--
     Plugins for test environment (see https://www.jenkins.io/doc/developer/testing/). These are
     using versions defined in Jenkins bom-2.176.x BOM file (https://github.com/jenkinsci/bom).

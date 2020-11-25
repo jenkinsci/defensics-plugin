@@ -37,7 +37,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
-import javax.ws.rs.core.HttpHeaders;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.matchers.Times;
 import org.mockserver.model.HttpResponse;
@@ -109,7 +108,7 @@ public class DefensicsMockServerApiV2 {
             request()
                 .withMethod("GET")
                 .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
-                .withHeader(HttpHeaders.AUTHORIZATION, AUTHENTICATION_TOKEN)
+                .withHeader("Authorization", AUTHENTICATION_TOKEN)
                 .withPath("/api/v2/healthcheck"))
         .respond(HttpResponse.response()
             .withBody(json(
@@ -201,7 +200,7 @@ public class DefensicsMockServerApiV2 {
                 .withHeader(
                     (
                         header(
-                            string(HttpHeaders.AUTHORIZATION),
+                            string("Authorization"),
                             not(AUTHENTICATION_TOKEN)))))
         .respond(
             HttpResponse

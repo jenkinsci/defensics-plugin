@@ -61,7 +61,6 @@ public class DefensicsUtils {
    * @param pluginName Short name of the plugin
    * @return Version information wrapped in Optional, or empty optional if version was not available
    */
-  @NotNull
   public Optional<String> getPluginVersion(String pluginName) {
     return Optional.ofNullable(Jenkins.getInstanceOrNull())
         .map(e -> e.getPlugin(pluginName))

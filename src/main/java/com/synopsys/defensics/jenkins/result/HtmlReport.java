@@ -18,6 +18,9 @@ package com.synopsys.defensics.jenkins.result;
 
 import hudson.FilePath;
 import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.nio.channels.ClosedByInterruptException;
+import org.apache.commons.lang.exception.ExceptionUtils;
 
 public class HtmlReport {
 
@@ -43,11 +46,24 @@ public class HtmlReport {
     reportFile = this.reportFolder.child("report-" + jobId + ".html");
     FilePath originalReportFile = this.reportFolder.child("report.html");
 
-    // Using URL instead of FilePath is a workaround for copyFrom(FilePath) using copyTo(FilePath),
-    // which wraps IOExceptions in another IOException, hiding ClosedByInterruptException which
-    // we'd like to handle differently from other IOExceptions as it indicates that the run was
-    // aborted.
-    reportFile.copyFrom(originalReportFile.toURI().toURL());
+    try {
+      reportFile.copyFrom(originalReportFile);
+    } catch (Exception e) {
+      // NOTE: The copyFrom can wrap Interrupted exceptions into IOExceptions so
+      // throw interrupted exception in that case to match previous code.
+      final Exception cause = (Exception) e.getCause();
+
+      // Check if there was interruption, and if yes, map to InterruptedException
+      if (cause != null
+          && (ExceptionUtils.indexOfType(cause, InterruptedIOException.class) >= 0
+          || ExceptionUtils.indexOfType(cause, ClosedByInterruptException.class) >= 0
+          || ExceptionUtils.indexOfType(cause, InterruptedException.class) >= 0)
+      ) {
+        throw new InterruptedException(e.getCause().getMessage());
+      } else {
+        throw e;
+      }
+    }
     originalReportFile.delete();
 
     reportCssFile = this.reportFolder.child("style.css");

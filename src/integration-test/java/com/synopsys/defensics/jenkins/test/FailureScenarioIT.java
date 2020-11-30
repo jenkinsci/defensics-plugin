@@ -40,11 +40,15 @@ import com.synopsys.defensics.jenkins.test.utils.ProjectUtils;
 import htmlpublisher.HtmlPublisherTarget.HTMLAction;
 import hudson.EnvVars;
 import hudson.model.Result;
+import hudson.model.Slave;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
@@ -175,15 +179,54 @@ public class FailureScenarioIT {
   }
 
   /**
-   * Test that suite is unloaded after test run.
+   * Test whole build and that that suite is unloaded after test run.
    */
   @Test
-  public void testRun_suiteShouldBeUnloaded() throws Exception {
+  public void testRun() throws Exception {
     initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
     setupProject(pipelineScript);
 
     WorkflowRun run = project.scheduleBuild2(0).get();
     dumpLogs(run);
+
+    checkRunOkAndReportPresent(run);
+    checkApiServerResourcesAreCleaned();
+  }
+
+  /**
+   * Test whole build on a separate node and that that suite is unloaded after test run. Note:
+   * This test is still running in same machine so it doesn't test all aspects, eg. remote
+   * filesystem handling.
+   */
+  @Test
+  public void testRun_runOnSeparateNode() throws Exception {
+    initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
+
+    Slave slave = jenkinsRule.createSlave();
+    // Separate node has different workspace (in same computer in these tests, though) so refer
+    // the source testplan with the absolute path
+    Path absoluteTestplanPath = Paths.get(
+        "./src/integration-test/resources/com/synopsys/defensics/jenkins/test/utils/http.testplan"
+    ).toAbsolutePath();
+
+    assertThat(Files.exists(absoluteTestplanPath), is(true));
+
+    String pipelineScript = createPipelineScript(
+        NAME,
+        absoluteTestplanPath.toString(),
+        String.format("--uri %s", SUT_URI)
+    );
+
+    String scriptWithNode = pipelineScript.replaceFirst(
+        "node",
+        String.format("node('%s')", slave.getNodeName())
+    );
+    // Ensure that replace did something
+    assertThat(scriptWithNode, is(not(equalTo(this.pipelineScript))));
+
+    setupProject(scriptWithNode);
+
+    WorkflowRun run = project.scheduleBuild2(0).get();
 
     checkRunOkAndReportPresent(run);
     checkApiServerResourcesAreCleaned();

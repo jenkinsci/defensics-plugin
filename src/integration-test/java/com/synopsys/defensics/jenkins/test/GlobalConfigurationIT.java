@@ -19,7 +19,6 @@ package com.synopsys.defensics.jenkins.test;
 import static com.synopsys.defensics.jenkins.test.utils.Constants.CERTIFICATE_VALIDATION_DISABLED;
 import static com.synopsys.defensics.jenkins.test.utils.Constants.CREDENTIALS_ID;
 import static com.synopsys.defensics.jenkins.test.utils.Constants.NAME;
-import static com.synopsys.defensics.jenkins.test.utils.Constants.SETTING_FILE_PATH;
 import static com.synopsys.defensics.jenkins.test.utils.Constants.URL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -28,7 +27,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.fail;
 
 import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
-import com.synopsys.defensics.jenkins.FuzzBuildStep;
 import com.synopsys.defensics.jenkins.configuration.InstanceConfiguration;
 import com.synopsys.defensics.jenkins.configuration.PluginConfiguration;
 import hudson.util.ListBoxModel;
@@ -56,8 +54,6 @@ public class GlobalConfigurationIT {
     defensicsInstances.add(instanceConfiguration);
     pluginConfiguration = jenkinsRule.get(PluginConfiguration.class);
     pluginConfiguration.setDefensicsInstances(defensicsInstances);
-    final FuzzBuildStep plugin = new FuzzBuildStep(SETTING_FILE_PATH);
-    plugin.setDefensicsInstance(NAME);
   }
 
   @Test

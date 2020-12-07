@@ -79,6 +79,10 @@ To install the plugin manually to a Jenkins:
 
 ## Release notes
 
+### Version 1.1.0
+- Change plugin to use new server API so this version requires Defensics 2020.12 or newer
+- Fix report download issue when using remote Jenkins nodes
+
 ### Version 1.0.3
 - Fix abort handling for pipeline jobs
 - Fix internal links within User Guide

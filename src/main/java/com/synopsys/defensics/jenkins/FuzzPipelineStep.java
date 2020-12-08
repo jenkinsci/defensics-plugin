@@ -195,6 +195,8 @@ public class FuzzPipelineStep extends Step {
           getContext().onSuccess(null);
         } catch (AbortException e) {
           getContext().onFailure(e);
+        } catch (Exception e) {
+          getContext().onFailure(e);
         }
       });
       return false;
@@ -207,7 +209,9 @@ public class FuzzPipelineStep extends Step {
      */
     @Override
     public void stop(@Nonnull Throwable cause) {
-      future.cancel(true);
+      if (future != null) {
+        future.cancel(true);
+      }
     }
   }
 

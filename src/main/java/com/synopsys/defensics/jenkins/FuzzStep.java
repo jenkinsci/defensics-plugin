@@ -64,6 +64,9 @@ public class FuzzStep {
 
 
   private FilePath getTestPlan(FilePath workspace) throws MissingConfigurationException {
+    if (settingFilePath == null) {
+      throw new MissingConfigurationException("Configuration file path was not defined");
+    }
     FilePath testPlan = new FilePath(workspace, settingFilePath);
     try {
       if (!testPlan.exists()) {

@@ -23,9 +23,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.Mockito.mock;
 
+import jenkins.model.Jenkins;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.lang.reflect.Field;
+
 public class FuzzBuildStepTest {
 
   FuzzBuildStep fuzzBuildStep;
@@ -55,5 +60,16 @@ public class FuzzBuildStepTest {
   @Test
   public void testGetSettingFilePath() {
     assertThat(fuzzBuildStep.getConfigurationFilePath(), is(equalTo(SETTING_FILE_PATH)));
+  }
+
+  @Test
+  public void testDisplayName() throws NoSuchFieldException, IllegalAccessException {
+    Jenkins jenkins = mock(Jenkins.class);
+    Jenkins.JenkinsHolder holder = () -> jenkins;
+    Field holderField = Jenkins.class.getDeclaredField("HOLDER");
+    holderField.setAccessible(true);
+    holderField.set(null, holder);
+    FuzzBuildStep.FuzzBuildStepDescriptor descriptor = new FuzzBuildStep.FuzzBuildStepDescriptor();
+    assertThat(descriptor.getDisplayName(), is(notNullValue()));
   }
 }

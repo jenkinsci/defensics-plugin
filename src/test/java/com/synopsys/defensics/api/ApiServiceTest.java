@@ -127,9 +127,10 @@ public class ApiServiceTest {
   public void testFetchJobReport() throws Exception {
     TemporaryFolder temporaryFolder = new TemporaryFolder();
     temporaryFolder.create();
-    FilePath resultForlder = new FilePath(temporaryFolder.getRoot());
-    api.saveResults(DefensicsMockServer.RUN_ID, resultForlder);
-    assertThat(resultForlder.exists(), is(equalTo(true)));
-    assertThat(resultForlder.child("report.html").exists(), is(equalTo(true)));
+    FilePath resultFolder = new FilePath(temporaryFolder.getRoot());
+    Run run = api.getRun(DefensicsMockServer.RUN_ID);
+    api.saveResults(run, resultFolder);
+    assertThat(resultFolder.exists(), is(equalTo(true)));
+    assertThat(resultFolder.child("report.html").exists(), is(equalTo(true)));
   }
 }

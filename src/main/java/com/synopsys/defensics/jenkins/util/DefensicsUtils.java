@@ -23,7 +23,6 @@ import hudson.Plugin;
 import hudson.PluginWrapper;
 import java.util.Optional;
 import jenkins.model.Jenkins;
-import org.jetbrains.annotations.NotNull;
 
 public class DefensicsUtils {
 

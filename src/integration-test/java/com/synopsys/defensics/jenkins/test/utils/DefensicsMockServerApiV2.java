@@ -46,6 +46,7 @@ import org.mockserver.model.HttpResponse;
  */
 public class DefensicsMockServerApiV2 {
   public static final String RUN_ID = "72c5c70f-102c-489c-a7cc-6625d47c5ab6";
+  public static final String RESULT_ID = "9ee36d3c-2f7d-4ae7-8ed9-974ca0518b2a";
   public static final String SUITE_INSTANCE_ID = "8f4992ae-59e9-41af-bd5c-6402fd4d781c";
   public static final long TOTAL = 5000;
   private static final String AUTHENTICATION_TOKEN = "Bearer test-token";
@@ -56,6 +57,7 @@ public class DefensicsMockServerApiV2 {
 
   private static final String EXPECTED_USER_AGENT_REGEX = "Defensics-Jenkins-Plugin.*";
   private static final String CONTENT_TYPE_JSON = "application/json; charset=utf-8";
+  private static final String REPORT_FORMAT = "cloud-html";
   private final String verdict;
   private final RunState endState;
   private final boolean authentication;
@@ -274,7 +276,10 @@ public class DefensicsMockServerApiV2 {
           request()
               .withMethod("GET")
               .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
-              .withPath("/api/v2/runs/" + RUN_ID + "/report"))
+              .withPath("/api/v2/results/report")
+              .withQueryStringParameter("resultId", RESULT_ID)
+              .withQueryStringParameter("format", REPORT_FORMAT))
+
           .respond(HttpResponse.response()
               .withStatusCode(200)
               .withBody(Files.readAllBytes(Paths.get(REPORT_ZIP_PATH))));
@@ -289,7 +294,8 @@ public class DefensicsMockServerApiV2 {
           request()
               .withMethod("GET")
               .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
-              .withPath("/api/v2/runs/" + RUN_ID + "/result-package"))
+              .withPath("/api/v2/results/result-package")
+              .withQueryStringParameter("resultId", RESULT_ID))
           .respond(HttpResponse.response()
               .withStatusCode(200)
               .withBody(Files.readAllBytes(Paths.get(RESULT_PACKAGE_PATH))));
@@ -318,6 +324,7 @@ public class DefensicsMockServerApiV2 {
       run.setVerdict(RunVerdict.valueOf(verdict));
     }
     run.setFailureSummary(Collections.emptyList());
+    run.setResultId(RESULT_ID);
 
     return toJsonString(new Item<Run>(run));
   }
@@ -328,7 +335,8 @@ public class DefensicsMockServerApiV2 {
         SUITE_INSTANCE_ID,
         SuiteRunState.valueOf(suiteInstanceState),
         null,
-        "suite-id"
+        "suite-feature",
+        "suite-version"
     );
 
     return toJsonString(new Item<SuiteInstance>(suiteInstance));

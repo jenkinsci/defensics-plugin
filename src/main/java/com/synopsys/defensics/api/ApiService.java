@@ -203,11 +203,11 @@ public class ApiService {
    * @throws DefensicsRequestException if server responds with error
    * @throws InterruptedException      if reading test plan file is interrupted
    */
-  public void saveResults(String runId, FilePath reportFolder)
+  public void saveResults(Run run, FilePath reportFolder)
       throws IOException, DefensicsRequestException, InterruptedException {
 
     try (InputStream cloudReportStream = defensicsClient.downloadReport(
-          runId,
+          run.getResultId(),
           HtmlReport.Cloud.toString()
     )) {
       reportFolder.mkdirs();
@@ -229,11 +229,10 @@ public class ApiService {
    * @throws DefensicsRequestException if server responds with error
    * @throws InterruptedException      if FilePath actions fail
    */
-  public void saveResultPackage(FilePath resultFolder, String fileName, String runId)
+  public void saveResultPackage(FilePath resultFolder, String fileName, Run run)
       throws IOException, DefensicsRequestException, InterruptedException {
     try {
-      final InputStream resultpackage = defensicsClient
-          .downloadResultPackage(runId);
+      final InputStream resultpackage = defensicsClient.downloadResultPackage(run.getResultId());
       resultFolder.child(fileName).copyFrom(resultpackage);
     } catch (DefensicsClientException e) {
       mapAndThrow(e);

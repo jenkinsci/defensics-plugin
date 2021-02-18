@@ -33,7 +33,7 @@ public class RunLogger {
    * @param run {@code Run} object for reading the run status.
    */
   public void log(Run run) {
-    final int totalCases = run.getCasesToBeExecuted();
+    final long totalCases = run.getCasesToBeExecuted();
     final int paddingSize = getNumberLength(totalCases);
     final String status = String.format(
         "%4.1f%% (%" + paddingSize + "d/%d) of tests run. %s",
@@ -46,8 +46,8 @@ public class RunLogger {
   }
 
   private float getPercentage(Run run) {
-    final int runIndex = run.getRunIndex();
-    final int total = run.getCasesToBeExecuted();
+    final long runIndex = run.getRunIndex();
+    final long total = run.getCasesToBeExecuted();
     if (total == 0) {
       // Return 100% in cases where zero cases meant to be run.
       return 100f;
@@ -65,7 +65,7 @@ public class RunLogger {
   /**
    * Returns count of digits in a number.
    */
-  private int getNumberLength(int number) {
-    return Integer.toString(number, 10).length();
+  private int getNumberLength(long number) {
+    return Long.toString(number, 10).length();
   }
 }

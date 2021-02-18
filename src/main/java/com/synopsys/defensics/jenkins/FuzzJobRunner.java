@@ -331,7 +331,7 @@ public class FuzzJobRunner {
     logger.println("Downloading report.");
     workspace.mkdirs();
     final FilePath resultsDir = workspace.createTempDir("defensics-results", null);
-    defensicsClient.saveResults(defensicsRun.getId(), resultsDir);
+    defensicsClient.saveResults(defensicsRun, resultsDir);
 
     HtmlReport report = null;
     try {
@@ -350,7 +350,7 @@ public class FuzzJobRunner {
    *
    * @param jenkinsRun   Jenkins run
    * @param defensicsRun Defensics run
-   * @throws Exception See {@link ApiService#saveResultPackage(FilePath, String, String)
+   * @throws Exception See {@link ApiService#saveResultPackage(FilePath, String, Run)
    *                   saveResultPackage} for possible exceptions
    */
   public void publishResultPackage(hudson.model.Run<?, ?> jenkinsRun, Run defensicsRun)
@@ -360,7 +360,7 @@ public class FuzzJobRunner {
         .format("defensics-b%s-%s.zip", jenkinsRun.getId(), defensicsRun.getId());
     final FilePath filePath = new FilePath(jenkinsRun.getRootDir())
         .child(ResultPackageAction.URL_NAME);
-    defensicsClient.saveResultPackage(filePath, resultFile, defensicsRun.getId());
+    defensicsClient.saveResultPackage(filePath, resultFile, defensicsRun);
     ResultPackageAction resultPackageAction = jenkinsRun.getAction(ResultPackageAction.class);
     if (resultPackageAction == null) {
       resultPackageAction = new ResultPackageAction(resultFile);

@@ -49,5 +49,4 @@ public class CredentialsUtil {
     store.addCredentials(Domain.global(), credential);
     return CREDENTIAL_ID;
   }
-
 }

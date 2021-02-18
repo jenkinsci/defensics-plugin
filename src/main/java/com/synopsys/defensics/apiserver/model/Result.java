@@ -16,10 +16,11 @@
 
 package com.synopsys.defensics.apiserver.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
 import java.time.Duration;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * Information about some past test run. As this describes data about past event, (nearly)
@@ -40,16 +41,16 @@ public class Result extends BaseTestRun {
   private RunStoppingStatus stoppingStatus;
 
   @Schema(description = "Total verdict of the test run", example = "FAIL")
-  private RunVerdict runVerdict;
+  private RunVerdict verdict;
 
   @Schema(description = "When test run ended")
-  private ZonedDateTime runEndTime;
+  private OffsetDateTime runEndTime;
 
-  // TODO ideally Duration would get automatically documented properly, and this wouldn't be needed
   @Schema(description = "Run duration in seconds", type = "number", example = "255.421")
   private Duration runDuration;
 
   @Schema(description = "Information about configuration that was used on the run")
+  @JsonIgnore
   protected ResultTestConfiguration configuration;
 
   public Result() {
@@ -65,20 +66,20 @@ public class Result extends BaseTestRun {
    * @param completionPercentage Completion percentage (check field definition for details)
    * @param stoppingStatus Execution outcome of the run
    * @param runType Run type
-   * @param runVerdict Run verdict
+   * @param verdict Run verdict
    * @param runStartTime Run starting time
    * @param runEndTime Run ending time
    * @param runDuration Run duration
    */
   public Result(String id, String runName, String projectId, Long testCasesExecuted,
       BigDecimal completionPercentage, RunStoppingStatus stoppingStatus, RunType runType,
-      RunVerdict runVerdict, ZonedDateTime runStartTime, ZonedDateTime runEndTime,
+      RunVerdict verdict, OffsetDateTime runStartTime, OffsetDateTime runEndTime,
       Duration runDuration) {
     super(id, runName, projectId, runType, runStartTime, null);
     this.testCasesExecuted = testCasesExecuted;
     this.completionPercentage = completionPercentage;
     this.stoppingStatus = stoppingStatus;
-    this.runVerdict = runVerdict;
+    this.verdict = verdict;
     this.runEndTime = runEndTime;
     this.runDuration = runDuration;
   }
@@ -107,19 +108,19 @@ public class Result extends BaseTestRun {
     this.stoppingStatus = stoppingStatus;
   }
 
-  public RunVerdict getRunVerdict() {
-    return runVerdict;
+  public RunVerdict getVerdict() {
+    return verdict;
   }
 
-  public void setRunVerdict(RunVerdict runVerdict) {
-    this.runVerdict = runVerdict;
+  public void setVerdict(RunVerdict verdict) {
+    this.verdict = verdict;
   }
 
-  public ZonedDateTime getRunEndTime() {
+  public OffsetDateTime getRunEndTime() {
     return runEndTime;
   }
 
-  public void setRunEndTime(ZonedDateTime runEndTime) {
+  public void setRunEndTime(OffsetDateTime runEndTime) {
     this.runEndTime = runEndTime;
   }
 

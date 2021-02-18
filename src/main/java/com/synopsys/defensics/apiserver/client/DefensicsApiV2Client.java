@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.common.io.ByteStreams;
+import com.synopsys.defensics.apiserver.model.BaseSettings;
 import com.synopsys.defensics.apiserver.model.HealthCheckResult;
 import com.synopsys.defensics.apiserver.model.Item;
 import com.synopsys.defensics.apiserver.model.ItemArray;
@@ -124,9 +125,9 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
   @Override
   public void uploadTestPlan(String configurationId, InputStream testplanStream) {
     final HttpUrl url = apiBaseUrl.newBuilder()
-        .addPathSegments("runs")
+        .addPathSegment("runs")
         .addPathSegment(configurationId)
-        .addPathSegments("configuration")
+        .addPathSegment("configuration")
         .addPathSegment("upload-plan")
         .build();
     try {
@@ -144,9 +145,9 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
   @Override
   public void setTestConfigurationSettings(String runId, SettingCliArgs settings) {
     final HttpUrl uploadUrl = apiBaseUrl.newBuilder()
-        .addPathSegments("runs")
+        .addPathSegment("runs")
         .addPathSegment(runId)
-        .addPathSegments("configuration")
+        .addPathSegment("configuration")
         .addPathSegment("arguments")
         .build();
 
@@ -163,9 +164,47 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
   }
 
   @Override
+  public List<Setting> setTestConfigurationSettings(String runId, BaseSettings settings) {
+    final HttpUrl uploadUrl = apiBaseUrl.newBuilder()
+        .addPathSegment("runs")
+        .addPathSegment(runId)
+        .addPathSegment("configuration")
+        .addPathSegment("settings")
+        .build();
+
+    final String operation = "update test configuration";
+    try {
+      final RequestBody body = RequestBody.create(
+          objectMapper.writeValueAsString(settings),
+          MediaType.parse("application/json")
+      );
+      return postAndGetArrayResponse(
+          uploadUrl,
+          body,
+          operation,
+          new TypeReference<ItemArray<Setting>>(){}
+      );
+    } catch (IOException e) {
+      throw new DefensicsClientException("Could not " + operation + ": " + e.getMessage(), e);
+    }
+  }
+
+  @Override
+  public List<Setting> getTestConfigurationSettings(String runId) {
+    final HttpUrl url = apiBaseUrl.newBuilder()
+        .addPathSegment("runs")
+        .addPathSegment(runId)
+        .addPathSegment("configuration")
+        .addPathSegment("settings")
+        .build();
+    final String operation = "get test configuration";
+    return getArrayItem(url, operation, new TypeReference<ItemArray<Setting>>() {});
+  }
+
+  @Override
   public Run createTestRun() {
     final HttpUrl url = apiBaseUrl.newBuilder()
-        .addPathSegments("runs")
+        .addPathSegment("runs")
         .build();
     final RequestBody body = RequestBody.create(
         "{}",
@@ -177,11 +216,15 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
   @Override
   public Optional<RunTestConfiguration> getRunConfiguration(String configurationId) {
     final HttpUrl url = apiBaseUrl.newBuilder()
-        .addPathSegments("runs")
-        .addPathSegments(configurationId)
-        .addPathSegments("configuration")
+        .addPathSegment("runs")
+        .addPathSegment(configurationId)
+        .addPathSegment("configuration")
         .build();
-    return getSingleItem(url, "get run configuration", new TypeReference<Item<RunTestConfiguration>>(){});
+    return getSingleItem(
+        url,
+        "get run configuration",
+        new TypeReference<Item<RunTestConfiguration>>(){}
+    );
   }
 
   @Override
@@ -193,8 +236,8 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
 
   public Optional<Run> getRun(String runId, String query) {
     final HttpUrl.Builder builder = apiBaseUrl.newBuilder()
-        .addPathSegments("runs")
-        .addPathSegments(runId);
+        .addPathSegment("runs")
+        .addPathSegment(runId);
 
     if (query != null) {
       builder.query(query);
@@ -209,6 +252,30 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
     final HttpUrl url = apiBaseUrl.newBuilder()
         .addPathSegment("runs")
         .build();
+
+    return getArrayItem(url, "get runs", new TypeReference<ItemArray<Run>>() {});
+  }
+
+  @Override
+  public List<Run> getRuns(String filter, String sort, Long offset, Long limit) {
+    final HttpUrl.Builder builder = apiBaseUrl.newBuilder();
+
+    builder.addPathSegment("runs");
+
+    if (filter != null) {
+      builder.addQueryParameter("filter", filter);
+    }
+    if (sort != null) {
+      builder.addQueryParameter("sort", sort);
+    }
+    if (offset != null) {
+      builder.addQueryParameter("offset", offset.toString());
+    }
+    if (limit != null) {
+      builder.addQueryParameter("limit", limit.toString());
+    }
+
+    final HttpUrl url = builder.build();
 
     return getArrayItem(url, "get runs", new TypeReference<ItemArray<Run>>() {});
   }
@@ -231,16 +298,37 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
   @Override
   public void deleteRun(String runId) {
     final HttpUrl uploadUrl = apiBaseUrl.newBuilder()
-        .addPathSegments("runs")
-        .addPathSegments(runId)
+        .addPathSegment("runs")
+        .addPathSegment(runId)
         .build();
     delete(uploadUrl, "delete test run");
   }
 
   @Override
+  public void deleteRunPreserveSuite(String runId) {
+    final HttpUrl uploadUrl = apiBaseUrl.newBuilder()
+        .addPathSegment("runs")
+        .addPathSegment(runId)
+        .addQueryParameter("unload-suite", "false")
+        .build();
+    delete(uploadUrl, "delete test run (preserve suite)");
+  }
+
+
+  @Override
+  public void deleteResult(String resultId) {
+    final HttpUrl uploadUrl = apiBaseUrl.newBuilder()
+        .addPathSegment("results")
+        .addPathSegment(resultId)
+        .build();
+    delete(uploadUrl, "delete result");
+  }
+
+
+  @Override
   public boolean healthcheck() {
     final HttpUrl healthcheckUrl = apiBaseUrl.newBuilder()
-        .addPathSegments("healthcheck")
+        .addPathSegment("healthcheck")
         .build();
 
     Request request = new Builder()
@@ -288,7 +376,7 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
   @Override
   public Optional<VersionInformation> getServerVersion() {
     final HttpUrl versionUrl = apiBaseUrl.newBuilder()
-        .addPathSegments("version")
+        .addPathSegment("version")
         .build();
 
     return getSingleItem(
@@ -300,13 +388,13 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
 
   @Override
   public InputStream downloadReport(
-      String runId,
+      String resultId,
       String reportType
   ) {
     HttpUrl.Builder uriBuilder = apiBaseUrl.newBuilder()
-        .addPathSegment("runs")
-        .addPathSegment(runId)
+        .addPathSegment("results")
         .addPathSegment("report")
+        .addQueryParameter("resultId", resultId)
         .addQueryParameter("format", reportType);
 
     final HttpUrl reportUri = uriBuilder.build();
@@ -335,12 +423,13 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
   }
 
   @Override
-  public InputStream downloadResultPackage(String runId) {
+  public InputStream downloadResultPackage(String resultId) {
     HttpUrl.Builder uriBuilder = apiBaseUrl
         .newBuilder()
-        .addPathSegment("runs")
-        .addPathSegment(runId)
-        .addPathSegment("result-package");
+        .addPathSegment("results")
+        .addPathSegment("result-package")
+        .addQueryParameter("resultId", resultId);
+
 
     final HttpUrl resultPackageUri = uriBuilder.build();
 
@@ -371,28 +460,36 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
   @Override
   public Optional<SuiteInstance> getRunSuiteInstance(String runId) {
     final HttpUrl url = apiBaseUrl.newBuilder()
-        .addPathSegments("runs")
-        .addPathSegments(runId)
-        .addPathSegments("configuration")
+        .addPathSegment("runs")
+        .addPathSegment(runId)
+        .addPathSegment("configuration")
         .addPathSegment("suite-instance")
         .build();
 
-    return getSingleItem(url, "get suite for configuration", new TypeReference<Item<SuiteInstance>>() {});
+    return getSingleItem(
+        url,
+        "get suite for configuration",
+        new TypeReference<Item<SuiteInstance>>() {}
+    );
   }
 
   @Override
   public List<SuiteInstance> getSuiteInstances() {
     final HttpUrl url = apiBaseUrl.newBuilder()
-        .addPathSegments("suite-instances")
+        .addPathSegment("suite-instances")
         .build();
 
-    return getArrayItem(url, "get suite instances", new TypeReference<ItemArray<SuiteInstance>>() {});
+    return getArrayItem(
+        url,
+        "get suite instances",
+        new TypeReference<ItemArray<SuiteInstance>>() {}
+    );
   }
 
   @Override
   public Optional<SuiteInstance> getSuiteInstance(String suiteInstanceId) {
     final HttpUrl url = apiBaseUrl.newBuilder()
-        .addPathSegments("suite-instances")
+        .addPathSegment("suite-instances")
         .addPathSegment(suiteInstanceId)
         .build();
 
@@ -402,7 +499,7 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
   @Override
   public void startRun(String runId) {
     final HttpUrl url = apiBaseUrl.newBuilder()
-        .addPathSegments("runs")
+        .addPathSegment("runs")
         .addPathSegment(runId)
         .addPathSegment("start")
         .build();
@@ -413,7 +510,7 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
   @Override
   public void stopRun(String runId) {
     final HttpUrl url = apiBaseUrl.newBuilder()
-        .addPathSegments("runs")
+        .addPathSegment("runs")
         .addPathSegment(runId)
         .addPathSegment("stop")
         .build();
@@ -424,7 +521,7 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
   @Override
   public void pauseRun(String runId) {
     final HttpUrl url = apiBaseUrl.newBuilder()
-        .addPathSegments("runs")
+        .addPathSegment("runs")
         .addPathSegment(runId)
         .addPathSegment("pause")
         .build();
@@ -435,7 +532,7 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
   @Override
   public void resumeRun(String runId) {
     final HttpUrl url = apiBaseUrl.newBuilder()
-        .addPathSegments("runs")
+        .addPathSegment("runs")
         .addPathSegment(runId)
         .addPathSegment("resume")
         .build();
@@ -446,18 +543,45 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
   @Override
   public List<Suite> getSuites() {
     final HttpUrl url = apiBaseUrl.newBuilder()
-        .addPathSegments("suites")
+        .addPathSegment("suites")
         .build();
 
     return getArrayItem(url, "get suites", new TypeReference<ItemArray<Suite>>() {});
   }
 
   @Override
-  public SuiteInstance loadSuite(String suiteId) {
+  public Optional<Suite> getSuite(String suiteFeature, String suiteVersion) {
     final HttpUrl url = apiBaseUrl.newBuilder()
-        .addPathSegments("suites")
-        .addPathSegments(suiteId)
-        .addPathSegments("load")
+        .addPathSegment("suites")
+        .addPathSegment(suiteFeature)
+        .addPathSegment(suiteVersion)
+        .build();
+    return getSingleItem(url, "get suite", new TypeReference<Item<Suite>>() {});
+  }
+
+  @Override
+  public SuiteInstance loadSuite(String suiteFeature) {
+    final HttpUrl url = apiBaseUrl.newBuilder()
+        .addPathSegment("suites")
+        .addPathSegment(suiteFeature)
+        .addPathSegment("load")
+        .build();
+
+    return post(
+        url,
+        ACTION_NO_CONTENT,
+        "load suite with configuration",
+        new TypeReference<Item<SuiteInstance>>() {}
+    );
+  }
+
+  @Override
+  public SuiteInstance loadSuite(String suiteFeature, String suiteVersion) {
+    final HttpUrl url = apiBaseUrl.newBuilder()
+        .addPathSegment("suites")
+        .addPathSegment(suiteFeature)
+        .addPathSegment(suiteVersion)
+        .addPathSegment("load")
         .build();
 
     return post(
@@ -471,8 +595,8 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
   @Override
   public void unloadSuiteInstance(String suiteInstanceId) {
     final HttpUrl url = apiBaseUrl.newBuilder()
-        .addPathSegments("suite-instances")
-        .addPathSegments(suiteInstanceId)
+        .addPathSegment("suite-instances")
+        .addPathSegment(suiteInstanceId)
         .build();
 
     delete(url, "unload suite");
@@ -481,8 +605,8 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
   @Override
   public void assignSuiteToRun(String suiteInstanceId, String runId) {
     final HttpUrl url = apiBaseUrl.newBuilder()
-        .addPathSegments("runs")
-        .addPathSegments(runId)
+        .addPathSegment("runs")
+        .addPathSegment(runId)
         .addPathSegment("configuration")
         .addPathSegment("assign-suite")
         .build();
@@ -501,14 +625,23 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
     }
   }
 
+  @Override
+  public Optional<Result> getResult(String resultId) {
+    final HttpUrl.Builder builder = apiBaseUrl.newBuilder()
+        .addPathSegment("results")
+        .addPathSegment(resultId);
+
+    final HttpUrl url = builder.build();
+    return getSingleItem(url, "get result", new TypeReference<Item<Result>>(){});
+  }
+
   private <T> Optional<T> getSingleItem(
       HttpUrl uploadUrl,
       String operationString,
       TypeReference<Item<T>> typeReference
   ) {
-    try {
-      final Request request = new Builder().url(uploadUrl).get().build();
-      final Response response = okHttpClient.newCall(request).execute();
+    final Request request = new Builder().url(uploadUrl).get().build();
+    try (Response response = okHttpClient.newCall(request).execute()) {
       if (response.code() == 404) {
         return Optional.empty();
       }
@@ -534,7 +667,6 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
           .map(Item::getData)
           .map(Optional::of)
           .orElseThrow(() -> new DefensicsClientException("Server response empty"));
-
     } catch (IOException e) {
       throw new DefensicsClientException(
           String.format("Could not %s: %s", operationString, e.getMessage()),
@@ -548,10 +680,8 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
       String operationString,
       TypeReference<ItemArray<T>> typeReference
   ) {
-    try {
-      final Request request = new Builder().url(url).get().build();
-      final Response response = okHttpClient.newCall(request).execute();
-
+    final Request request = new Builder().url(url).get().build();
+    try (final Response response = okHttpClient.newCall(request).execute()) {
       if (response.code() >= 400) {
         String message = errorMessageForFailingJaxRsRequest(
             "Could not " + operationString,
@@ -573,7 +703,6 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
           })
           .map(ItemArray::getData)
           .orElseThrow(() -> new DefensicsClientException("Server response empty"));
-
     } catch (IOException e) {
       throw new DefensicsClientException(
           String.format("Could not %s: %s", operationString, e.getMessage()), e
@@ -594,12 +723,8 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
   }
 
   private void delete(HttpUrl uploadUrl, String operation) {
-    try {
-      final Request request = new Builder()
-          .url(uploadUrl)
-          .delete()
-          .build();
-      final Response response = okHttpClient.newCall(request).execute();
+    final Request request = new Builder().url(uploadUrl).delete().build();
+    try (final Response response = okHttpClient.newCall(request).execute()) {
       if (response.code() >= 400) {
         String message = errorMessageForFailingJaxRsRequest(
             "Could not " + operation,
@@ -609,7 +734,7 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
         throw new DefensicsClientException(message);
       }
     } catch (IOException e) {
-      throw new DefensicsClientException( "Could not " + operation + ":" + e.getMessage(), e);
+      throw new DefensicsClientException("Could not " + operation + ":" + e.getMessage(), e);
     }
   }
 
@@ -622,7 +747,7 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
    * @param body Request body
    * @param operationString String used in eg. error conditions. In format "upload testplan"
    * @param typeReference Typereference where to de-serialize response. If null, response is not
-   * read and null is returned.
+   *     read and null is returned.
    * @param <T> Expected result type. Note that Item unwrapping is defined already.
    * @return De-serialized response or null
    */
@@ -632,12 +757,11 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
       String operationString,
       TypeReference<Item<T>> typeReference
   ) {
-    try {
-      final Request request = new Builder()
-          .url(url)
-          .post(body)
-          .build();
-      final Response response = okHttpClient.newCall(request).execute();
+    final Request request = new Builder()
+        .url(url)
+        .post(body)
+        .build();
+    try (final Response response = okHttpClient.newCall(request).execute()) {
       if (response.code() >= 400) {
         String message = errorMessageForFailingJaxRsRequest(
             "Could not " + operationString,
@@ -665,7 +789,55 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
         return null;
       }
     } catch (IOException e) {
-      throw new DefensicsClientException("Could not create test ru: " + e.getMessage(), e);
+      throw new DefensicsClientException("Could not " + operationString + ":" + e.getMessage(), e);
+    }
+  }
+
+  /**
+   * Make HTTP POST request to given url with given RequestBody. Read itemArray type of response.
+   *
+   * @param url URL
+   * @param body Request body
+   * @param operationString String used in eg. error conditions. In format "upload testplan"
+   * @param typeReference Type reference where to de-serialize response.
+   * @param <T> Expected result type. Note that Item unwrapping is defined already.
+   * @return De-serialized response
+   */
+  private <T> List<T> postAndGetArrayResponse(
+      HttpUrl url,
+      RequestBody body,
+      String operationString,
+      TypeReference<ItemArray<T>> typeReference
+  ) {
+    final Request request = new Builder()
+        .url(url)
+        .post(body)
+        .build();
+    try (final Response response = okHttpClient.newCall(request).execute()) {
+      if (response.code() >= 400) {
+        String message = errorMessageForFailingJaxRsRequest(
+            "Could not " + operationString,
+            response
+        );
+
+        throw new DefensicsClientException(message);
+      }
+      return Optional.of(response)
+          .map(Response::body)
+          .map(ResponseBody::byteStream)
+          .map(stream -> {
+            try {
+              return objectMapper.readValue(stream, typeReference);
+            } catch (IOException e) {
+              throw new DefensicsClientException(
+                  "Could not parse response: " + e.getMessage(), e
+              );
+            }
+          })
+          .map(ItemArray::getData)
+          .orElseThrow(() -> new DefensicsClientException("Server response empty"));
+    } catch (IOException e) {
+      throw new DefensicsClientException("Could not " + operationString + ":" + e.getMessage(), e);
     }
   }
 

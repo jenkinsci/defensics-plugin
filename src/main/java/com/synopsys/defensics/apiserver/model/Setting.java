@@ -16,117 +16,129 @@
 
 package com.synopsys.defensics.apiserver.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Class to store setting object.
  */
-public class Setting {
-  /**
-   * Name of the setting, used as id.
-   */
-  private String name;
-
+public class Setting extends BaseSetting {
   /**
    * Argument of the the setting.
    */
+  @Schema(description = "Command-line argument for the setting.")
   private String argument;
 
   /**
    * Description for the setting. Used as human readable name.
    */
+  @Schema(description = "Human readable name of the setting.")
   private String description;
 
   /**
-   * The settings group.
+   * The settings group as list of groups, used internally.
    */
-  private String group;
+  @JsonIgnore
+  private transient List<String> groupList;
 
   /**
-   * List of dependencies to other settings.
+   * The settings group id.
    */
-  private List<Dependency> dependency;
+  @Schema(description = "Name of the settings group (page) this setting is listed in.")
+  private String group;
 
   /**
    * Possible list of choices.
    */
+  @Schema(description = "Allowed choice values for this setting.")
   private List<SettingChoice> choices;
-
-  /**
-   * Value of the suite.
-   */
-  private String value;
 
   /**
    * The default value.
    */
+  @Schema(description = "Default value for this setting.")
   private String defaultValue;
 
   /**
    * If the setting is enabled.
    */
+  @Schema(description = "A flag indicating if the setting is configurable (enabled) or not.")
   private boolean enabled;
-
-  /**
-   * If the setting is editable.
-   */
-  private boolean editable;
 
   /**
    * If change causes test cases change.
    */
+  @Schema(description = "A flag indicating if changing the value of this setting will require the"
+      + " suite to be reloaded.")
   private boolean reloadRequired;
 
   /**
    * Type of the setting.
    */
+  @Schema(description = "Type of this setting.")
   private String type;
-
-  /**
-   * Optional endpoint for additional data.
-   */
-  private String endpoint;
-
-  /**
-   * REGEX to be used for value validating.
-   */
-  private String validator;
 
   /**
    * URL for help.
    */
+  @Schema(description = "URL for help documentation for this setting.")
   private String helpUrl;
 
   /**
    * History of submitted values.
    */
+  @Schema(description = "History of recently used values for this setting.")
   private List<String> history;
-
-  /**
-   * Possible setting children.
-   * These are used for complex settings.
-   */
-  private List<Setting> children;
 
   /**
    * If the setting requires a value.
    */
+  @Schema(description = "Indicate if a value is always required for this setting.")
   private boolean valueRequired;
 
   /**
    * Indicates support for live setting validation.
    */
+  @Schema(description = "A flag indicating if live validation is supported for this setting.")
   private boolean validationSupported;
+
+  /**
+   * Number size, a rendering hint for frontend.
+   */
+  @Schema(description = "Size hint for a number setting field.")
+  private NumberSize numberSize;
+
+  /**
+   * Minimum value for number setting. {@code null} if not defined.
+   */
+  @Schema(description = "Minimum value for a number setting.")
+  private Long minValue;
+
+  /**
+   * Maximum value for number setting. {@code null} if not defined.
+   */
+  @Schema(description = "Maximum value for a number setting.")
+  private Long maxValue;
+
+  /**
+   * Number radix. {@code null} if not defined.
+   */
+  @Schema(description = "Radix for a number setting.")
+  private Integer radix;
 
   /**
    * Order of the setting.
    */
+  @Schema(description = "Location of this setting in an UI. Smaller values should be shown first.")
   private int order;
 
-  public Setting() {}
+  public Setting() {
+    super(null, null);
+  }
 
   public void setArgument(String argument) {
     this.argument = argument;
@@ -141,29 +153,24 @@ public class Setting {
     this.defaultValue = defaultValue;
   }
 
-  @JsonSetter(nulls = Nulls.AS_EMPTY)
-  public void setDependency(List<Dependency> dependency) {
-    this.dependency = dependency;
-  }
-
   public void setDescription(String description) {
     this.description = description;
-  }
-
-  public void setEditable(boolean editable) {
-    this.editable = editable;
   }
 
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
   }
 
-  public void setEndpoint(String endpoint) {
-    this.endpoint = endpoint;
-  }
-
-  public void setGroup(String group) {
-    this.group = group;
+  /**
+   * Setter for the group list, sets also the group id.
+   *
+   * @param groupList list of groups.
+   */
+  public void setGroupList(List<String> groupList) {
+    this.groupList = groupList;
+    if (groupList != null && groupList.size() > 0) {
+      group = String.join("|", groupList);
+    }
   }
 
   public void setHelpUrl(String helpUrl) {
@@ -175,10 +182,6 @@ public class Setting {
     this.history = new ArrayList<>(history);
   }
 
-  public void setName(String name) {
-    this.name = name;
-  }
-
   public void setReloadRequired(boolean reloadRequired) {
     this.reloadRequired = reloadRequired;
   }
@@ -187,21 +190,8 @@ public class Setting {
     this.type = type;
   }
 
-  public void setValue(String value) {
-    this.value = value;
-  }
-
   public void setOrder(int order) {
     this.order = order;
-  }
-
-  public void setValidator(String validator) {
-    this.validator = validator;
-  }
-
-  @JsonSetter(nulls = Nulls.AS_EMPTY)
-  public void setChildren(List<Setting> children) {
-    this.children = children;
   }
 
   public void setValueRequired(boolean valueRequired) {
@@ -212,28 +202,32 @@ public class Setting {
     this.validationSupported = validationSupported;
   }
 
-  public String getDescription() {
-    return description;
+  public NumberSize getNumberSize() {
+    return numberSize;
   }
 
-  public String getName() {
-    return name;
+  public Long getMinValue() {
+    return minValue;
+  }
+
+  public Long getMaxValue() {
+    return maxValue;
+  }
+
+  public Integer getRadix() {
+    return radix;
+  }
+
+  public String getDescription() {
+    return description;
   }
 
   public String getArgument() {
     return argument;
   }
 
-  public boolean getEditable() {
-    return editable;
-  }
-
   public boolean getEnabled() {
     return enabled;
-  }
-
-  public List<Dependency> getDependency() {
-    return dependency;
   }
 
   public List<SettingChoice> getChoices() {
@@ -248,8 +242,8 @@ public class Setting {
     return reloadRequired;
   }
 
-  public String getEndpoint() {
-    return endpoint;
+  public List<String> getGroupList() {
+    return groupList;
   }
 
   public String getGroup() {
@@ -268,20 +262,8 @@ public class Setting {
     return type;
   }
 
-  public String getValidator() {
-    return validator;
-  }
-
-  public String getValue() {
-    return value;
-  }
-
   public int getOrder() {
     return order;
-  }
-
-  public List<Setting> getChildren() {
-    return children;
   }
 
   public boolean getValueRequired() {
@@ -290,5 +272,21 @@ public class Setting {
 
   public boolean isValidationSupported() {
     return validationSupported;
+  }
+
+  public void setNumberSize(NumberSize numberSize) {
+    this.numberSize = numberSize;
+  }
+
+  public void setMinValue(Long minValue) {
+    this.minValue = minValue;
+  }
+
+  public void setMaxValue(Long maxValue) {
+    this.maxValue = maxValue;
+  }
+
+  public void setRadix(Integer radix) {
+    this.radix = radix;
   }
 }

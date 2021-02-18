@@ -16,8 +16,9 @@
 
 package com.synopsys.defensics.apiserver.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * Base class for Run (a test run that is currently running) and Result (a test run that has
@@ -32,20 +33,22 @@ public abstract class BaseTestRun {
   protected String runName;
 
   @Schema(description = "Id of the project this run belongs")
+  @JsonIgnore
   protected String projectId;
 
   protected RunType runType;
 
   // Auto-generated field, not modifiable by user
-  protected ZonedDateTime runStartTime;
+  protected OffsetDateTime runStartTime;
 
+  @JsonIgnore
   private String parentConfigurationId;
 
   public BaseTestRun() {
   }
 
   public BaseTestRun(String id, String runName, String projectId,
-      RunType runType, ZonedDateTime runStartTime, String parentConfigurationId) {
+      RunType runType, OffsetDateTime runStartTime, String parentConfigurationId) {
     this.id = id;
     this.runName = runName;
     this.projectId = projectId;
@@ -94,11 +97,11 @@ public abstract class BaseTestRun {
     this.runType = runType;
   }
 
-  public ZonedDateTime getRunStartTime() {
+  public OffsetDateTime getRunStartTime() {
     return runStartTime;
   }
 
-  public void setRunStartTime(ZonedDateTime runStartTime) {
+  public void setRunStartTime(OffsetDateTime runStartTime) {
     this.runStartTime = runStartTime;
   }
 }

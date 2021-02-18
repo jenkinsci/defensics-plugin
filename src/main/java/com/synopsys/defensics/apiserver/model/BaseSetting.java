@@ -16,53 +16,44 @@
 
 package com.synopsys.defensics.apiserver.model;
 
-/**
- * Class for setting choice.
- */
-public class SettingChoice {
+import io.swagger.v3.oas.annotations.media.Schema;
+
+public class BaseSetting {
+  /**
+   * Name of the setting, used as id.
+   */
+  @Schema(description = "Setting name used as an identifier")
+  private String name;
 
   /**
-   * Constructor.
-   *
-   * @param name        name for choice.
-   * @param description description for the choice.
+   * Value of the setting.
    */
-  public SettingChoice(String name, String description) {
+  @Schema(description = "Value of the setting as string.")
+  private String value;
+
+  private BaseSetting() {
+    this(null, null);
+  }
+
+  public BaseSetting(String name, String value) {
     this.name = name;
-    this.description = description;
+    this.value = value;
   }
-
-  /**
-   * Empty constructor.
-   */
-  public SettingChoice() {
-
-  }
-
-
-  /**
-   * Name of the choice.
-   */
-  String name;
-
-  /**
-   * Description of the choice.
-   */
-  String description;
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public void setValue(String value) {
+    this.value = value;
   }
 
   public String getName() {
     return name;
   }
 
-  public void setDescription(String description) {
-    this.description = description;
+  public String getValue() {
+    return value;
   }
 
-  public String getDescription() {
-    return description;
-  }
 }

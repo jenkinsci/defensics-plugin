@@ -21,9 +21,6 @@ package com.synopsys.defensics.apiserver.model;
  */
 public class FailureSummaryEntry {
 
-  // For nested resource with to-many relation, we must use id-class
-  private FailureSummaryEntryId id;
-
   /**
    * Source instrumentation of the failure summary.
    */
@@ -39,8 +36,6 @@ public class FailureSummaryEntry {
    */
   private int count;
 
-  private String runId;
-
   /**
    * The default constructor.
    */
@@ -53,21 +48,11 @@ public class FailureSummaryEntry {
    * @param source The failure source instrumentation.
    * @param count  The number of failure events.
    */
-  public FailureSummaryEntry(String id, String runId, String source, FailureLevel level,
+  public FailureSummaryEntry(String source, FailureLevel level,
       int count) {
-    this.id = new FailureSummaryEntryId(id, runId);
     this.source = source;
     this.count = count;
     this.level = level;
-    this.runId = runId;
-  }
-
-  public FailureSummaryEntryId getId() {
-    return id;
-  }
-
-  public void setId(FailureSummaryEntryId id) {
-    this.id = id;
   }
 
   public int getCount() {
@@ -92,13 +77,5 @@ public class FailureSummaryEntry {
 
   public void setLevel(FailureLevel level) {
     this.level = level;
-  }
-
-  public String getRunId() {
-    return runId;
-  }
-
-  public void setRunId(String runId) {
-    this.runId = runId;
   }
 }

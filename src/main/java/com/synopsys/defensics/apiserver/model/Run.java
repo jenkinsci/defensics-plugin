@@ -19,20 +19,20 @@ package com.synopsys.defensics.apiserver.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.File;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 public class Run extends BaseTestRun {
 
   @Schema(description = "Number of test cases that are going to be executed on the run")
-  private int casesToBeExecuted;
+  private long casesToBeExecuted;
 
   // Case index changes during the run. Client can't specify these, so it's not postable/patchable.
   @Schema(description = "Index of the case run is currently executing")
-  private int caseIndex;
+  private long caseIndex;
 
   @Schema(description = "Number of cases already executed on run")
-  private int runIndex;
+  private long runIndex;
 
   private RunState state;
 
@@ -41,6 +41,7 @@ public class Run extends BaseTestRun {
   // Actual run configuration containing the settings used by run. Auto-created
   // at run creation based on the shared configuration provided
   // Can't be changed by user (contents itself can be modified)
+  @JsonIgnore
   protected RunTestConfiguration configuration;
 
   private List<FailureSummaryEntry> failureSummary;
@@ -77,11 +78,11 @@ public class Run extends BaseTestRun {
       String name,
       String projectId,
       RunType runType,
-      ZonedDateTime startTime,
+      OffsetDateTime startTime,
       String parentConfigurationId,
-      int casesToBeExecuted,
-      int caseIndex,
-      int runIndex,
+      long casesToBeExecuted,
+      long caseIndex,
+      long runIndex,
       RunState state,
       RunVerdict verdict,
       List<FailureSummaryEntry> failureSummary,
@@ -144,19 +145,19 @@ public class Run extends BaseTestRun {
     this.failureSummary = failureSummary;
   }
 
-  public void setRunIndex(int runIndex) {
+  public void setRunIndex(long runIndex) {
     this.runIndex = runIndex;
   }
 
-  public void setCaseIndex(int caseIndex) {
+  public void setCaseIndex(long caseIndex) {
     this.caseIndex = caseIndex;
   }
 
-  public int getCaseIndex() {
+  public long getCaseIndex() {
     return caseIndex;
   }
 
-  public int getRunIndex() {
+  public long getRunIndex() {
     return runIndex;
   }
 
@@ -180,11 +181,11 @@ public class Run extends BaseTestRun {
     this.targetDirectory = targetDirectory;
   }
 
-  public int getCasesToBeExecuted() {
+  public long getCasesToBeExecuted() {
     return casesToBeExecuted;
   }
 
-  public void setCasesToBeExecuted(int casesToBeExecuted) {
+  public void setCasesToBeExecuted(long casesToBeExecuted) {
     this.casesToBeExecuted = casesToBeExecuted;
   }
 

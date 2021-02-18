@@ -16,6 +16,7 @@
 
 package com.synopsys.defensics.apiserver.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
@@ -25,10 +26,12 @@ import io.swagger.v3.oas.annotations.media.Schema;
  */
 public abstract class BaseTestConfiguration {
 
+  @JsonIgnore
   @Schema(description = "Human-readable name of the TestConfiguration",
       example = "Example configuration")
   protected String name;
 
+  @JsonIgnore
   @Schema(description = "Id of the project this configuration belongs to")
   protected String projectId;
 

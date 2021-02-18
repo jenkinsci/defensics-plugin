@@ -17,33 +17,31 @@
 package com.synopsys.defensics.apiserver.model;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.util.List;
 
 /**
- * Defines the suite properties: specifier and version, and if it's installed.
+ * Defines the suite properties: feature and version, and if it's installed.
  *
  * <p>When the suite starts, that started suite will be a suite instance {@link SuiteInstance}.</p>
  *
- * <p>Information on this is mostly read-only for clients; suiteInstance relation can be altered
- * to launch new instances of a suite.</p>
+ * <p>Information on this is mostly read-only for clients.</p>
  */
+@Schema(
+    description = "Installed suite that can be loaded. Suite is identified "
+        + "by its feature/version combination"
+)
 public class Suite {
 
-  @Schema(description = "Identifies the suite/version combination",
-      example = "d3-http-server:4.13.0-rel-2020-03-22478")
-  private String id;
-
   /**
-   * Specifier of the suite.
+   * Feature of the suite.
    */
-  @Schema(description = "Suite specifier (basically the id of a specific type of suite)",
+  @Schema(description = "Suite feature identifies type of the suite (HTTP suite, TLS suite, etc)",
       example = "d3-http-server")
-  private String specifier;
+  private String feature;
 
   /**
    * Version of the suite.
    */
-  @Schema(description = "Suite version", example = "4.13.0-rel-2020-03-22478")
+  @Schema(description = "Suite version", example = "4.13.0")
   private String version;
 
   /**
@@ -61,32 +59,22 @@ public class Suite {
 
   /**
    * Constructor for suite with initial values specified.
-   * @param id Suite id
-   * @param specifier Suite specifier.
+   * @param feature Suite feature.
    * @param version Suite version
    * @param name Suite name
    */
-  public Suite(String id, String specifier, String version, String name) {
-    this.id = id;
-    this.specifier = specifier;
+  public Suite(String feature, String version, String name) {
+    this.feature = feature;
     this.version = version;
     this.name = name;
   }
 
-  public String getId() {
-    return id;
+  public String getFeature() {
+    return feature;
   }
 
-  public void setId(String id) {
-    this.id = id;
-  }
-
-  public String getSpecifier() {
-    return specifier;
-  }
-
-  public void setSpecifier(String specifier) {
-    this.specifier = specifier;
+  public void setFeature(String feature) {
+    this.feature = feature;
   }
 
   public String getVersion() {

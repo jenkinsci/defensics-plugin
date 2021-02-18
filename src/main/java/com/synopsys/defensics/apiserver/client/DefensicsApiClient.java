@@ -16,6 +16,7 @@
 
 package com.synopsys.defensics.apiserver.client;
 
+import com.synopsys.defensics.apiserver.model.BaseSettings;
 import com.synopsys.defensics.apiserver.model.Result;
 import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.RunTestConfiguration;
@@ -63,7 +64,7 @@ public interface DefensicsApiClient {
    * Uploads and assigns a Defensics testplan to the test configuration of run with given ID.
    *
    * @param configurationId Test configuration ID
-   * @param testplanStream Defensics testplan file as a stream
+   * @param testplanStream Defensics testplan file as a stream. Caller has to close the stream.
    */
   void uploadTestPlan(
       String configurationId,
@@ -81,6 +82,18 @@ public interface DefensicsApiClient {
   void setTestConfigurationSettings(
       String runId,
       SettingCliArgs settings
+  );
+
+  /**
+   * Adds additional configuration settings for suite and monitor as BaseSettings objects.
+   *
+   * @param runId Run ID whose configuration is changed
+   * @param settings Settings to add
+   * @return List of affected settings.
+   */
+  List<Setting> setTestConfigurationSettings(
+      String runId,
+      BaseSettings settings
   );
 
   /**
@@ -128,7 +141,18 @@ public interface DefensicsApiClient {
   List<Run> getRuns();
 
   /**
-   * Get all results
+   * Get all runs with query params.
+   *
+   * @param filter Filtering parameter. Can be null for filtering.
+   * @param sort Sorting parameter. Can be null for no sorting.
+   * @param offset Offset parameter. Can be null for no offset.
+   * @param limit Limit parameter. Can be null for no limit.
+   * @return Runs
+   */
+  List<Run> getRuns(String filter, String sort, Long offset, Long limit);
+
+  /**
+   * Get all results.
    *
    * @return List of results
    */
@@ -138,7 +162,7 @@ public interface DefensicsApiClient {
    * Get all results matching given URL query string.
    *
    * @param query URL query string to add into URL. Actual functionality not yet done, and this can
-   * change to some QuerySpec-style model.
+   *              change to some QuerySpec-style model.
    * @return Results matching given query
    */
   List<Result> getResults(String query);
@@ -149,6 +173,20 @@ public interface DefensicsApiClient {
    * @param runId Run ID
    */
   void deleteRun(String runId);
+
+  /**
+   * Removes the run. Also removes related RunTestConfiguration but any related suite is preserved.
+   *
+   * @param runId Run ID
+   */
+  void deleteRunPreserveSuite(String runId);
+
+  /**
+   * Deletes the Result.
+   *
+   * @param resultId Result ID
+   */
+  void deleteResult(String resultId);
 
   /**
    * Starts Defensics run.
@@ -165,22 +203,22 @@ public interface DefensicsApiClient {
   void stopRun(String runId);
 
   /**
-   * Downloads Defensics report of given type for given run IDs. Caller has to close the stream.
+   * Downloads Defensics report of given type for given result IDs. Caller has to close the stream.
    *
-   * @param runId Run IDs for which to generate report
+   * @param resultId Run IDs for which to generate report
    * @param reportType Report type
    * @return Report as a stream
    */
-  InputStream downloadReport(String runId, String reportType);
+  InputStream downloadReport(String resultId, String reportType);
 
   /**
-   * Downloads Defensics result package for given run ID. Result package contains Defensics
+   * Downloads Defensics result package for given result ID. Result package contains Defensics
    * result files in ZIP archive. Caller has to close the stream.
    *
-   * @param runId Run ID to include in the result package
+   * @param resultId Result ID to include in the result package
    * @return Result package as an inputstream. Contains Zip-package
    */
-  InputStream downloadResultPackage(String runId);
+  InputStream downloadResultPackage(String resultId);
 
   /**
    * Pauses given Defensics run.
@@ -195,22 +233,40 @@ public interface DefensicsApiClient {
   void resumeRun(String runId);
 
   /**
-   * Get all suites
+   * Get all suites.
    *
    * @return List of suites
    */
   List<Suite> getSuites();
 
   /**
-   * Load a new suite instance of suite/version given in suiteId.
+   * Get single suite by the it's feature and version.
    *
-   * @param suiteId Suite id
-   * @return Suite instance.
+   * @param suiteFeature the feature of suite to get
+   * @param suiteVersion the version of suite to get
+   * @return Suite
    */
-  SuiteInstance loadSuite(String suiteId);
+  Optional<Suite> getSuite(String suiteFeature, String suiteVersion);
 
   /**
-   * Unload given suiteInstance
+   * Load a new suite instance of newest installed version of suite with given feature.
+   *
+   * @param suiteFeature the feature of suite to load
+   * @return Suite instance.
+   */
+  SuiteInstance loadSuite(String suiteFeature);
+
+  /**
+   * Load a new suite instance of specified suite version.
+   *
+   * @param suiteFeature the feature of suite to load
+   * @param suiteVersion the version of suite to load
+   * @return Suite instance.
+   */
+  SuiteInstance loadSuite(String suiteFeature, String suiteVersion);
+
+  /**
+   * Unload given suiteInstance.
    *
    * @param suiteInstanceId Suite instance ID
    */
@@ -225,6 +281,13 @@ public interface DefensicsApiClient {
   void assignSuiteToRun(String suiteInstanceId, String runId);
 
   /**
+   * Return results for given result.
+   *
+   * @param resultId ID for result to fetch.
+   */
+  Optional<Result> getResult(String resultId);
+
+  /**
    * High level exception thrown when Defensics API client cannot do given operation succesfully.
    * Check the cause exception for further details.
    */
@@ -237,4 +300,11 @@ public interface DefensicsApiClient {
       super(message, cause);
     }
   }
+
+  /**
+   * Getter for test run settings.
+   * @param runId id of the run.
+   * @return List of settings.
+   */
+  List<Setting> getTestConfigurationSettings(String runId);
 }

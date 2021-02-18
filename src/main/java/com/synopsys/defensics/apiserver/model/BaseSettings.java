@@ -16,8 +16,34 @@
 
 package com.synopsys.defensics.apiserver.model;
 
+import java.util.List;
+
 /**
- * Class for setting dependency. Still just a placeholder without any content.
+ * Configuring settings by name and value.
  */
-public class Dependency {
+public class BaseSettings {
+
+  public BaseSettings() {}
+
+  /**
+   * List for default settings.
+   */
+  List<BaseSetting> settings;
+
+  /**
+   * Constructor.
+   *
+   * @param settings the settings list.
+   */
+  public BaseSettings(List<BaseSetting> settings) {
+    this.settings = settings;
+  }
+
+  public void setSettings(List<BaseSetting> settings) {
+    this.settings = settings;
+  }
+
+  public List<BaseSetting> getSettings() {
+    return settings;
+  }
 }

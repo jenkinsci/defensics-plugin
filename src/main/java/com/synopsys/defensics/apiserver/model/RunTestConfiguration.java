@@ -16,6 +16,7 @@
 
 package com.synopsys.defensics.apiserver.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
@@ -36,6 +37,7 @@ public class RunTestConfiguration extends BaseTestConfiguration {
    * akin to settings. Use here the main sequence which will be shown in the UI as the primary
    * sequence.
    */
+  @JsonIgnore
   @Schema(description = "Id of the sequence this configuration uses")
   private String sequenceId;
 
@@ -43,6 +45,7 @@ public class RunTestConfiguration extends BaseTestConfiguration {
    * Parent configuration that was used as a base when this configuration (=run using this
    * configuration) was created.
    */
+  @JsonIgnore
   @Schema(
       description = "Id of the shared configuration that was used as a basis for this configuration"
   )

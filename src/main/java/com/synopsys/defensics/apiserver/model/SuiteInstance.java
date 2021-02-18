@@ -16,20 +16,44 @@
 
 package com.synopsys.defensics.apiserver.model;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 /**
  * Suite instance, e.g. loaded or running suite with id. The available and installed suites are
  * defined with {@link Suite}.
  */
+@Schema(
+    description = "This is single loaded instance of the suite. If system has multiple copies"
+        + "of same suite loaded, each will have it's own suite instance, each pointing out to "
+        + "same suite (via feature/version reference)."
+)
 public class SuiteInstance {
+  @Schema(
+      description = "ID for this suite instance",
+      example = "f7469afe-db02-49e1-99a3-901dc126599a"
+  )
   private String id;
 
+  @Schema(
+      description = "Current state of the suite",
+      example = "LOADING"
+  )
   private SuiteRunState state;
+  @Schema(
+      description = "Error message describing reason why suite was transitioned to 'ERROR' state"
+  )
   private String error;
 
-  // Must be specified on creation, can't be updated afterwards
-  private Suite suite;
-
-  private String suiteId;
+  @Schema(
+      description = "The feature of the suite this is instance of",
+      example = "d3-http-server"
+  )
+  private String suiteFeature;
+  @Schema(
+      description = "The version of suite this is instance of",
+      example = "4.13.0"
+  )
+  private String suiteVersion;
 
   /**
    * Constructor for suite instance.
@@ -43,17 +67,20 @@ public class SuiteInstance {
    * @param id Suite instance id
    * @param state Suite instance run state
    * @param error Error
-   * @param suiteId Suite id
+   * @param suiteFeature Feature of the suite this is instance of
+   * @param suiteVersion Version of the suite this is instance of
    */
   public SuiteInstance(
       String id,
       SuiteRunState state,
       String error,
-      String suiteId) {
+      String suiteFeature,
+      String suiteVersion) {
     this.id = id;
     this.state = state;
     this.error = error;
-    this.suiteId = suiteId;
+    this.suiteFeature = suiteFeature;
+    this.suiteVersion = suiteVersion;
   }
 
   public String getId() {
@@ -80,19 +107,11 @@ public class SuiteInstance {
     this.error = error;
   }
 
-  public Suite getSuite() {
-    return suite;
+  public String getSuiteFeature() {
+    return suiteFeature;
   }
 
-  public void setSuite(Suite suite) {
-    this.suite = suite;
-  }
-
-  public String getSuiteId() {
-    return suiteId;
-  }
-
-  public void setSuiteId(String suiteId) {
-    this.suiteId = suiteId;
+  public String getSuiteVersion() {
+    return suiteVersion;
   }
 }

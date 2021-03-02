@@ -146,7 +146,7 @@ public class FuzzBuildStep extends Builder implements SimpleBuildStep {
     @Nonnull
     @Override
     public String getDisplayName() {
-      return pluginConfiguration.getDisplayName();
+      return PluginConfiguration.DISPLAY_NAME;
     }
 
     /**

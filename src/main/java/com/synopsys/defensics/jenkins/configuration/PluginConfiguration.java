@@ -29,6 +29,8 @@ import org.kohsuke.stapler.StaplerRequest;
 public class PluginConfiguration extends GlobalConfiguration {
   /** Plugin short name. Used e.g. when fetching plugin version number. */
   public static final String DEFENSICS_PLUGIN_NAME = "defensics";
+  /** Display name for both configuration and steps. */
+  public static final String DISPLAY_NAME = "Defensics fuzz test";
 
   private final transient InstanceConfigurationValidator instanceConfigurationValidator =
       new InstanceConfigurationValidator();
@@ -63,7 +65,7 @@ public class PluginConfiguration extends GlobalConfiguration {
   @Nonnull
   @Override
   public String getDisplayName() {
-    return "Defensics fuzz test";
+    return DISPLAY_NAME;
   }
 
   /**

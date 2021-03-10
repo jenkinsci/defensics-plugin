@@ -79,6 +79,10 @@ To install the plugin manually to a Jenkins:
 
 ## Release notes
 
+### Version 1.2.0
+- Update plugin to work with Defensics 2021.03 API changes so this version requires
+  Defensics 2021.03 or newer
+
 ### Version 1.1.0
 - Change plugin to use new server API so this version requires Defensics 2020.12 or newer
 - Fix report download issue when using remote Jenkins nodes

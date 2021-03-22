@@ -28,9 +28,8 @@ import com.synopsys.defensics.client.DefensicsRequestException;
 import com.synopsys.defensics.jenkins.test.utils.DefensicsMockServer;
 import hudson.FilePath;
 import java.io.File;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockserver.integration.ClientAndServer;
@@ -44,8 +43,8 @@ public class ApiServiceTest {
   private static final boolean CERTIFICATE_VALIDATION_DISABLED = false;
   private ApiService api;
 
-  @BeforeClass
-  public static void startServer() {
+  @Before
+  public void setUp() throws Exception {
     mockServer = ClientAndServer.startClientAndServer(1080);
     final DefensicsMockServer defensicsMockServer = new DefensicsMockServer(
         true,
@@ -53,16 +52,12 @@ public class ApiServiceTest {
         RunState.STARTING
     );
     defensicsMockServer.initServer(mockServer);
-  }
-
-  @AfterClass
-  public static void stopServer() {
-    mockServer.stop();
-  }
-
-  @Before
-  public void init() {
     api = new ApiService(DEFENSICS_URL, TOKEN, CERTIFICATE_VALIDATION_DISABLED);
+  }
+
+  @After
+  public void tearDown() {
+    mockServer.stop();
   }
 
   @Test

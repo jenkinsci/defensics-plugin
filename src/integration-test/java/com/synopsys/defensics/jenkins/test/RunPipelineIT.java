@@ -20,7 +20,6 @@ import static com.synopsys.defensics.jenkins.test.utils.Constants.CERTIFICATE_VA
 import static com.synopsys.defensics.jenkins.test.utils.Constants.LOCAL_URL;
 import static com.synopsys.defensics.jenkins.test.utils.Constants.NAME;
 import static com.synopsys.defensics.jenkins.test.utils.Constants.PIPELINE_ERROR_TEXT;
-import static java.lang.Thread.sleep;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -73,7 +72,7 @@ public class RunPipelineIT {
 
   @After
   public void stopServer() {
-    mockServer.stop();
+    DefensicsMockServer.stopMockServer(mockServer);
   }
 
   @Test

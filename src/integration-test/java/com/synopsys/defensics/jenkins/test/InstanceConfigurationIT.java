@@ -111,7 +111,7 @@ public class InstanceConfigurationIT {
 
       assertThat(result.kind, is(equalTo(Kind.OK)));
     } finally {
-      mockServer.stop();
+      DefensicsMockServer.stopMockServer(mockServer);
     }
   }
 

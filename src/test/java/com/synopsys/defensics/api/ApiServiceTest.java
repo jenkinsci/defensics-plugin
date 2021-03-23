@@ -57,7 +57,7 @@ public class ApiServiceTest {
 
   @After
   public void tearDown() {
-    mockServer.stop();
+    DefensicsMockServer.stopMockServer(mockServer);
   }
 
   @Test

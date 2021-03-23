@@ -67,7 +67,7 @@ public class RunFreestyleIT {
 
   @After
   public void stopServer() {
-    mockServer.stop();
+    DefensicsMockServer.stopMockServer(mockServer);
   }
 
   @Test
@@ -225,5 +225,4 @@ public class RunFreestyleIT {
     assertThat(project.getAction(HtmlReportAction.class).getUrlName(),
         is(equalTo(run.getActions(HtmlReportAction.class).get(0).getUrlName())));
   }
-
 }

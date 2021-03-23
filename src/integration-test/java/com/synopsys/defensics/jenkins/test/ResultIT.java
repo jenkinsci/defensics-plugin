@@ -83,7 +83,7 @@ public class ResultIT {
 
   @After
   public void stopServer() {
-    mockServer.stop();
+    DefensicsMockServer.stopMockServer(mockServer);
   }
 
   @Test

@@ -16,8 +16,8 @@
 
 package com.synopsys.defensics.jenkins.test.utils;
 
-import com.synopsys.defensics.api.ApiService;
 import com.synopsys.defensics.apiserver.model.RunState;
+import java.util.concurrent.TimeUnit;
 import org.mockserver.integration.ClientAndServer;
 
 /**
@@ -56,5 +56,29 @@ public class DefensicsMockServer {
         endState
     );
     apiV2Server.initServer(server);
+  }
+
+
+  /**
+   * Stop the mockServer gracefully. Issues stop and wait that the server is stopped. Note: This
+   * handles the lower-level mockServer and not this DefensicsMockServer. This method could go
+   * somewhere else as well but currently there isn't suitable util class so let's have this here
+   * for now.
+   *
+   * @param mockServer to stop
+   * @throws IllegalStateException if server could not be stopped in a timely manner
+   */
+  public static void stopMockServer(ClientAndServer mockServer) {
+    mockServer.stop();
+    // Windows CI builds fails sometimes due to "Unable to connect to socket" so wait
+    // that previous test server has stopped.
+    // Related issue https://github.com/mock-server/mockserver/issues/498
+    int counter = 5;
+    while(!mockServer.hasStopped(3, 500, TimeUnit.MILLISECONDS)) {
+      if (counter-- <= 0) {
+        throw new IllegalStateException(
+            "Could not stop mockserver in port " + mockServer.getLocalPort());
+      }
+    }
   }
 }

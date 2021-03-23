@@ -101,11 +101,12 @@ public class InstanceConfigurationIT {
   @Test
   public void testConnectionTest() {
     ClientAndServer mockServer = ClientAndServer.startClientAndServer(1080);
-    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(
-        true, "PASS", RunState.COMPLETED);
-    defensicsMockServer.initServer(mockServer);
-
     try {
+      DefensicsMockServer defensicsMockServer = new DefensicsMockServer(
+          true, "PASS", RunState.COMPLETED
+      );
+      defensicsMockServer.initServer(mockServer);
+
       FormValidation result = defensicsInstanceConfigurationDescriptor.doTestConnection(
           LOCAL_URL, CERTIFICATE_VALIDATION_ENABLED, credentialsId);
 

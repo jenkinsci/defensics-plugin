@@ -63,6 +63,7 @@ public class RunFreestyleIT {
     EnvVars env = prop.getEnvVars();
     env.put("DEFENSICS_MAX_POLLING_INTERVAL", "1");
     jenkinsRule.jenkins.getGlobalNodeProperties().add(prop);
+    mockServer = ClientAndServer.startClientAndServer(1080);
   }
 
   @After
@@ -72,9 +73,8 @@ public class RunFreestyleIT {
 
   @Test
   public void testRunBuildStep() throws Exception {
-    mockServer = ClientAndServer.startClientAndServer(1080);
-    DefensicsMockServer mockServer = new DefensicsMockServer(true, "PASS", RunState.COMPLETED);
-    mockServer.initServer(this.mockServer);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, "PASS", RunState.COMPLETED);
+    defensicsMockServer.initServer(this.mockServer);
     ProjectUtils.setupProject(
         jenkinsRule,
         project,
@@ -96,9 +96,8 @@ public class RunFreestyleIT {
 
   @Test
   public void testRunPostBuildStep() throws Exception {
-    mockServer = ClientAndServer.startClientAndServer(1080);
-    DefensicsMockServer mockServer = new DefensicsMockServer(true, "PASS", RunState.COMPLETED);
-    mockServer.initServer(this.mockServer);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, "PASS", RunState.COMPLETED);
+    defensicsMockServer.initServer(this.mockServer);
     ProjectUtils.setupProject(
         jenkinsRule,
         project,
@@ -120,9 +119,8 @@ public class RunFreestyleIT {
 
   @Test
   public void testConfigurationRoundTripAndRun() throws Exception {
-    mockServer = ClientAndServer.startClientAndServer(1080);
-    DefensicsMockServer mockServer = new DefensicsMockServer(true, "PASS", RunState.COMPLETED);
-    mockServer.initServer(this.mockServer);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, "PASS", RunState.COMPLETED);
+    defensicsMockServer.initServer(this.mockServer);
     ProjectUtils.setupProject(
         jenkinsRule,
         project,
@@ -146,11 +144,8 @@ public class RunFreestyleIT {
 
   @Test
   public void testAbortJob() throws Exception {
-    // Create and use new client to prevent Job from completing.
-    // client = ApiUtils.getMockClient(JobState.RUNNING, 0);
-    mockServer = ClientAndServer.startClientAndServer(1080);
-    DefensicsMockServer mockServer = new DefensicsMockServer(true, "PASS", RunState.COMPLETED);
-    mockServer.initServer(this.mockServer);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, "PASS", RunState.COMPLETED);
+    defensicsMockServer.initServer(this.mockServer);
     ProjectUtils.setupProject(
         jenkinsRule,
         project,
@@ -179,9 +174,8 @@ public class RunFreestyleIT {
 
   @Test
   public void testJobFailed() throws Exception {
-    mockServer = ClientAndServer.startClientAndServer(1080);
-    DefensicsMockServer mockServer = new DefensicsMockServer(true, "PASS", RunState.ERROR);
-    mockServer.initServer(this.mockServer);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, "PASS", RunState.ERROR);
+    defensicsMockServer.initServer(this.mockServer);
     ProjectUtils.setupProject(
         jenkinsRule,
         project,
@@ -203,9 +197,8 @@ public class RunFreestyleIT {
 
   @Test
   public void testJobFailure() throws Exception {
-    mockServer = ClientAndServer.startClientAndServer(1080);
-    DefensicsMockServer mockServer = new DefensicsMockServer(true, "FAIL", RunState.COMPLETED);
-    mockServer.initServer(this.mockServer);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, "FAIL", RunState.COMPLETED);
+    defensicsMockServer.initServer(this.mockServer);
 
     ProjectUtils.setupProject(
         jenkinsRule,

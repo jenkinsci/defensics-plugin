@@ -38,7 +38,7 @@ public class ApiServiceTest {
 
   private static final String SUITE_SETTINGS = "--suite.setting=thisIsFakeSetting";
   private static ClientAndServer mockServer;
-  private static final String DEFENSICS_URL = "http://localhost:1080/";
+  private static final String DEFENSICS_URL = "http://127.0.0.1:1080/";
   private static final String TOKEN = "test-token";
   private static final boolean CERTIFICATE_VALIDATION_DISABLED = false;
   private ApiService api;
@@ -57,7 +57,7 @@ public class ApiServiceTest {
 
   @After
   public void tearDown() {
-    mockServer.stop();
+    DefensicsMockServer.stopMockServer(mockServer);
   }
 
   @Test
@@ -86,7 +86,7 @@ public class ApiServiceTest {
       api.healthCheck();
       fail("Test connection authentication did not return DefensicsRequestException");
     } catch (DefensicsRequestException exception) {
-      final String apiAddress = "http://localhost:1080/api/v2/healthcheck";
+      final String apiAddress = "http://127.0.0.1:1080/api/v2/healthcheck";
 
       assertThat(
           exception.getMessage(),

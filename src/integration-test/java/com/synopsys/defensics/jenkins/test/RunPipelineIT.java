@@ -20,7 +20,6 @@ import static com.synopsys.defensics.jenkins.test.utils.Constants.CERTIFICATE_VA
 import static com.synopsys.defensics.jenkins.test.utils.Constants.LOCAL_URL;
 import static com.synopsys.defensics.jenkins.test.utils.Constants.NAME;
 import static com.synopsys.defensics.jenkins.test.utils.Constants.PIPELINE_ERROR_TEXT;
-import static java.lang.Thread.sleep;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -69,19 +68,19 @@ public class RunPipelineIT {
     EnvVars env = prop.getEnvVars();
     env.put("DEFENSICS_MAX_POLLING_INTERVAL", "1");
     jenkinsRule.jenkins.getGlobalNodeProperties().add(prop);
+    mockServer = ClientAndServer.startClientAndServer(1080);
   }
 
   @After
   public void stopServer() {
-    mockServer.stop();
+    DefensicsMockServer.stopMockServer(mockServer);
   }
 
   @Test
   public void testRun() throws Exception {
     project.setDefinition(new CpsFlowDefinition(PIPELINE_SCRIPT, true));
-    mockServer = ClientAndServer.startClientAndServer(1080);
-    DefensicsMockServer mockServer = new DefensicsMockServer(true, "PASS", RunState.COMPLETED);
-    mockServer.initServer(RunPipelineIT.mockServer);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, "PASS", RunState.COMPLETED);
+    defensicsMockServer.initServer(RunPipelineIT.mockServer);
 
     ProjectUtils.setupProject(
         jenkinsRule,
@@ -104,9 +103,8 @@ public class RunPipelineIT {
   @Test
   public void testRunJobWithFailures() throws Exception {
     project.setDefinition(new CpsFlowDefinition(PIPELINE_SCRIPT, true));
-    mockServer = ClientAndServer.startClientAndServer(1080);
-    DefensicsMockServer mockServer = new DefensicsMockServer(true, "FAIL", RunState.COMPLETED);
-    mockServer.initServer(RunPipelineIT.mockServer);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, "FAIL", RunState.COMPLETED);
+    defensicsMockServer.initServer(RunPipelineIT.mockServer);
     ProjectUtils.setupProject(
         jenkinsRule,
         project,
@@ -131,9 +129,8 @@ public class RunPipelineIT {
   @Test
   public void testAbortJob() throws Exception {
     // Create and use new client to prevent Job from completing.
-    mockServer = ClientAndServer.startClientAndServer(1080);
-    DefensicsMockServer mockServer = new DefensicsMockServer(true, "PASS", RunState.COMPLETED);
-    mockServer.initServer(RunPipelineIT.mockServer);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, "PASS", RunState.COMPLETED);
+    defensicsMockServer.initServer(RunPipelineIT.mockServer);
     ProjectUtils.setupProject(
         jenkinsRule,
         project,
@@ -168,7 +165,6 @@ public class RunPipelineIT {
   @Test
   public void testJobFailed() throws Exception {
     project.setDefinition(new CpsFlowDefinition(PIPELINE_SCRIPT, true));
-    mockServer = ClientAndServer.startClientAndServer(1080);
     DefensicsMockServer mockServer = new DefensicsMockServer(true, "PASS", RunState.ERROR);
     mockServer.initServer(RunPipelineIT.mockServer);
     ProjectUtils.setupProject(

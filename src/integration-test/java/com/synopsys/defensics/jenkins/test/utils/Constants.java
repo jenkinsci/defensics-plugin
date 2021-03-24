@@ -19,7 +19,7 @@ package com.synopsys.defensics.jenkins.test.utils;
 public class Constants {
   public static final String NAME = "My Defensics";
   public static final String URL = "http://my.defensics";
-  public static final String LOCAL_URL = "http://localhost:1080";
+  public static final String LOCAL_URL = "http://127.0.0.1:1080";
   public static final boolean CERTIFICATE_VALIDATION_DISABLED = true; // True disables validation
   public static final boolean CERTIFICATE_VALIDATION_ENABLED = false; // False enables validation
   public static final String CREDENTIALS_ID = "test-credentials";

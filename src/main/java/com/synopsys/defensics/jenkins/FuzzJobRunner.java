@@ -285,23 +285,25 @@ public class FuzzJobRunner {
    */
   private void waitForSuiteLoading(Run run)
       throws IOException, InterruptedException, DefensicsRequestException {
-    Optional<SuiteInstance> suiteInstanceMaybe =
-        defensicsClient.getConfigurationSuite(run.getId());
 
-    while (suiteInstanceMaybe.isPresent()
-        && suiteInstanceMaybe.get().getState() == RunState.LOADING) {
+    SuiteInstance suiteInstance = defensicsClient.getConfigurationSuite(run.getId())
+            .orElseThrow(() -> new AbortException("Suite not found"));
 
-      final SuiteInstance suiteInstance = suiteInstanceMaybe.get();
-
-      if (suiteInstance.getState() == RunState.LOADING) {
-        logger.println("Loading suite...");
-      } else if (Arrays.asList(RunState.ERROR, RunState.FATAL).contains(suiteInstance.getState())) {
-        throw new AbortException("Couldn't load the suite.");
-      }
-
+    while (suiteInstance.getState() == RunState.LOADING) {
+      logger.println("Loading suite...");
       TimeUnit.SECONDS.sleep(pollingIntervals.getTestplanLoadingInterval());
-      suiteInstanceMaybe = defensicsClient.getConfigurationSuite(run.getId());
+      suiteInstance = defensicsClient.getConfigurationSuite(run.getId())
+          .orElseThrow(() -> new AbortException("Suite not found"));
     }
+
+    if (Arrays.asList(RunState.ERROR, RunState.FATAL).contains(suiteInstance.getState())) {
+      String errorMessage = "Couldn't load suite";
+      if (suiteInstance.getError() != null && !suiteInstance.getError().isEmpty()) {
+        errorMessage += ", error: " + suiteInstance.getError();
+      }
+      throw new AbortException(errorMessage);
+    }
+
     logger.println("Suite loaded.");
   }
 

@@ -8,6 +8,9 @@
   so updating older Defensics versions to 2021.06 is recommended.
 - Update plugin dependencies
 
+### Fixed
+- Make job fail sooner if suite loading fails
+
 ## v1.2.0 - 2021-03-22
 ### Changed
 - Update plugin to work with Defensics 2021.03 API changes

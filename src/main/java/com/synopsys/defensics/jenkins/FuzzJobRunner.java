@@ -34,6 +34,7 @@ import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Plugin;
+import hudson.PluginManager;
 import hudson.model.Result;
 import hudson.util.VersionNumber;
 import java.io.IOException;
@@ -57,11 +58,15 @@ public class FuzzJobRunner {
 
   private Logger logger;
 
+  /**
+   * Default constructor.
+   *
+   * <p>TODO: Check later if this can be augmented to take all related service objects as
+   * constructor arguments so writing unit tests would be cleaner. Some related service objects
+   * require jenkinsRun information etc., so need to check how this object lifecycle goes.
+   * </p>
+   */
   public FuzzJobRunner() {
-  }
-
-  public FuzzJobRunner(ApiService defensicsClient) {
-    this.defensicsClient = defensicsClient;
   }
 
   /**
@@ -89,10 +94,8 @@ public class FuzzJobRunner {
     Result runResult = null;
 
     try {
-      pollingIntervals = new PollingIntervals(jenkinsRun, launcher.getListener(), logger);
-      if (defensicsClient == null) {
-        setUpDefensicsConnection(instanceConfiguration);
-      }
+      pollingIntervals = getPollingIntervals(jenkinsRun, launcher, logger);
+      setUpDefensicsConnection(instanceConfiguration);
 
       logger.println("Creating new run.");
       defensicsRun = defensicsClient.createNewRun();
@@ -227,8 +230,7 @@ public class FuzzJobRunner {
     String authenticationToken = AuthenticationTokenProvider.getAuthenticationToken(
         new URL(instanceConfiguration.getUrl()), instanceConfiguration.getCredentialsId());
 
-    defensicsClient = new ApiService(instanceConfiguration.getUrl(), authenticationToken,
-        instanceConfiguration.isCertificateValidationDisabled());
+    defensicsClient = getApiService(instanceConfiguration, authenticationToken);
     logger.println("Connecting to Defensics: " + instanceConfiguration.getName()
         + " (" + instanceConfiguration.getUrl() + ")");
     if (instanceConfiguration.isCertificateValidationDisabled()) {
@@ -338,8 +340,8 @@ public class FuzzJobRunner {
     // Plugin manager class name needs to be checked because of a bug in Jenkins test harness
     // (https://issues.jenkins-ci.org/browse/JENKINS-48885) that causes pluginmanager not to have
     // any plugins when running Jenkins test harness, even though the plugins are there and usable.
-    Plugin htmlPublisherPlugin = Jenkins.get().getPlugin("htmlpublisher");
-    if (!Jenkins.get().getPluginManager().getClass().getName()
+    Plugin htmlPublisherPlugin = getHtmlPublisher();
+    if (!getJenkinsPluginManager().getClass().getName()
         .equals("org.jvnet.hudson.test.TestPluginManager")
         && (htmlPublisherPlugin == null
         || htmlPublisherPlugin.getWrapper().getVersionNumber().compareTo(
@@ -357,7 +359,8 @@ public class FuzzJobRunner {
     HtmlReport report = null;
     try {
       report = new HtmlReport(resultsDir, defensicsRun.getId(), testPlanName);
-      new ResultPublisher().publishResults(jenkinsRun, defensicsRun, report, logger, workspace);
+      final ResultPublisher resultPublisher = getResultPublisher();
+      resultPublisher.publishResults(jenkinsRun, defensicsRun, report, logger, workspace);
     } finally {
       if (report != null) {
         report.delete();
@@ -477,5 +480,66 @@ public class FuzzJobRunner {
         logger.logError("Error message: " + exception.getMessage());
       }
     }
+  }
+
+  /**
+   * HtmlPublisher getter to allow overriding in the unit tests.
+   *
+   * @return HtmlPublisher plugin
+   */
+  Plugin getHtmlPublisher() {
+    return Jenkins.get().getPlugin("htmlpublisher");
+  }
+
+  /**
+   * ResultPublisher getter to allow overriding in the unit tests.
+   *
+   * @return ResultPublisher
+   */
+  ResultPublisher getResultPublisher() {
+    return new ResultPublisher();
+  }
+
+  /**
+   * Jenkins plugin manager getter to allow overriding in the unit tests.
+   *
+   * @return PluginManager
+   */
+  PluginManager getJenkinsPluginManager() {
+    return Jenkins.get().getPluginManager();
+  }
+
+  /**
+   * ApiService getter to allow overriding unit tests.
+   *
+   * @param instanceConfiguration Defensics instance configuration
+   * @param authenticationToken Authentication token to use for API requests
+   * @return ApiService
+   */
+  ApiService getApiService(
+      InstanceConfiguration instanceConfiguration,
+      String authenticationToken
+  ) {
+    return new ApiService(
+        instanceConfiguration.getUrl(),
+        authenticationToken,
+        instanceConfiguration.isCertificateValidationDisabled()
+    );
+  }
+
+  /**
+   * Polling intervals getter to allow overriding in the unit tests.
+   *
+   * @param jenkinsRun Jenkins run
+   * @param launcher Launcher
+   * @param logger Logger
+   * @return PollingIntervals
+   */
+  PollingIntervals getPollingIntervals(
+      hudson.model.Run<?, ?> jenkinsRun,
+      Launcher launcher,
+      Logger logger
+  ) {
+    return new PollingIntervals(jenkinsRun, launcher.getListener(), logger);
   }
 }

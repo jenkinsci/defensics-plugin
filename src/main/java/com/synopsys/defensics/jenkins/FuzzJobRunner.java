@@ -57,6 +57,13 @@ public class FuzzJobRunner {
 
   private Logger logger;
 
+  public FuzzJobRunner() {
+  }
+
+  public FuzzJobRunner(ApiService defensicsClient) {
+    this.defensicsClient = defensicsClient;
+  }
+
   /**
    * Run fuzz tests with Defensics and publish resulting HTML report.
    *
@@ -83,7 +90,9 @@ public class FuzzJobRunner {
 
     try {
       pollingIntervals = new PollingIntervals(jenkinsRun, launcher.getListener(), logger);
-      setUpDefensicsConnection(instanceConfiguration);
+      if (defensicsClient == null) {
+        setUpDefensicsConnection(instanceConfiguration);
+      }
 
       logger.println("Creating new run.");
       defensicsRun = defensicsClient.createNewRun();

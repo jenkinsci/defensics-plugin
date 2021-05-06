@@ -266,6 +266,33 @@ public class FailureScenarioIT {
     checkApiServerResourcesAreCleaned();
   }
 
+
+  /**
+   * Tests that plugin can handle cases where suite is reloaded after sending reloadRequired
+   * setting.
+   */
+  @Test
+  public void testRun_hasSuiteReload() throws Exception {
+    initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
+    String instrumentationString = String.join(" ", Arrays.asList(
+        "--index 1-100",
+        "--tg-text off" // Anomaly control change requires suite reload
+    ));
+
+    pipelineScript = createPipelineScript(
+        NAME,
+        SETTING_FILE_PATH,
+        String.format("--uri %s %s", SUT_URI, instrumentationString)
+    );
+    setupProject(pipelineScript);
+
+    WorkflowRun run = project.scheduleBuild2(0).get();
+    dumpLogs(run);
+
+    checkRunOkAndReportPresent(run);
+    checkApiServerResourcesAreCleaned();
+  }
+
   /**
    * Test that Jenkins runs report at least WARNING if SUT URI was wrong.
    */

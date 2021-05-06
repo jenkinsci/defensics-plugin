@@ -96,6 +96,13 @@ public class FuzzJobRunner {
         logger.println(
             "Overriding test configuration file settings with values: " + configurationOverrides);
         defensicsClient.setTestConfigurationSettings(defensicsRun.getId(), configurationOverrides);
+        // Some settings require reload so check if suite is reloading and wait its completion
+        SuiteInstance suiteInstance = defensicsClient.getConfigurationSuite(defensicsRun.getId())
+            .orElseThrow(() -> new AbortException("Defensics suite not found anymore"));
+        if (suiteInstance.getState().equals(SuiteRunState.LOADING)) {
+          logger.println("Used setting requires suite reload");
+          waitForSuiteLoading(defensicsRun);
+        }
       }
       logger.println("Fuzz testing is starting.");
       defensicsClient.startRun(defensicsRun.getId());

@@ -32,7 +32,6 @@ import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.RunState;
 import com.synopsys.defensics.apiserver.model.RunVerdict;
 import com.synopsys.defensics.apiserver.model.SuiteInstance;
-import com.synopsys.defensics.apiserver.model.SuiteRunState;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -333,7 +332,7 @@ public class DefensicsMockServerApiV2 {
   private String getSuiteInstanceJson(String suiteInstanceState) {
     SuiteInstance suiteInstance = new SuiteInstance(
         SUITE_INSTANCE_ID,
-        SuiteRunState.valueOf(suiteInstanceState),
+        RunState.valueOf(suiteInstanceState),
         null,
         "suite-feature",
         "suite-version"

@@ -23,7 +23,6 @@ import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.RunState;
 import com.synopsys.defensics.apiserver.model.RunVerdict;
 import com.synopsys.defensics.apiserver.model.SuiteInstance;
-import com.synopsys.defensics.apiserver.model.SuiteRunState;
 import com.synopsys.defensics.client.DefensicsRequestException;
 import com.synopsys.defensics.jenkins.configuration.AuthenticationTokenProvider;
 import com.synopsys.defensics.jenkins.configuration.InstanceConfiguration;
@@ -41,6 +40,8 @@ import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.net.URL;
 import java.nio.channels.ClosedByInterruptException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
@@ -99,7 +100,7 @@ public class FuzzJobRunner {
         // Some settings require reload so check if suite is reloading and wait its completion
         SuiteInstance suiteInstance = defensicsClient.getConfigurationSuite(defensicsRun.getId())
             .orElseThrow(() -> new AbortException("Defensics suite not found anymore"));
-        if (suiteInstance.getState().equals(SuiteRunState.LOADING)) {
+        if (suiteInstance.getState().equals(RunState.LOADING)) {
           logger.println("Used setting requires suite reload");
           waitForSuiteLoading(defensicsRun);
         }
@@ -248,6 +249,7 @@ public class FuzzJobRunner {
       final Run run = defensicsClient.getRun(runId);
 
       switch (run.getState()) {
+        case FATAL:
         case ERROR:
           runLogger.log(run);
           logger.logError("Test run terminated with ERROR.");
@@ -259,6 +261,7 @@ public class FuzzJobRunner {
           nextSleepDuration = pollingIntervals.getRunPollingInterval();
           errorCounter = 0;
           break;
+        case UNLOADING:
         case STOPPING:
         case COMPLETED:
           runLogger.log(run);
@@ -286,13 +289,13 @@ public class FuzzJobRunner {
         defensicsClient.getConfigurationSuite(run.getId());
 
     while (suiteInstanceMaybe.isPresent()
-        && suiteInstanceMaybe.get().getState() == SuiteRunState.LOADING) {
+        && suiteInstanceMaybe.get().getState() == RunState.LOADING) {
 
       final SuiteInstance suiteInstance = suiteInstanceMaybe.get();
 
-      if (suiteInstance.getState() == SuiteRunState.LOADING) {
+      if (suiteInstance.getState() == RunState.LOADING) {
         logger.println("Loading suite...");
-      } else if (suiteInstance.getState() == SuiteRunState.ERROR) {
+      } else if (Arrays.asList(RunState.ERROR, RunState.FATAL).contains(suiteInstance.getState())) {
         throw new AbortException("Couldn't load the suite.");
       }
 
@@ -399,17 +402,20 @@ public class FuzzJobRunner {
       // We can't stop test run if suite isn't loaded so let's make sure it is
       final Optional<SuiteInstance> suiteMaybe = defensicsClient.getConfigurationSuite(run.getId());
 
-      if (suiteMaybe.isPresent() && suiteMaybe.get().getState().equals(SuiteRunState.LOADING)) {
+      if (suiteMaybe.isPresent() && suiteMaybe.get().getState().equals(RunState.LOADING)) {
         logger.println("Suite loading is ongoing. Waiting for suite to load before unloading it.");
         waitForSuiteLoading(run);
       }
 
-      // Only try to stop run if it's created and hasn't finished yet. Idle jobs cannot be stopped.
-      if (
-          run.getState() != RunState.COMPLETED
-              && run.getState() != RunState.ERROR
-              && run.getState() != RunState.IDLE
-      ) {
+      // Try to stop run if it's created and hasn't finished yet. Idle jobs cannot be stopped.
+      List<RunState> stoppedStates = Arrays.asList(
+          RunState.COMPLETED,
+          RunState.ERROR,
+          RunState.FATAL,
+          RunState.IDLE,
+          RunState.UNLOADING
+      );
+      if (!stoppedStates.contains(run.getState())) {
         final String runId = run.getId();
         logger.println("Stopping run.");
         try {
@@ -434,6 +440,7 @@ public class FuzzJobRunner {
           TimeUnit.SECONDS.sleep(1);
           run = defensicsClient.getRun(runId);
           switch (run.getState()) {
+            case FATAL:
             case ERROR:
               logger.logError("Test run is in error state, couldn't stop run.");
               return;

@@ -32,12 +32,15 @@ public class Result extends BaseTestRun {
   private Long testCasesExecuted;
 
   @Schema(
-      description = "Percentage of planned run completed (null for unlimited runs)",
+      description = "Percentage of planned run completed (null for unlimited test runs)",
       example = "43.5"
   )
   private BigDecimal completionPercentage;
 
-  @Schema(description = "How run execution ended (finished, not finished))", example = "FINISHED")
+  @Schema(
+      description = "How test run execution ended (finished, not finished)",
+      example = "FINISHED"
+  )
   private RunStoppingStatus stoppingStatus;
 
   @Schema(description = "Total verdict of the test run", example = "FAIL")
@@ -46,10 +49,10 @@ public class Result extends BaseTestRun {
   @Schema(description = "When test run ended")
   private OffsetDateTime runEndTime;
 
-  @Schema(description = "Run duration in seconds", type = "number", example = "255.421")
+  @Schema(description = "Test run duration in seconds", type = "number", example = "255.421")
   private Duration runDuration;
 
-  @Schema(description = "Information about configuration that was used on the run")
+  @Schema(description = "Information about configuration that was used on the test run")
   @JsonIgnore
   protected ResultTestConfiguration configuration;
 

@@ -23,9 +23,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
  * defined with {@link Suite}.
  */
 @Schema(
-    description = "This is single loaded instance of the suite. If system has multiple copies"
-        + "of same suite loaded, each will have it's own suite instance, each pointing out to "
-        + "same suite (via feature/version reference)."
+    description = "This is a single loaded instance of the suite. If the system has multiple copies "
+        + "of the same suite loaded, each will have it's own suite instance, pointing to "
+        + "the same suite (via feature/version reference)."
 )
 public class SuiteInstance {
   @Schema(
@@ -38,7 +38,7 @@ public class SuiteInstance {
       description = "Current state of the suite",
       example = "LOADING"
   )
-  private SuiteRunState state;
+  private RunState state;
   @Schema(
       description = "Error message describing reason why suite was transitioned to 'ERROR' state"
   )
@@ -72,7 +72,7 @@ public class SuiteInstance {
    */
   public SuiteInstance(
       String id,
-      SuiteRunState state,
+      RunState state,
       String error,
       String suiteFeature,
       String suiteVersion) {
@@ -91,11 +91,11 @@ public class SuiteInstance {
     this.id = id;
   }
 
-  public SuiteRunState getState() {
+  public RunState getState() {
     return state;
   }
 
-  public void setState(SuiteRunState state) {
+  public void setState(RunState state) {
     this.state = state;
   }
 

@@ -822,6 +822,10 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
 
         throw new DefensicsClientException(message);
       }
+      if (response.code() == 202) {
+        // means that there is not response yet.
+        return null;
+      }
       return Optional.of(response)
           .map(Response::body)
           .map(ResponseBody::byteStream)

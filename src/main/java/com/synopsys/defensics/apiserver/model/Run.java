@@ -24,18 +24,20 @@ import java.util.List;
 
 public class Run extends BaseTestRun {
 
-  @Schema(description = "Number of test cases that are going to be executed on the run")
+  @Schema(description = "Number of test cases that are going to be executed on the test run")
   private long casesToBeExecuted;
 
   // Case index changes during the run. Client can't specify these, so it's not postable/patchable.
   @Schema(description = "Index of the case run is currently executing")
   private long caseIndex;
 
-  @Schema(description = "Number of cases already executed on run")
+  @Schema(description = "Number of cases already executed on test run")
   private long runIndex;
 
+  @Schema(description = "Test run state")
   private RunState state;
 
+  @Schema(description = "Test run verdict")
   private RunVerdict verdict;
 
   // Actual run configuration containing the settings used by run. Auto-created
@@ -44,9 +46,14 @@ public class Run extends BaseTestRun {
   @JsonIgnore
   protected RunTestConfiguration configuration;
 
+  @Schema(
+      description = "Contains instrumentation failure counts if query parameter "
+          + "?include=failure-summary is given. Note: This field and the inclusion mechanism is "
+          + "unstable and may change in coming releases."
+  )
   private List<FailureSummaryEntry> failureSummary;
 
-  @Schema(description = "Id of the result corresponding this run")
+  @Schema(description = "Id of the result corresponding this test run")
   private String resultId;
 
   /**

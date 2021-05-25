@@ -20,13 +20,17 @@ import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
 
 public enum RunState {
     IDLE,
+    LOADING,
+    LOADED,
     STARTING,
     RUNNING,
     PAUSING,
     PAUSED,
-    COMPLETED,
     STOPPING,
+    COMPLETED,
     ERROR,
+    FATAL,
+    UNLOADING,
     // Unknown enum values are mapped to this on client side (Allows client
     // to handle cases where client and server version don't match and server
     // has added some new values to the enum)

@@ -20,6 +20,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -91,7 +92,9 @@ public class Setting extends BaseSetting {
   /**
    * History of submitted values.
    */
-  @Schema(description = "History of recently used values for this setting.")
+  @JsonIgnore
+  @Schema(description = "History of recently used values for this setting. History is never "
+      + "available for PASSWORD, CHOICE, BOOLEAN or INDEX settings.")
   private List<String> history;
 
   /**
@@ -116,19 +119,25 @@ public class Setting extends BaseSetting {
    * Minimum value for number setting. {@code null} if not defined.
    */
   @Schema(description = "Minimum value for a number setting.")
-  private Long minValue;
+  private BigInteger minValue;
 
   /**
    * Maximum value for number setting. {@code null} if not defined.
    */
   @Schema(description = "Maximum value for a number setting.")
-  private Long maxValue;
+  private BigInteger maxValue;
 
   /**
    * Number radix. {@code null} if not defined.
    */
   @Schema(description = "Radix for a number setting.")
   private Integer radix;
+
+  /**
+   * Stepping buttons rendering hint.
+   */
+  @Schema(description = "Should increment/decrement buttons be shown for this setting.")
+  private Boolean steppable;
 
   /**
    * Order of the setting.
@@ -168,9 +177,19 @@ public class Setting extends BaseSetting {
    */
   public void setGroupList(List<String> groupList) {
     this.groupList = groupList;
+    group = joinGroupList(groupList);
+  }
+
+  /**
+   * Joins the group list as a single string.
+   * @param groupList the joined list.
+   * @return a single string for the group.
+   */
+  public static String joinGroupList(List<String> groupList) {
     if (groupList != null && groupList.size() > 0) {
-      group = String.join("|", groupList);
+      return String.join("|", groupList);
     }
+    return null;
   }
 
   public void setHelpUrl(String helpUrl) {
@@ -206,16 +225,20 @@ public class Setting extends BaseSetting {
     return numberSize;
   }
 
-  public Long getMinValue() {
+  public BigInteger getMinValue() {
     return minValue;
   }
 
-  public Long getMaxValue() {
+  public BigInteger getMaxValue() {
     return maxValue;
   }
 
   public Integer getRadix() {
     return radix;
+  }
+
+  public Boolean isSteppable() {
+    return steppable;
   }
 
   public String getDescription() {
@@ -278,15 +301,19 @@ public class Setting extends BaseSetting {
     this.numberSize = numberSize;
   }
 
-  public void setMinValue(Long minValue) {
+  public void setMinValue(BigInteger minValue) {
     this.minValue = minValue;
   }
 
-  public void setMaxValue(Long maxValue) {
+  public void setMaxValue(BigInteger maxValue) {
     this.maxValue = maxValue;
   }
 
   public void setRadix(Integer radix) {
     this.radix = radix;
+  }
+
+  public void setSteppable(Boolean steppable) {
+    this.steppable = steppable;
   }
 }

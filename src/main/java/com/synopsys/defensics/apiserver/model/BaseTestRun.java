@@ -26,19 +26,22 @@ import java.time.OffsetDateTime;
  */
 public abstract class BaseTestRun {
 
-  @Schema(description = "Id of the Result", example = "1a21fb37-d173-41af-8a71-5bbe06249f7f")
+  @Schema(description = "ID", example = "1a21fb37-d173-41af-8a71-5bbe06249f7f")
   protected String id;
 
-  @Schema(description = "Name of the Run", example = "20200305-1217-58")
+  @Schema(description = "Name of the test run", example = "20200305-1217-58")
   protected String runName;
 
-  @Schema(description = "Id of the project this run belongs")
+  @Schema(description = "Project ID this test run belongs to.")
   @JsonIgnore
   protected String projectId;
 
+  @Schema(description = "Test run type. Currently all API runs have 'NORMAL' run type. Other run "
+      + "types are used in Defensics GUI, for example, where interoperability checks are used.")
   protected RunType runType;
 
   // Auto-generated field, not modifiable by user
+  @Schema(description = "When the test run started")
   protected OffsetDateTime runStartTime;
 
   @JsonIgnore

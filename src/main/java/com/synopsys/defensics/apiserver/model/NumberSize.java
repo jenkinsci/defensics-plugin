@@ -17,7 +17,9 @@
 package com.synopsys.defensics.apiserver.model;
 
 public enum NumberSize {
+  EXTRA_SHORT,
   SHORT,
   MEDIUM,
-  LONG
+  LONG,
+  EXTRA_LONG
 }

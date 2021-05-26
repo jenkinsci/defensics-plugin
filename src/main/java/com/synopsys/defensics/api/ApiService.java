@@ -31,9 +31,11 @@ import hudson.FilePath;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import okhttp3.OkHttpClient.Builder;
@@ -66,6 +68,16 @@ public class ApiService {
     Consumer<Builder> clientConfigurator = builder -> {
       UserAgentConfigurator.configureUserAgent(builder, defensicsUtils.createUserAgentString());
 
+      // Set read timeout longer since eg. report generation can take multiple minutes.
+      // Note: according to https://www.baeldung.com/okhttp-timeouts, readTimeout is defined
+      // as the maximum allowed time of inactivity between two packets, not the total time allowed
+      // for response reading.
+      // TODO: It'd be better if timeouts are per endpoint since most operations should finish
+      // pretty fast, but result-package and report download can take longer. Looks OkHttp
+      // support read timeout setting only during build, so there need to be two clients
+      // for different purposes which is a bit clumsy.
+      builder.readTimeout(20, TimeUnit.MINUTES);
+
       if (certificateValidationDisabled) {
         // Disable strict TLS checking if user has checked "Disable TLS checking".
         // Not preferred method, better would be to use TLS checking.
@@ -86,6 +98,17 @@ public class ApiService {
         authenticationToken,
         clientConfigurator
     );
+  }
+
+  /**
+   * Alternative constructor for unit testing. Takes already created DefensicsClient.
+   *
+   * @param defensicsClient Defensics client
+   * @param apiBaseUrl API server base URL containing the trailing "/api/v2"
+   */
+  ApiService(DefensicsApiClient defensicsClient, URI apiBaseUrl) {
+    this.defensicsClient = defensicsClient;
+    this.apiBaseUrl = apiBaseUrl;
   }
 
   /**
@@ -312,16 +335,24 @@ public class ApiService {
       DefensicsClientException e,
       Function<DefensicsClientException, String> messageRenderer
   ) throws DefensicsRequestException, InterruptedException {
-
     final Exception cause = (Exception)e.getCause();
 
-    // Check if there was interruption, and if yes, map to InterruptedException
-    if (cause != null
-        && (ExceptionUtils.indexOfType(cause, InterruptedIOException.class) >= 0
-            || ExceptionUtils.indexOfType(cause, ClosedByInterruptException.class) >= 0
-            || ExceptionUtils.indexOfType(cause, InterruptedException.class) >= 0)
-    ) {
-      throw new InterruptedException(e.getCause().getMessage());
+    // Check if there was user interruption, and if yes, map to InterruptedException
+    if (cause != null) {
+      boolean jobInterruptedByUser =
+          (ExceptionUtils.indexOfType(cause, InterruptedIOException.class) >= 0
+              || ExceptionUtils.indexOfType(cause, ClosedByInterruptException.class) >= 0
+              || ExceptionUtils.indexOfType(cause, InterruptedException.class) >= 0);
+
+      // SocketTimeoutException comes from OkHttpClient when eg. readTimeout is met so
+      // this shouldn't come from user actions and should be classified as build fail.
+      if (cause instanceof SocketTimeoutException) {
+        jobInterruptedByUser = false;
+      }
+
+      if (jobInterruptedByUser) {
+        throw new InterruptedException(e.getCause().getMessage());
+      }
     }
 
     String message = messageRenderer.apply(e);

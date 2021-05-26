@@ -109,11 +109,17 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
     );
     final OkHttpClient.Builder okHttpBuilder = new OkHttpClient.Builder();
 
+    // Increase default timeout since some operations like report generation can take
+    // more than 10 seconds. If needed, timeout can be overridden in clientConfigurator.
+    // Note that the readTimeout isn't the maximum allowed response time but maximum allowed
+    // inactivity between packets when reading response (according to Baeldung post, didn't yet
+    // find good official OkHttp reference)
+    okHttpBuilder.readTimeout(60, TimeUnit.SECONDS);
+
     if (clientConfigurator != null) {
       clientConfigurator.accept(okHttpBuilder);
     }
 
-    okHttpBuilder.readTimeout(60, TimeUnit.SECONDS);
 
     // Register each requests to contain given token in Authorization header
     this.setToken(token, okHttpBuilder);

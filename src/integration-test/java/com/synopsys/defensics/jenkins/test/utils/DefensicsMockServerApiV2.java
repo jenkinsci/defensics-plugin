@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.matchers.Times;
 import org.mockserver.model.HttpResponse;
@@ -134,6 +135,8 @@ public class DefensicsMockServerApiV2 {
                 .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
                 .withPath("/api/v2/runs"))
         .respond(HttpResponse.response()
+            // Add brief delay added to check client timeout handling
+            .withDelay(TimeUnit.MILLISECONDS, 5)
             .withHeader("Content-Type", CONTENT_TYPE_JSON)
             .withBody(json(getRunJson(null, RunState.IDLE, 0)))
             .withStatusCode(201));

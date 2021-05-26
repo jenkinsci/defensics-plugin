@@ -10,6 +10,8 @@
 
 ### Fixed
 - Make job fail sooner if suite loading fails
+- Increase timeout for larger report and result package downloading. If timeout still occurs, mark
+  build as failed instead of interrupted.
 
 ## v1.2.0 - 2021-03-22
 ### Changed

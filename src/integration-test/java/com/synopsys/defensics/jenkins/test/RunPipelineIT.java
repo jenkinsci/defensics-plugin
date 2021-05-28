@@ -36,6 +36,7 @@ import hudson.EnvVars;
 import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
+import java.io.IOException;
 import java.util.Arrays;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
@@ -65,6 +66,9 @@ public class RunPipelineIT {
       "  }",
       "}"
   ));
+
+  // If true, prints Jenkins console logs for each run
+  private boolean dumpRunLogs = true;
 
   private static ClientAndServer mockServer;
   @Rule
@@ -103,6 +107,7 @@ public class RunPipelineIT {
         true, credentialsId,
         SETTING_FILE_NAME);
     WorkflowRun run = project.scheduleBuild2(0).get();
+    dumpRunLog(run);
 
     assertThat(run.getResult(), is(equalTo(Result.SUCCESS)));
     assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
@@ -127,6 +132,7 @@ public class RunPipelineIT {
         SETTING_FILE_NAME);
 
     WorkflowRun run = project.scheduleBuild2(0).get();
+    dumpRunLog(run);
 
     assertThat(run.getResult(), is(equalTo(Result.FAILURE)));
     assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
@@ -165,6 +171,8 @@ public class RunPipelineIT {
     JenkinsJobUtils.triggerAbortOnLogLine(lastBuild, "Fuzz testing is RUNNING");
 
     WorkflowRun run = runFuture.get();
+    dumpRunLog(run);
+
     assertThat(run.getResult(), is(equalTo(Result.ABORTED)));
     assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(0)));
     assertThat(run.getActions(HTMLAction.class).size(), is(equalTo(0)));
@@ -188,6 +196,7 @@ public class RunPipelineIT {
         SETTING_FILE_NAME);
 
     WorkflowRun run = project.scheduleBuild2(0).get();
+    dumpRunLog(run);
 
     assertThat(run.getResult(), is(equalTo(Result.FAILURE)));
     assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(0)));
@@ -196,5 +205,11 @@ public class RunPipelineIT {
     assertThat(project.getAction(HtmlReportAction.class),
         is(nullValue()));
     assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(true));
+  }
+
+  private void dumpRunLog(WorkflowRun run) throws IOException {
+    if (dumpRunLogs) {
+      run.getLog(999).forEach(System.out::println);
+    }
   }
 }

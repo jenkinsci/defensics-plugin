@@ -18,7 +18,9 @@ package com.synopsys.defensics.jenkins.test.utils;
 
 import com.synopsys.defensics.apiserver.model.RunState;
 import java.util.concurrent.TimeUnit;
+import org.mockserver.configuration.ConfigurationProperties;
 import org.mockserver.integration.ClientAndServer;
+import org.slf4j.event.Level;
 
 /**
  * Mock server returning for unit and integration tests. Add specific exceptions what requests
@@ -38,6 +40,19 @@ public class DefensicsMockServer {
     this.verdict = verdict;
     this.authentication = authentication;
     this.endState = endState;
+    ConfigurationProperties.logLevel(Level.WARN.toString());
+  }
+
+  /**
+   * Change Mock server logging level. INFO level prints all request expectations etc., polluting
+   * the run logs so level is set to WARN level by default. Note this is done via static
+   * ConfigurationProperties so this will have global effect.
+   *
+   * @param level Log level. Uses SLF4j levels TRACE, DEBUG, INFO, WARN, ERROR, OFF (or java
+   *     logger levels).
+   */
+  public static void setMockServerLogLevel(String level) {
+    ConfigurationProperties.logLevel(level);
   }
 
   /**

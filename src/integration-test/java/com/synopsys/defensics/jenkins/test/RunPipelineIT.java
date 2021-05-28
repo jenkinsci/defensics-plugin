@@ -27,6 +27,7 @@ import static org.hamcrest.Matchers.nullValue;
 
 import com.synopsys.defensics.apiserver.model.RunState;
 import com.synopsys.defensics.jenkins.result.HtmlReportPublisherTarget.HtmlReportAction;
+import com.synopsys.defensics.jenkins.result.ResultPackageAction;
 import com.synopsys.defensics.jenkins.test.utils.CredentialsUtil;
 import com.synopsys.defensics.jenkins.test.utils.DefensicsMockServer;
 import com.synopsys.defensics.jenkins.test.utils.JenkinsJobUtils;
@@ -49,7 +50,6 @@ import org.jvnet.hudson.test.JenkinsRule;
 import org.mockserver.integration.ClientAndServer;
 
 public class RunPipelineIT {
-
   private static final String SETTING_FILE_NAME = "http_1000.set";
   private static final String PIPELINE_SCRIPT = String.join("\n", Arrays.asList(
       "node {",
@@ -57,7 +57,8 @@ public class RunPipelineIT {
       "    try {",
       "      defensics(",
       "        defensicsInstance:'" + NAME + "',",
-      "        configurationFilePath:'" + SETTING_FILE_NAME + "'",
+      "        configurationFilePath:'" + SETTING_FILE_NAME + "',",
+      "        saveResultPackage: true",
       "      )",
       "    } catch (error) {",
       "      echo \"" + PIPELINE_ERROR_TEXT + "\";",
@@ -116,6 +117,17 @@ public class RunPipelineIT {
     assertThat(project.getAction(HtmlReportAction.class).getUrlName(),
         is(equalTo(run.getActions(HtmlReportAction.class).get(0).getUrlName())));
     assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(false));
+
+    assertThat(run.getActions(ResultPackageAction.class).size(), is(1));
+    final ResultPackageAction resultPackageAction =
+        run.getActions(ResultPackageAction.class).get(0);
+
+    assertThat(resultPackageAction.getResultPackages().size(), is(1));
+    final String fileName = resultPackageAction.getResultPackages().get(0);
+    assertThat(
+        resultPackageAction.getDescription(fileName),
+        is(String.format("(testplan: %s)", SETTING_FILE_NAME))
+    );
   }
 
   @Test

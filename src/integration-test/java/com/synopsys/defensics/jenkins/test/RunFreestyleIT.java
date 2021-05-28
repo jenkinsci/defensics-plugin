@@ -28,6 +28,7 @@ import static org.hamcrest.Matchers.nullValue;
 
 import com.synopsys.defensics.apiserver.model.RunState;
 import com.synopsys.defensics.jenkins.result.HtmlReportPublisherTarget.HtmlReportAction;
+import com.synopsys.defensics.jenkins.result.ResultPackageAction;
 import com.synopsys.defensics.jenkins.test.utils.CredentialsUtil;
 import com.synopsys.defensics.jenkins.test.utils.DefensicsMockServer;
 import com.synopsys.defensics.jenkins.test.utils.ProjectUtils;
@@ -83,7 +84,7 @@ public class RunFreestyleIT {
         CERTIFICATE_VALIDATION_ENABLED,
         credentialsId,
         SETTING_FILE_PATH);
-    ProjectUtils.addBuildStep(project, NAME, SETTING_FILE_PATH, false);
+    ProjectUtils.addBuildStep(project, NAME, SETTING_FILE_PATH, true);
 
     FreeStyleBuild run = project.scheduleBuild2(0).get();
 
@@ -92,6 +93,17 @@ public class RunFreestyleIT {
     assertThat(run.getActions(HTMLAction.class).size(), is(equalTo(0)));
     assertThat(project.getAction(HtmlReportAction.class).getUrlName(),
         is(equalTo(run.getActions(HtmlReportAction.class).get(0).getUrlName())));
+
+    assertThat(run.getActions(ResultPackageAction.class).size(), is(1));
+    final ResultPackageAction resultPackageAction =
+        run.getActions(ResultPackageAction.class).get(0);
+
+    assertThat(resultPackageAction.getResultPackages().size(), is(1));
+    final String fileName = resultPackageAction.getResultPackages().get(0);
+    assertThat(
+        resultPackageAction.getDescription(fileName),
+        is(String.format("(testplan: %s)", SETTING_FILE_PATH))
+    );
   }
 
   @Test

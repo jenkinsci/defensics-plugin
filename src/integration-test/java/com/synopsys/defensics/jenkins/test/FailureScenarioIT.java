@@ -34,6 +34,7 @@ import com.synopsys.defensics.apiserver.model.SuiteInstance;
 import com.synopsys.defensics.client.DefensicsRequestException;
 import com.synopsys.defensics.client.UnsafeTlsConfigurator;
 import com.synopsys.defensics.jenkins.result.HtmlReportPublisherTarget.HtmlReportAction;
+import com.synopsys.defensics.jenkins.result.ResultPackageAction;
 import com.synopsys.defensics.jenkins.test.utils.CredentialsUtil;
 import com.synopsys.defensics.jenkins.test.utils.JenkinsJobUtils;
 import com.synopsys.defensics.jenkins.test.utils.ProjectUtils;
@@ -114,7 +115,8 @@ public class FailureScenarioIT {
   private String pipelineScript = createPipelineScript(
       NAME,
       SETTING_FILE_PATH,
-      String.format("--uri %s", SUT_URI)
+      String.format("--uri %s", SUT_URI),
+      false
   );
 
   private String credentialsId;
@@ -143,7 +145,8 @@ public class FailureScenarioIT {
   private static String createPipelineScript(
       String defensicsInstance,
       String configurationFilePath,
-      String configurationOverride
+      String configurationOverride,
+      boolean saveResultPackage
   ) {
     return "node {\n"
         + "  stage('Build') {\n"
@@ -151,7 +154,8 @@ public class FailureScenarioIT {
         + "     defensics(\n"
         + "       defensicsInstance: '" + defensicsInstance + "', "
         + "       configurationFilePath: '" + configurationFilePath + "', "
-        + "       configurationOverrides: '" + configurationOverride + "'"
+        + "       configurationOverrides: '" + configurationOverride + "', "
+        + "       saveResultPackage: " + saveResultPackage
         + "     )\n"
         + "     echo \"Step 2: Print line after fuzz job\"\n"
         + "    } catch (error) {\n"
@@ -186,6 +190,12 @@ public class FailureScenarioIT {
   @Test
   public void testRun() throws Exception {
     initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
+    String pipelineScript = createPipelineScript(
+        NAME,
+        SETTING_FILE_PATH,
+        String.format("--uri %s", SUT_URI),
+        true
+    );
     setupProject(pipelineScript);
 
     WorkflowRun run = project.scheduleBuild2(0).get();
@@ -203,6 +213,7 @@ public class FailureScenarioIT {
     );
     checkRunOkAndReportPresent(run);
     checkApiServerResourcesAreCleaned();
+    checkResultPackagePresent(run, SETTING_FILE_PATH);
   }
 
   /**
@@ -226,7 +237,8 @@ public class FailureScenarioIT {
     String pipelineScript = createPipelineScript(
         NAME,
         absoluteTestplanPath.toString(),
-        String.format("--uri %s", SUT_URI)
+        String.format("--uri %s", SUT_URI),
+        false
     );
 
     String scriptWithNode = pipelineScript.replaceFirst(
@@ -262,7 +274,8 @@ public class FailureScenarioIT {
     pipelineScript = createPipelineScript(
         NAME,
         SETTING_FILE_PATH,
-        String.format("--uri %s %s", SUT_URI, instrumentationString)
+        String.format("--uri %s %s", SUT_URI, instrumentationString),
+        false
     );
 
     setupProject(pipelineScript);
@@ -294,7 +307,8 @@ public class FailureScenarioIT {
     pipelineScript = createPipelineScript(
         NAME,
         SETTING_FILE_PATH,
-        String.format("--uri %s %s", SUT_URI, instrumentationString)
+        String.format("--uri %s %s", SUT_URI, instrumentationString),
+        false
     );
     setupProject(pipelineScript);
 
@@ -314,7 +328,8 @@ public class FailureScenarioIT {
     pipelineScript = createPipelineScript(
         NAME,
         SETTING_FILE_PATH,
-        String.format("--uri %s", wrongSutUri)
+        String.format("--uri %s", wrongSutUri),
+        false
     );
     initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
     setupProject(pipelineScript);
@@ -340,7 +355,8 @@ public class FailureScenarioIT {
     pipelineScript = createPipelineScript(
         NAME,
         SETTING_FILE_PATH,
-        String.format("--uri %s", wrongSutUri)
+        String.format("--uri %s", wrongSutUri),
+        false
     );
     initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
     setupProject(pipelineScript);
@@ -368,7 +384,8 @@ public class FailureScenarioIT {
     final String pipelineScriptEmptyTestplan = createPipelineScript(
         NAME,
         emptyFile.getAbsolutePath(),
-        ""
+        "",
+        false
     );
     initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
     setupProject(pipelineScriptEmptyTestplan);
@@ -395,7 +412,8 @@ public class FailureScenarioIT {
     final String pipelineScriptDefiningExternalInstrumentation = createPipelineScript(
         NAME,
         SETTING_FILE_PATH,
-        "--exec-instrument echo 1"
+        "--exec-instrument echo 1",
+        false
     );
     setupProject(pipelineScriptDefiningExternalInstrumentation);
 
@@ -746,6 +764,19 @@ public class FailureScenarioIT {
     assertThat(project.getAction(HtmlReportAction.class).getUrlName(),
         is(equalTo(run.getActions(HtmlReportAction.class).get(0).getUrlName())));
     assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(shouldLogPipelineError));
+  }
+
+  private void checkResultPackagePresent(WorkflowRun run, String testplanFile) {
+    assertThat(run.getActions(ResultPackageAction.class).size(), is(1));
+    final ResultPackageAction resultPackageAction =
+        run.getActions(ResultPackageAction.class).get(0);
+
+    assertThat(resultPackageAction.getResultPackages().size(), is(1));
+    final String fileName = resultPackageAction.getResultPackages().get(0);
+    assertThat(
+        resultPackageAction.getDescription(fileName),
+        is(String.format("(testplan: %s)", testplanFile))
+    );
   }
 
   private void dumpLogs(WorkflowRun run) throws IOException {

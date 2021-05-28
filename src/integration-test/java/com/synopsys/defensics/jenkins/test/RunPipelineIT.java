@@ -36,6 +36,7 @@ import hudson.EnvVars;
 import hudson.model.Result;
 import hudson.model.queue.QueueTaskFuture;
 import hudson.slaves.EnvironmentVariablesNodeProperty;
+import java.util.Arrays;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -49,10 +50,22 @@ import org.mockserver.integration.ClientAndServer;
 public class RunPipelineIT {
 
   private static final String SETTING_FILE_NAME = "http_1000.set";
-  private static final String PIPELINE_SCRIPT =
-      "node { stage('Build') { try { defensics(defensicsInstance:'" + NAME
-          + "', configurationFilePath:'" + SETTING_FILE_NAME + "')"
-          + "} catch (error) { echo \"" + PIPELINE_ERROR_TEXT + "\"; throw error }}}";
+  private static final String PIPELINE_SCRIPT = String.join("\n", Arrays.asList(
+      "node {",
+      "  stage('Build') {",
+      "    try {",
+      "      defensics(",
+      "        defensicsInstance:'" + NAME + "',",
+      "        configurationFilePath:'" + SETTING_FILE_NAME + "'",
+      "      )",
+      "    } catch (error) {",
+      "      echo \"" + PIPELINE_ERROR_TEXT + "\";",
+      "      throw error;",
+      "    }",
+      "  }",
+      "}"
+  ));
+
   private static ClientAndServer mockServer;
   @Rule
   public JenkinsRule jenkinsRule = new JenkinsRule();

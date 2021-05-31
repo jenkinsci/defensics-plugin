@@ -6,6 +6,7 @@
   is an API change coming in Defensics 2021.06.
 - Update plugin run and suite states to match Defensics 2021.06 API. There are some new states
   so updating older Defensics versions to 2021.06 is recommended.
+- Update plugin dependencies
 
 ## v1.2.0 - 2021-03-22
 ### Changed

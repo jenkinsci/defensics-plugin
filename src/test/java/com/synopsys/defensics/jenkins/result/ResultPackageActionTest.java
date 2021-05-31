@@ -44,7 +44,7 @@ public class ResultPackageActionTest {
   public void testGetResultPackages() {
     assertThat(resultPackageAction.getResultPackages(), contains(RESULT_PACKAGE));
     assertThat(resultPackageAction.getResultPackages(), not(contains(RESULT_PACKAGE2)));
-    resultPackageAction.addResultPackage(RESULT_PACKAGE2);
+    resultPackageAction.addResultPackage(RESULT_PACKAGE2, "");
     assertThat(resultPackageAction.getResultPackages(),
         containsInRelativeOrder(RESULT_PACKAGE, RESULT_PACKAGE2));
   }

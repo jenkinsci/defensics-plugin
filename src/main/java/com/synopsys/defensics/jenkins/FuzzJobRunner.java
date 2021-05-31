@@ -143,7 +143,7 @@ public class FuzzJobRunner {
       );
 
       if (saveResultPackage) {
-        publishResultPackage(jenkinsRun, defensicsRun);
+        publishResultPackage(jenkinsRun, defensicsRun, testPlan);
       }
 
       if (defensicsRun.getVerdict().equals(RunVerdict.PASS)) {
@@ -387,10 +387,15 @@ public class FuzzJobRunner {
    *
    * @param jenkinsRun   Jenkins run
    * @param defensicsRun Defensics run
+   * @param testPlan
    * @throws Exception See {@link ApiService#saveResultPackage(FilePath, String, Run)
    *                   saveResultPackage} for possible exceptions
    */
-  public void publishResultPackage(hudson.model.Run<?, ?> jenkinsRun, Run defensicsRun)
+  public void publishResultPackage(
+      hudson.model.Run<?, ?> jenkinsRun,
+      Run defensicsRun,
+      FilePath testPlan
+  )
       throws Exception {
     logger.println("Downloading result package.");
     final String resultFile = String
@@ -399,10 +404,11 @@ public class FuzzJobRunner {
         .child(ResultPackageAction.URL_NAME);
     defensicsClient.saveResultPackage(filePath, resultFile, defensicsRun);
     ResultPackageAction resultPackageAction = jenkinsRun.getAction(ResultPackageAction.class);
+    String description = "(testplan: " + testPlan.getName() + ")";
     if (resultPackageAction == null) {
-      resultPackageAction = new ResultPackageAction(resultFile);
+      resultPackageAction = new ResultPackageAction(resultFile, description);
     } else {
-      resultPackageAction.addResultPackage(resultFile);
+      resultPackageAction.addResultPackage(resultFile, description);
     }
     jenkinsRun.addOrReplaceAction(resultPackageAction);
   }

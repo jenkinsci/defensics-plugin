@@ -20,7 +20,9 @@ import hudson.FilePath;
 import hudson.model.DirectoryBrowserSupport;
 import hudson.model.Run;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.annotation.CheckForNull;
 import javax.annotation.Nonnull;
 import jenkins.model.RunAction2;
@@ -32,17 +34,32 @@ public class ResultPackageAction implements RunAction2 {
   public static final String URL_NAME = "defensics";
   private transient Run<?, ?> run;
   private final List<String> resultPackages = new ArrayList<>();
+  private final Map<String, String> descriptions = new HashMap<>();
 
   public ResultPackageAction(String resultFile) {
     resultPackages.add(resultFile);
+    descriptions.put(resultFile, "");
+  }
+
+  public ResultPackageAction(String resultFile, String description) {
+    resultPackages.add(resultFile);
+    descriptions.put(resultFile, description);
   }
 
   public List<String> getResultPackages() {
     return resultPackages;
   }
 
-  public void addResultPackage(String resultPackage) {
+  public void addResultPackage(String resultPackage, String description) {
     resultPackages.add(resultPackage);
+    descriptions.put(resultPackage, description);
+  }
+
+  public String getDescription(String resultFile) {
+    if (resultFile == null || descriptions == null) {
+      return "";
+    }
+    return descriptions.getOrDefault(resultFile, "");
   }
 
   @Override

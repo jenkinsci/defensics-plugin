@@ -7,6 +7,8 @@
 - Update plugin run and suite states to match Defensics 2021.06 API. There are some new states
   so updating older Defensics versions to 2021.06 is recommended.
 - Update plugin dependencies
+- Show testplan name in the result-package link text so it's easier to find right result if there's
+  multiple Fuzz runs in the same build.
 - Print Defensics server and suite version in the build log
 
 ### Fixed

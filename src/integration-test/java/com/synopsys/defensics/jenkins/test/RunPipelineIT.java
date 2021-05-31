@@ -152,14 +152,12 @@ public class RunPipelineIT {
     JenkinsJobUtils.triggerAbortOnLogLine(lastBuild, "Fuzz testing is RUNNING");
 
     WorkflowRun run = runFuture.get();
-
     assertThat(run.getResult(), is(equalTo(Result.ABORTED)));
     assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(0)));
     assertThat(run.getActions(HTMLAction.class).size(), is(equalTo(0)));
     assertThat(project.getActions(HtmlReportAction.class).size(), is(equalTo(0)));
     assertThat(project.getAction(HtmlReportAction.class),
         is(nullValue()));
-    assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(false));
   }
 
   @Test

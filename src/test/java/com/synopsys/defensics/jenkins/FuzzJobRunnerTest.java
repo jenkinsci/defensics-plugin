@@ -173,15 +173,18 @@ public class FuzzJobRunnerTest {
       return runState.get();
     });
 
-    fuzzJobRunner.run(
-        jenkinsRun,
-        workspace,
-        launcher,
-        logger,
-        testplan,
-        "",
-        instanceConfiguration,
-        saveResultPackage
+    Assert.assertThrows(
+        AbortException.class,
+        () -> fuzzJobRunner.run(
+          jenkinsRun,
+          workspace,
+          launcher,
+          logger,
+          testplan,
+          "",
+          instanceConfiguration,
+          saveResultPackage
+        )
     );
 
     verify(apiService).stopRun(RUN_ID);
@@ -232,15 +235,18 @@ public class FuzzJobRunnerTest {
       return runState.get();
     });
 
-    fuzzJobRunner.run(
-        jenkinsRun,
-        workspace,
-        launcher,
-        logger,
-        testplan,
-        "",
-        instanceConfiguration,
-        saveResultPackage
+    Assert.assertThrows(
+        AbortException.class,
+        () -> fuzzJobRunner.run(
+          jenkinsRun,
+          workspace,
+          launcher,
+          logger,
+          testplan,
+          "",
+          instanceConfiguration,
+          saveResultPackage
+      )
     );
 
     // STARTING state gets 409, RUNNING state gets 200

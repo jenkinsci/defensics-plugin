@@ -152,6 +152,7 @@ public class FailureScenarioIT {
         + "       configurationFilePath: '" + configurationFilePath + "', "
         + "       configurationOverrides: '" + configurationOverride + "'"
         + "     )\n"
+        + "     echo \"Step 2: Print line after fuzz job\"\n"
         + "    } catch (error) {\n"
         + "      echo \"" + PIPELINE_ERROR_TEXT + "\";\n"
         + "      throw error\n"
@@ -581,18 +582,21 @@ public class FailureScenarioIT {
         "           configurationFilePath: '" + SETTING_FILE_PATH + "',",
         "           configurationOverrides: '" + override + "',",
         "         )",
+        "         echo 'Step 2: Should not be shown if interrupted'",
         "      }, job2: {",
         "         defensics(",
         "           defensicsInstance: '" + NAME + "',",
         "           configurationFilePath: '" + SETTING_FILE_PATH + "',",
         "           configurationOverrides: '" + override + "'",
         "         )",
+        "         echo 'Step 2: Should not be shown if interrupted'",
         "      }, job3: {",
         "         defensics(",
         "           defensicsInstance: '" + NAME + "',",
         "           configurationFilePath: '" + SETTING_FILE_PATH + "',",
         "           configurationOverrides: '" + override + "'",
         "         )",
+        "         echo 'Step 2: Should not be shown if interrupted'",
         "      })",
         "  }",
         "}"
@@ -743,11 +747,15 @@ public class FailureScenarioIT {
 
   private void checkRunAbortedCleanly(WorkflowRun run) throws IOException {
     assertThat(run.getResult(), is(equalTo(Result.ABORTED)));
-    assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(false));
     assertThat(logHas(run, "Fuzzing was interrupted"), is(true));
     if(logHas(run, "Stopping run")) {
       assertThat(logHas(run, "Stopping succeeded"), is(true));
     }
+    assertThat(
+        "Second step should not be run after fuzz job is interrupted",
+        run.getLog(999).stream().anyMatch(line -> line.contains("Step 2:")),
+        is(false)
+    );
   }
 
   private void checkApiServerResourcesAreCleaned() {

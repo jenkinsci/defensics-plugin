@@ -98,7 +98,7 @@ public class FuzzPostBuildStep extends Recorder implements SimpleBuildStep {
   @Override
   public void perform(Run<?, ?> run, @Nonnull FilePath workspace, @Nonnull Launcher launcher,
       @Nonnull TaskListener listener)
-      throws AbortException {
+      throws AbortException, InterruptedException {
     if (run.getResult() != Result.ABORTED) {
       FuzzStep fuzzStep = new FuzzStep(
           getDescriptor(),
@@ -106,7 +106,17 @@ public class FuzzPostBuildStep extends Recorder implements SimpleBuildStep {
           configurationFilePath,
           configurationOverrides,
           saveResultPackage);
-      fuzzStep.perform(run, workspace, launcher, listener);
+      try {
+        fuzzStep.perform(run, workspace, launcher, listener);
+      } catch (AbortException e) {
+        // SimpleBuildStep.perform(...) JavaDocs says method should throw InterruptedException
+        // if interrupted so translate exception in this case, otherwise throw original exception
+        if (Result.ABORTED.equals(run.getResult())) {
+          throw new InterruptedException(e.getMessage());
+        } else {
+          throw e;
+        }
+      }
     }
   }
 

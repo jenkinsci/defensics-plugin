@@ -26,6 +26,7 @@ import hudson.ExtensionPoint;
 import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractProject;
+import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.tasks.BuildStepDescriptor;
@@ -35,7 +36,6 @@ import hudson.util.ListBoxModel;
 import java.util.List;
 import javax.annotation.Nonnull;
 import jenkins.tasks.SimpleBuildStep;
-import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
 import org.kohsuke.stapler.QueryParameter;
@@ -96,14 +96,24 @@ public class FuzzBuildStep extends Builder implements SimpleBuildStep {
   @Override
   public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace,
       @Nonnull Launcher launcher, @Nonnull TaskListener listener)
-      throws AbortException {
+      throws AbortException, InterruptedException {
     FuzzStep fuzzStep = new FuzzStep(
         getDescriptor(),
         selectedDefensicsInstanceName,
         configurationFilePath,
         configurationOverrides,
         saveResultPackage);
-    fuzzStep.perform(run, workspace, launcher, listener);
+    try {
+      fuzzStep.perform(run, workspace, launcher, listener);
+    } catch (AbortException e) {
+      // SimpleBuildStep.perform(...) JavaDocs says method should throw InterruptedException
+      // if interrupted so translate exception in this case, otherwise throw original exception
+      if (Result.ABORTED.equals(run.getResult())) {
+        throw new InterruptedException(e.getMessage());
+      } else {
+        throw e;
+      }
+    }
   }
 
   @Override

@@ -12,6 +12,8 @@
 - Make job fail sooner if suite loading fails
 - Increase timeout for larger report and result package downloading. If timeout still occurs, mark
   build as failed instead of interrupted.
+- If Fuzz job is interrupted, whole Jenkins build is stopped and next pipeline steps are not run
+  unless exception is handled, for example, in the pipeline's try-catch block.
 
 ## v1.2.0 - 2021-03-22
 ### Changed

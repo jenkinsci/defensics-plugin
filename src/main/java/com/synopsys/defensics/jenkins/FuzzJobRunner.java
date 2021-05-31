@@ -158,6 +158,7 @@ public class FuzzJobRunner {
 
       handleRunInterruption(defensicsRun);
       runResult = Result.ABORTED;
+      throw new AbortException("Fuzzing was interrupted.");
     } catch (Exception e) {
       runResult = Result.FAILURE;
       if (e instanceof AbortException) {

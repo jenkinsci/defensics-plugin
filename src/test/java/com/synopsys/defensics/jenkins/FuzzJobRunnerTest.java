@@ -22,8 +22,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 import com.synopsys.defensics.api.ApiService;
+import com.synopsys.defensics.apiserver.client.DefensicsApiClient.DefensicsClientException;
 import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.RunState;
 import com.synopsys.defensics.apiserver.model.RunVerdict;
@@ -44,24 +46,33 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.junit.rules.Timeout;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import org.mockito.stubbing.Answer;
 
 /**
  * Unit tests for FuzzJobRunner, allows to test corner cases and other more randomly occuring
  * scenarios. Uses lots of mocks, so modeling the full real behaviour is quite tedious so tests
- * focus mostly on certain aspect to be tested.
+ * focus mostly on certain aspect to be tested. FuzzJobRunner method visibility could be opened
+ * a bit to allow method-level unit testing.
  */
 public class FuzzJobRunnerTest {
   @Rule
   public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+  @Rule
+  public Timeout timeout = new Timeout(10, TimeUnit.SECONDS);
 
   @Mock
   private hudson.model.Run<?, ?> jenkinsRun;
@@ -135,6 +146,106 @@ public class FuzzJobRunnerTest {
     );
 
     verify(jenkinsRun).setResult(Result.SUCCESS);
+  }
+
+  @Test
+  public void testInterruption_RunningRunStopped()
+      throws DefensicsRequestException, IOException, InterruptedException {
+    final FuzzJobRunner fuzzJobRunner = createFuzzJobRunnerWithMockServices();
+    setupMocks();
+
+    final AtomicReference<RunState> runState = new AtomicReference<>(RunState.RUNNING);
+
+    when(suiteInstance.getState()).thenAnswer(invocation -> runState.get());
+
+    // Stop run should succeed and set run to completed
+    doAnswer(invocation -> {
+      runState.set(RunState.COMPLETED);
+      return null;
+    }).when(apiService).stopRun(RUN_ID);
+
+    // Cause job interrupt in 5th poll
+    final AtomicInteger counter = new AtomicInteger();
+    when(defensicsRun.getState()).thenAnswer((Answer<?>) invocation -> {
+      if (counter.incrementAndGet() == 5) {
+        throw new InterruptedException("Job interrupted");
+      }
+      return runState.get();
+    });
+
+    fuzzJobRunner.run(
+        jenkinsRun,
+        workspace,
+        launcher,
+        logger,
+        testplan,
+        "",
+        instanceConfiguration,
+        saveResultPackage
+    );
+
+    verify(apiService).stopRun(RUN_ID);
+    verify(jenkinsRun).setResult(Result.ABORTED);
+  }
+
+
+  /**
+   * Check that retry mechanism on run stop works. Some states do not yet allow stopping and
+   * returns 409, so interrupt handler now retries stop request if first one got 409.
+   * Simulate a case where run was in STARTING state and moved to RUNNING state.
+   */
+  @Test
+  public void testInterruption_StartingRunStopped_eventually()
+      throws DefensicsRequestException, IOException, InterruptedException {
+    final FuzzJobRunner fuzzJobRunner = createFuzzJobRunnerWithMockServices();
+    setupMocks();
+
+    final AtomicReference<RunState> runState = new AtomicReference<>(RunState.STARTING);
+
+    when(suiteInstance.getState()).thenAnswer(invocation -> runState.get());
+
+    // Make run state changes happen during stopRun calls.
+    doAnswer(invocation -> {
+      if (runState.get().equals(RunState.STARTING)) {
+        // Starting run gets 409, but let's move run state internally to running.
+        // NOTE: These nested exceptions are bit cumbersome here.
+        runState.set(RunState.RUNNING);
+        throw new DefensicsRequestException(
+            "Plugin exception",
+            new DefensicsClientException("409 Conflict API client exception")
+        );
+      }
+
+      // Second stop for RUNNING run should succeed
+      if (runState.get().equals(RunState.RUNNING)) {
+        runState.set(RunState.COMPLETED);
+      }
+      return null;
+    }).when(apiService).stopRun(RUN_ID);
+
+    // Cause job interrupt in 5th poll
+    final AtomicInteger counter = new AtomicInteger();
+    when(defensicsRun.getState()).thenAnswer((Answer<?>) invocation -> {
+      if (counter.incrementAndGet() == 5) {
+        throw new InterruptedException("Job interrupted");
+      }
+      return runState.get();
+    });
+
+    fuzzJobRunner.run(
+        jenkinsRun,
+        workspace,
+        launcher,
+        logger,
+        testplan,
+        "",
+        instanceConfiguration,
+        saveResultPackage
+    );
+
+    // STARTING state gets 409, RUNNING state gets 200
+    verify(apiService, times(2)).stopRun(RUN_ID);
+    verify(jenkinsRun).setResult(Result.ABORTED);
   }
 
   /**

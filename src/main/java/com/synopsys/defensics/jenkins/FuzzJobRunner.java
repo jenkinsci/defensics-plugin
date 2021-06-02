@@ -421,15 +421,16 @@ public class FuzzJobRunner {
         waitForSuiteLoading(run);
       }
 
-      // Try to stop run if it's created and hasn't finished yet. Idle jobs cannot be stopped.
-      List<RunState> stoppedStates = Arrays.asList(
-          RunState.COMPLETED,
-          RunState.ERROR,
-          RunState.FATAL,
-          RunState.IDLE,
-          RunState.UNLOADING
+      // Stop job if it has been started. Starting and pausing runs might not be stoppable, but
+      // they likely can transition to next states which can be stopped so include those to state
+      // list. Interrupt handler stop-run retry mechanism should handle these cases.
+      List<RunState> stoppableStates = Arrays.asList(
+          RunState.STARTING,
+          RunState.RUNNING,
+          RunState.PAUSING,
+          RunState.PAUSED
       );
-      if (!stoppedStates.contains(run.getState())) {
+      if (stoppableStates.contains(run.getState())) {
         final String runId = run.getId();
         logger.println("Stopping run.");
         try {

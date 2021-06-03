@@ -734,7 +734,7 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
         throw new DefensicsClientException(message);
       }
     } catch (IOException e) {
-      throw new DefensicsClientException("Could not " + operation + ":" + e.getMessage(), e);
+      throw new DefensicsClientException("Could not " + operation + ": " + e.getMessage(), e);
     }
   }
 
@@ -789,7 +789,7 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
         return null;
       }
     } catch (IOException e) {
-      throw new DefensicsClientException("Could not " + operationString + ":" + e.getMessage(), e);
+      throw new DefensicsClientException("Could not " + operationString + ": " + e.getMessage(), e);
     }
   }
 
@@ -841,7 +841,7 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
           .map(ItemArray::getData)
           .orElseThrow(() -> new DefensicsClientException("Server response empty"));
     } catch (IOException e) {
-      throw new DefensicsClientException("Could not " + operationString + ":" + e.getMessage(), e);
+      throw new DefensicsClientException("Could not " + operationString + ": " + e.getMessage(), e);
     }
   }
 

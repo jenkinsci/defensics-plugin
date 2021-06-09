@@ -21,6 +21,7 @@ import com.synopsys.defensics.apiserver.client.DefensicsApiClient.DefensicsClien
 import com.synopsys.defensics.apiserver.client.DefensicsApiV2Client;
 import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.SettingCliArgs;
+import com.synopsys.defensics.apiserver.model.Suite;
 import com.synopsys.defensics.apiserver.model.SuiteInstance;
 import com.synopsys.defensics.client.DefensicsRequestException;
 import com.synopsys.defensics.client.UnsafeTlsConfigurator;
@@ -304,6 +305,41 @@ public class ApiService {
       defensicsClient.deleteRun(runId);
     } catch (DefensicsClientException e) {
       mapAndThrow(e);
+    }
+  }
+
+  /**
+   * Get Suite for the given run+suite-instance. Suite contains full suite name and some other
+   * information which cannot be found from suite-instance. Note: This eats client errors so refine
+   * error handling if suite information is necessary for run to proceed. Now suite is just used to
+   * print suite name and version.
+   *
+   * @param run Run having assigned suite instance
+   * @return Suite if found, otherwise empty optional.
+   */
+  public Optional<Suite> getSuiteInformationForRun(Run run) {
+    try {
+      final SuiteInstance suiteInstance = defensicsClient.getRunSuiteInstance(run.getId())
+          .orElseThrow(() -> new IllegalStateException("Suite instance not found"));
+      return defensicsClient.getSuite(
+          suiteInstance.getSuiteFeature(),
+          suiteInstance.getSuiteVersion()
+      );
+    } catch (DefensicsClientException | IllegalStateException e) {
+      return Optional.empty();
+    }
+  }
+
+  /**
+   * Returns API server version as a string, or empty optional if request fails for some reason.
+   *
+   * @return API server version (same as monitorVersion)
+   */
+  public Optional<String> getServerVersion() {
+    try {
+      return defensicsClient.getServerVersion().map(VersionInformation::getMonitorVersion);
+    } catch (DefensicsClientException e) {
+      return Optional.empty();
     }
   }
 

@@ -51,6 +51,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
@@ -190,6 +191,11 @@ public class FailureScenarioIT {
     WorkflowRun run = project.scheduleBuild2(0).get();
     dumpLogs(run);
 
+    // Check that suite name and version is printed. Suite version may vary so allow some variation.
+    assertThat(
+        logHas(run, Pattern.compile("Waiting for HTTP Server [0-9.-a-z]+ suite to load")),
+        is(true)
+    );
     checkRunOkAndReportPresent(run);
     checkApiServerResourcesAreCleaned();
   }
@@ -712,6 +718,10 @@ public class FailureScenarioIT {
 
   private boolean logHas(WorkflowRun run, String s) throws IOException {
     return Stream.of(run.getLog(999)).anyMatch(line -> line.toString().contains(s));
+  }
+
+  private boolean logHas(WorkflowRun run, Pattern regex) throws IOException {
+    return Stream.of(run.getLog(999)).anyMatch(line -> regex.matcher(line.toString()).find());
   }
 
   private void checkRunOkAndReportPresent(WorkflowRun run) throws IOException {

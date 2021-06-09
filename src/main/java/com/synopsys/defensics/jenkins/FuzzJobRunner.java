@@ -102,7 +102,15 @@ public class FuzzJobRunner {
 
       logger.println("Uploading test configuration from " + testPlan);
       defensicsClient.uploadTestPlan(defensicsRun.getId(), testPlan);
-      logger.println("Waiting for suite to load.");
+
+      final String suiteLoadingMessage = defensicsClient.getSuiteInformationForRun(defensicsRun)
+          .map(suite -> String.format("Waiting for %s %s suite to load.",
+              suite.getName(),
+              suite.getVersion()
+              )
+          ).orElse("Waiting for suite to load.");
+
+      logger.println(suiteLoadingMessage);
       waitForSuiteLoading(defensicsRun);
 
       if (isNotBlank(configurationOverrides)) {

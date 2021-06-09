@@ -7,6 +7,7 @@
 - Update plugin run and suite states to match Defensics 2021.06 API. There are some new states
   so updating older Defensics versions to 2021.06 is recommended.
 - Update plugin dependencies
+- Print used suite name and version in the build log
 
 ### Fixed
 - Make job fail sooner if suite loading fails

@@ -196,6 +196,11 @@ public class FailureScenarioIT {
         logHas(run, Pattern.compile("Waiting for HTTP Server [0-9.-a-z]+ suite to load")),
         is(true)
     );
+
+    assertThat(
+        logHas(run, Pattern.compile("Defensics server version: [2][0-1][0-9][0-9].*")),
+        is(true)
+    );
     checkRunOkAndReportPresent(run);
     checkApiServerResourcesAreCleaned();
   }

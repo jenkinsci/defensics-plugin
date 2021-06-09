@@ -246,6 +246,10 @@ public class FuzzJobRunner {
       logger.println("Certificate validation is disabled.");
     }
     defensicsClient.healthCheck();
+
+    defensicsClient.getServerVersion().ifPresent(serverVersion -> {
+      logger.println("Defensics server version: " + serverVersion);
+    });
   }
 
   /**

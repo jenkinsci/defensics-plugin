@@ -23,6 +23,7 @@ import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.SettingCliArgs;
 import com.synopsys.defensics.apiserver.model.Suite;
 import com.synopsys.defensics.apiserver.model.SuiteInstance;
+import com.synopsys.defensics.apiserver.model.VersionInformation;
 import com.synopsys.defensics.client.DefensicsRequestException;
 import com.synopsys.defensics.client.UnsafeTlsConfigurator;
 import com.synopsys.defensics.client.UserAgentConfigurator;

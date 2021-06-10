@@ -404,7 +404,9 @@ public class FuzzJobRunner {
         .child(ResultPackageAction.URL_NAME);
     defensicsClient.saveResultPackage(filePath, resultFile, defensicsRun);
     ResultPackageAction resultPackageAction = jenkinsRun.getAction(ResultPackageAction.class);
-    String description = "(testplan: " + testPlan.getName() + ")";
+    // Use only testplan name without .testplan extension in the link description to match
+    // the tab wording in the HTML report view
+    String description = testPlan.getName().replaceFirst(".testplan$", "");
     if (resultPackageAction == null) {
       resultPackageAction = new ResultPackageAction(resultFile, description);
     } else {

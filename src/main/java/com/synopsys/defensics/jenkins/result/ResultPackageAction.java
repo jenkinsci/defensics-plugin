@@ -34,6 +34,9 @@ public class ResultPackageAction implements RunAction2 {
   public static final String URL_NAME = "defensics";
   private transient Run<?, ?> run;
   private final List<String> resultPackages = new ArrayList<>();
+  /**
+   * Contains the link description. Key is the resultPackage string stored into resultPackages list.
+   */
   private final Map<String, String> descriptions = new HashMap<>();
 
   public ResultPackageAction(String resultFile) {
@@ -59,6 +62,7 @@ public class ResultPackageAction implements RunAction2 {
     if (resultFile == null || descriptions == null) {
       return "";
     }
+
     return descriptions.getOrDefault(resultFile, "");
   }
 

@@ -126,7 +126,7 @@ public class RunPipelineIT {
     final String fileName = resultPackageAction.getResultPackages().get(0);
     assertThat(
         resultPackageAction.getDescription(fileName),
-        is(String.format("(testplan: %s)", SETTING_FILE_NAME))
+        is(SETTING_FILE_NAME.replace(".testplan", ""))
     );
   }
 

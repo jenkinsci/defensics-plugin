@@ -6,7 +6,16 @@
       <ol id="defensics-results-package-list">
         <j:forEach var="package" items="${it.resultPackages}">
           <li>
-            <a href="${it.getUrlName()}/${package}">Result Package ${it.getDescription(package)}</a>
+            <a href="${it.getUrlName()}/${package}">
+              <j:choose>
+                <j:when test="${it.getDescription(package) == null || it.getDescription(package).isEmpty()}">
+                  Result package
+                </j:when>
+                <j:otherwise>
+                  ${it.getDescription(package)}
+                </j:otherwise>
+              </j:choose>
+            </a>
           </li>
         </j:forEach>
       </ol>

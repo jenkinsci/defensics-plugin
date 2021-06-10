@@ -775,7 +775,7 @@ public class FailureScenarioIT {
     final String fileName = resultPackageAction.getResultPackages().get(0);
     assertThat(
         resultPackageAction.getDescription(fileName),
-        is(String.format("(testplan: %s)", testplanFile))
+        is(String.format("%s", testplanFile.replace(".testplan", "")))
     );
   }
 

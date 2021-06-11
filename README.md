@@ -78,6 +78,12 @@ To install the plugin manually to a Jenkins:
 3. Restart Jenkins.
 
 ## Release notes
+### Version 1.2.1
+- Update plugin to match Defensics 2021.06 API changes
+- Use testplan name in the result package links to find correct result more easily
+- Print suite and server version during build
+- Various bug fixes: report download on long runs, better error handling on suite load
+  errors, stop build on fuzz job interrupt, etc. See CHANGELOG for more details.
 
 ### Version 1.2.0
 - Update plugin to work with Defensics 2021.03 API changes so this version requires

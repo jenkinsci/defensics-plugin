@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## v1.2.1 - 2021-06-14
 ### Changed
 - Plugin can now handle setting overrides which require suite reload. This
   is an API change coming in Defensics 2021.06.

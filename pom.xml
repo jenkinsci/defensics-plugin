@@ -123,6 +123,7 @@
             <include>**/*.java</include>
           </includes>
         </configuration>
+        <!-- FIXME: Enable when license checker handles multiple years.
         <executions>
           <execution>
             <id>check-license</id>
@@ -132,6 +133,7 @@
             <phase>process-sources</phase>
           </execution>
         </executions>
+        -->
       </plugin>
       <plugin>
         <groupId>com.github.spotbugs</groupId>

@@ -86,7 +86,7 @@ public class InstanceConfigurationValidator {
 
   private void areNamesUnique(List<InstanceConfiguration> defensicsInstances)
       throws FormException {
-    List<String> duplicatedNames = new ArrayList();
+    List<String> duplicatedNames = new ArrayList<>();
 
     defensicsInstances.stream().collect(
         Collectors.groupingBy(InstanceConfiguration::getName)).forEach((name, instances) -> {

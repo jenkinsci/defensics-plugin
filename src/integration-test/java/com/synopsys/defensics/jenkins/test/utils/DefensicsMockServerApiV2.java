@@ -24,7 +24,7 @@ import static org.mockserver.model.NottableString.string;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.PropertyNamingStrategy;
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.synopsys.defensics.apiserver.model.Item;
@@ -76,7 +76,7 @@ public class DefensicsMockServerApiV2 {
 
     // Configure objectmapper to match API server configuration (check from DefensicsApiV2Client)
     this.objectMapper = new ObjectMapper();
-    this.objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.LOWER_CAMEL_CASE);
+    this.objectMapper.setPropertyNamingStrategy(PropertyNamingStrategies.LOWER_CAMEL_CASE);
     this.objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
     this.objectMapper.registerModule(new JavaTimeModule());
   }

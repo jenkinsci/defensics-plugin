@@ -1,4 +1,6 @@
 # Changelog
+### Changed
+- Update Credentials plugin to 2.3.19 which fixes CVE-2021-21648
 
 ## v1.2.1 - 2021-06-14
 ### Changed

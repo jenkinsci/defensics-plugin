@@ -12,8 +12,8 @@ https://www.synopsys.com/software-integrity/security-testing/fuzz-testing.html.
 ## Requirements
 
 Requirements for the Defensics Jenkins plugin are:
-- Jenkins 2.176.4 or later. Non-LTS versions of Jenkins are not supported.
-- Defensics 2021.03 or later.
+- Jenkins 2.263.1 or later. Non-LTS versions of Jenkins are not supported.
+- Defensics 2021.06 or later.
 
 The Defensics Jenkins plugin uses the following plugins, which will be installed 
 by Jenkins on Defensics plugin installation, if not already installed:

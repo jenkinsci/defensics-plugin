@@ -77,8 +77,20 @@ public class HtmlReport {
    *         workspace.
    */
   public String getResultDirectory() {
-    return (reportFile == null || reportFile.getParent() == null) ? null
-        : reportFile.getParent().getRemote();
+    if (reportFile == null) {
+      return null;
+    }
+
+    // Handle spotbugs NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE issue for @CheckForNull annotated
+    // method. In theory multiple getParent() calls may not necessarily return the same
+    // value, so use final local variable here to lock the value.
+    // https://github.com/spotbugs/spotbugs/issues/782
+    final FilePath parent = reportFile.getParent();
+    if (parent == null) {
+      return null;
+    }
+
+    return parent.getRemote();
   }
 
   /**

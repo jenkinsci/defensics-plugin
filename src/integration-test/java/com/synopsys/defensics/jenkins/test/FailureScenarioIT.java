@@ -600,7 +600,7 @@ public class FailureScenarioIT {
   public void testParallelJobStop() throws Exception {
     // Configure concurrent suite runs have more cases so the first suite doesn't stop before last
     // suite has started loading
-    final String override = String.format("--uri %s --index 0-5000 --tg-text high", SUT_URI);
+    final String override = String.format("--uri %s --index 0-5000", SUT_URI);
     String script = String.join("\n", Arrays.asList(
         "node {",
         "  stage('Build') {",
@@ -651,7 +651,7 @@ public class FailureScenarioIT {
     final WorkflowRun lastBuild = project.getLastBuild();
 
     // All three suite loads need to be started before triggering interrupt.
-    JenkinsJobUtils.triggerAbortOnLogLine(lastBuild, "Waiting for suite to load", 3);
+    JenkinsJobUtils.triggerAbortOnLogLine(lastBuild, "Waiting for.* suite to load", 3);
 
     WorkflowRun run = runFuture.get();
 

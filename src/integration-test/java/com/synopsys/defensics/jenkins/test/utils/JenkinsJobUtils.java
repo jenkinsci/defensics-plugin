@@ -18,6 +18,7 @@ package com.synopsys.defensics.jenkins.test.utils;
 
 import java.io.IOException;
 import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
 
 /**
@@ -29,7 +30,7 @@ public class JenkinsJobUtils {
    * Watches build log and trigger job interrupt when logString occurs in logs.
    *
    * @param lastBuild Build to watch
-   * @param logString String to look for in lines
+   * @param logString Regular expression string to look for in lines
    */
   public static void triggerAbortOnLogLine(
       WorkflowRun lastBuild,
@@ -43,20 +44,21 @@ public class JenkinsJobUtils {
    * requiredOccurenceCount times.
    *
    * @param lastBuild Build to watch
-   * @param logString String to look for in lines
+   * @param logRegex Regular expression string to look for in the log lines
    * @param requiredOccurenceCount How many lines should have this to cause job interrupt
    */
   public static void triggerAbortOnLogLine(
       WorkflowRun lastBuild,
-      String logString,
+      String logRegex,
       int requiredOccurenceCount
   ) {
+    final Pattern regex = Pattern.compile(logRegex);
     Executors.newSingleThreadExecutor().submit(() -> {
           try {
             while (true) {
               final boolean containsLogStrings = lastBuild.getLog(999)
                   .stream()
-                  .filter(line -> line.contains(logString))
+                  .filter(line -> regex.matcher(line).find())
                   .count() == requiredOccurenceCount;
 
               if (containsLogStrings) {

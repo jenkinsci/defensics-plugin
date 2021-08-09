@@ -332,6 +332,11 @@
         <version>1.14</version>
       </dependency>
       <dependency>
+        <groupId>org.jenkins-ci</groupId>
+        <artifactId>symbol-annotation</artifactId>
+        <version>1.23</version>
+      </dependency>
+      <dependency>
         <groupId>com.google.guava</groupId>
         <artifactId>guava</artifactId>
         <!-- Seems Jenkins and CPS is using _old_ Guava 18.0. MockServer is using newer Guava but it breaks CPS executor 

@@ -78,6 +78,11 @@ To install the plugin manually to a Jenkins:
 3. Restart Jenkins.
 
 ## Release notes
+### Version 2021.9
+- Plugin version scheme is unified to follow Defensics versioning
+- Plugin dependencies and core libraries are updated to fix security issues.
+  Now the oldest supported Jenkins version is 2.263.1.
+
 ### Version 1.2.1
 - Update plugin to match Defensics 2021.06 API changes
 - Use testplan name in the result package links to find correct result more easily

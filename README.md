@@ -2,8 +2,7 @@
 
 This plugin allows Jenkins builds to run Defensics as a build or post-build 
 step. This README includes information for plugin developers. For information 
-on how to use the plugin, see [Defensics Jenkins Plugin User 
-Guide](doc/user-guide.md).
+on how to use the plugin, see [Defensics Jenkins Plugin User Guide](doc/user-guide.md).
 
 ## Getting started
 
@@ -41,8 +40,8 @@ by Jenkins, follow these steps:
 In IntelliJ IDEA
 1. Go to **Run > Edit configurations > + > Maven**.
 2. Give a name to this configuration, e.g. "Test Defensics Jenkins Plugin".
-3. Add the word verify to **Command line**. ("test" runs unit tests, "verify" 
-4. runs both unit and integration tests.)
+3. Add the word verify to **Command line**. ("test" runs unit tests, "verify" runs both unit and
+   integration tests.)
 
 Now you can run or debug the whole test suite for this project from IDEA. It's 
 important to do either this, or run "mvn verify" from command line before 
@@ -68,14 +67,14 @@ To build the hpi file:
 
 `mvn clean verify`
 
-This will compile, test and package the plugin into an Jenkins plugin 
+This will compile, test and package the plugin into a Jenkins plugin 
 installation package in `target/defensics-plugin.hpi`.
 
 To install the plugin manually to a Jenkins:
 
-1. Upload and install Defensics Plugin `defensics-plugin.hpi` from **Manage 
-2. Jenkins -> Plugins -> Advanced**.
-3. Restart Jenkins.
+1. Upload and install Defensics Plugin `defensics-plugin.hpi`
+   from **Manage Jenkins -> Plugins -> Advanced**.
+2. Restart Jenkins.
 
 ## Release notes
 ### Version 2021.9

@@ -1,8 +1,8 @@
 # Changelog
 
-## 2021.9 - 2021-09-13
+## 2021.9.0 - 2021-09-13
 ### Changed
-- Change plugin versioning to match Defensics versioning year.month[.revision].
+- Change plugin versioning to match Defensics versioning year.month.revision.
 - Update plugin reference Jenkins LTS version to 2.263.1
 - Update Credentials plugin to 2.3.19 which fixes CVE-2021-21648
 

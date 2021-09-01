@@ -107,6 +107,11 @@
         </executions>
       </plugin>
       <plugin>
+        <!--
+            This plugin is used manually to add copyright headers to new files with license:format - it'll
+            change other files as well so add only relevant files to git.
+            Checkstyle plugin is used during the build to check the header since it supports multiple years.
+        -->
         <groupId>com.mycila</groupId>
         <artifactId>license-maven-plugin</artifactId>
         <version>3.0</version>
@@ -118,22 +123,12 @@
           <properties>
             <owner>Synopsys, Inc.</owner>
             <inceptionYear>2020</inceptionYear>
+            <year>2021</year>
           </properties>
           <includes>
             <include>**/*.java</include>
           </includes>
         </configuration>
-        <!-- FIXME: Enable when license checker handles multiple years.
-        <executions>
-          <execution>
-            <id>check-license</id>
-            <goals>
-              <goal>check</goal>
-            </goals>
-            <phase>process-sources</phase>
-          </execution>
-        </executions>
-        -->
       </plugin>
       <plugin>
           <artifactId>maven-checkstyle-plugin</artifactId>

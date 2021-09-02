@@ -19,6 +19,7 @@ package com.synopsys.defensics.api;
 import com.synopsys.defensics.apiserver.client.DefensicsApiClient;
 import com.synopsys.defensics.apiserver.client.DefensicsApiClient.DefensicsClientException;
 import com.synopsys.defensics.apiserver.client.DefensicsApiV2Client;
+import com.synopsys.defensics.apiserver.model.HealthCheckResult;
 import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.SettingCliArgs;
 import com.synopsys.defensics.apiserver.model.Suite;
@@ -36,12 +37,16 @@ import java.io.InterruptedIOException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.nio.channels.ClosedByInterruptException;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import okhttp3.OkHttpClient.Builder;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Intermediate API service class between Jenkins job and Defensics client. Does things which client
@@ -121,7 +126,7 @@ public class ApiService {
    */
   public boolean healthCheck() throws DefensicsRequestException, InterruptedException {
     try {
-      return defensicsClient.healthcheck();
+      return getFailingHealthChecks().isEmpty();
     } catch (DefensicsClientException e) {
       mapAndThrow(e);
       // Should not reach this
@@ -129,6 +134,26 @@ public class ApiService {
     }
   }
 
+  /**
+   * Get server health check status and returns unhealthy check results.
+   *
+   * @return Unhealthy check information
+   * @throws DefensicsRequestException if healthcheck information could not be fetched
+   * @throws InterruptedException If processing was interrupted
+   */
+  public Map<String, HealthCheckResult> getFailingHealthChecks()
+      throws DefensicsRequestException, InterruptedException {
+    try {
+      return defensicsClient.getHealthChecks()
+          .entrySet()
+          .stream()
+          .filter(entry -> !entry.getValue().isHealthy())
+          .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+    } catch (DefensicsClientException e) {
+      mapAndThrow(e);
+      return null;
+    }
+  }
 
   /**
    * Upload a testplan file to the API server.
@@ -400,5 +425,27 @@ public class ApiService {
     }
 
     throw new DefensicsRequestException(message);
+  }
+
+  /**
+   * Returns formatted multiline string block about unhealthy healthchecks to be used in warnings.
+   *
+   * @param failingHealthChecks Unhealthy healthchecks
+   * @return Unhealthy healthcheck(s) information - check name and message. Format is unstable.
+   */
+  @NotNull
+  public static String formatUnhealthyHealthcheckLines(
+      Map<String, HealthCheckResult> failingHealthChecks
+  ) {
+    final String healthCheckLines = failingHealthChecks.entrySet()
+        .stream()
+        .map(e ->
+            String.format("Healthcheck '%s'%s",
+                e.getKey(),
+                e.getValue().getMessage().isEmpty() ? "" : ", message: " + e.getValue().getMessage()
+            )
+        )
+        .collect(Collectors.joining("\n"));
+    return healthCheckLines;
   }
 }

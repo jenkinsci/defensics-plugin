@@ -28,6 +28,7 @@ import com.synopsys.defensics.apiserver.model.RunState;
 import com.synopsys.defensics.jenkins.configuration.InstanceConfiguration.DefensicsInstanceConfigurationDescriptor;
 import com.synopsys.defensics.jenkins.test.utils.CredentialsUtil;
 import com.synopsys.defensics.jenkins.test.utils.DefensicsMockServer;
+import com.synopsys.defensics.jenkins.test.utils.DefensicsMockServerApiV2;
 import hudson.model.Item;
 import hudson.util.FormValidation;
 import hudson.util.FormValidation.Kind;
@@ -111,6 +112,28 @@ public class InstanceConfigurationIT {
           LOCAL_URL, CERTIFICATE_VALIDATION_ENABLED, credentialsId);
 
       assertThat(result.kind, is(equalTo(Kind.OK)));
+    } finally {
+      DefensicsMockServer.stopMockServer(mockServer);
+    }
+  }
+
+  @Test
+  public void testConnectionTest_unhealthyServer() {
+    ClientAndServer mockServer = ClientAndServer.startClientAndServer(1080);
+    try {
+      DefensicsMockServerApiV2.initHealthCheck(mockServer, false);
+
+      FormValidation result = defensicsInstanceConfigurationDescriptor.doTestConnection(
+          LOCAL_URL, CERTIFICATE_VALIDATION_ENABLED, credentialsId);
+
+      assertThat(result.kind, is(equalTo(Kind.WARNING)));
+      assertThat(
+          result.getMessage(),
+          is("Connection established, but Defensics server has following unhealthy health checks "
+              + "which may affect server operation:<br>Healthcheck &#039;apiServer&#039;, message: "
+              + "Healthcheck message"
+          )
+      );
     } finally {
       DefensicsMockServer.stopMockServer(mockServer);
     }

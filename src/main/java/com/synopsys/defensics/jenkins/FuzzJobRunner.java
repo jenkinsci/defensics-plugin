@@ -19,6 +19,7 @@ package com.synopsys.defensics.jenkins;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import com.synopsys.defensics.api.ApiService;
+import com.synopsys.defensics.apiserver.model.HealthCheckResult;
 import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.RunState;
 import com.synopsys.defensics.apiserver.model.RunVerdict;
@@ -43,6 +44,7 @@ import java.net.URL;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import jenkins.model.Jenkins;
@@ -245,7 +247,15 @@ public class FuzzJobRunner {
     if (instanceConfiguration.isCertificateValidationDisabled()) {
       logger.println("Certificate validation is disabled.");
     }
-    defensicsClient.healthCheck();
+
+    final Map<String, HealthCheckResult> failingHealthChecks =
+        defensicsClient.getFailingHealthChecks();
+    if (!failingHealthChecks.isEmpty()) {
+      final String serverStatusWarningMessage =
+          "Defensics server has following unhealthy health checks which may affect server operation:\n"
+              + ApiService.formatUnhealthyHealthcheckLines(failingHealthChecks);
+      logger.logWarning(serverStatusWarningMessage);
+    }
 
     defensicsClient.getServerVersion().ifPresent(serverVersion -> {
       logger.println("Defensics server version: " + serverVersion);

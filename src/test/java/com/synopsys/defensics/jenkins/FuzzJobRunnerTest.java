@@ -26,6 +26,7 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 import com.synopsys.defensics.api.ApiService;
 import com.synopsys.defensics.apiserver.client.DefensicsApiClient.DefensicsClientException;
+import com.synopsys.defensics.apiserver.model.HealthCheckResult;
 import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.RunState;
 import com.synopsys.defensics.apiserver.model.RunVerdict;
@@ -45,6 +46,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -56,6 +58,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.rules.Timeout;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -306,6 +309,43 @@ public class FuzzJobRunnerTest {
         )
     );
     assertThat(exception.getMessage(), is("Couldn't load suite, error: Suite error XXX"));
+  }
+
+  @Test
+  public void testServer_warnsAboutUnhealthyHealthchecks() throws Exception {
+    final FuzzJobRunner fuzzJobRunner = createFuzzJobRunnerWithMockServices();
+    setupMocks();
+    when(apiService.getFailingHealthChecks())
+        .thenReturn(Collections.singletonMap(
+            "apiServer",
+            new HealthCheckResult(false, "Check failed")
+        ));
+
+    when(suiteInstance.getState()).thenReturn(RunState.LOADED);
+    when(defensicsRun.getState()).thenReturn(RunState.COMPLETED);
+    when(defensicsRun.getVerdict()).thenReturn(RunVerdict.PASS);
+
+    fuzzJobRunner.run(
+        jenkinsRun,
+        workspace,
+        launcher,
+        logger,
+        testplan,
+        "",
+        instanceConfiguration,
+        saveResultPackage
+    );
+
+    verify(jenkinsRun).setResult(Result.SUCCESS);
+
+    // Currently unhealthy healthchecks are just logged as warnings and they don't stop the build.
+    final ArgumentCaptor<String> warningCaptor = ArgumentCaptor.forClass(String.class);
+    verify(logger).logWarning(warningCaptor.capture());
+    assertThat(
+        warningCaptor.getValue(),
+        is("Defensics server has following unhealthy health checks which may affect server "
+            + "operation:\nHealthcheck 'apiServer', message: Check failed")
+    );
   }
 
   private void setupMocks() throws DefensicsRequestException, InterruptedException, IOException {

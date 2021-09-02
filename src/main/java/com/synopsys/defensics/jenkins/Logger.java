@@ -54,4 +54,8 @@ public class Logger {
   public void logError(String message) {
     println("[ERROR] " + message);
   }
+
+  public void logWarning(String message) {
+    println("[WARNING] " + message);
+  }
 }

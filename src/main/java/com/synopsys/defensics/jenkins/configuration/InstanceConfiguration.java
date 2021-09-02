@@ -21,6 +21,7 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
 import com.synopsys.defensics.api.ApiService;
+import com.synopsys.defensics.apiserver.model.HealthCheckResult;
 import com.synopsys.defensics.client.DefensicsRequestException;
 import hudson.Extension;
 import hudson.model.AbstractDescribableImpl;
@@ -32,6 +33,7 @@ import hudson.util.ListBoxModel;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Map;
 import java.util.Objects;
 import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
@@ -225,7 +227,14 @@ public class InstanceConfiguration extends
             url,
             AuthenticationTokenProvider.getAuthenticationToken(new URL(url), credentialsId),
             certificateValidationDisabled);
-        apiService.healthCheck();
+        Map<String, HealthCheckResult> failingHealthChecks = apiService.getFailingHealthChecks();
+        if (!failingHealthChecks.isEmpty()) {
+          final String warningMessage =
+              "Connection established, but Defensics server has following "
+                  + "unhealthy health checks which may affect server operation:\n"
+                  + ApiService.formatUnhealthyHealthcheckLines(failingHealthChecks);
+          return FormValidation.warning(warningMessage);
+        }
         return FormValidation.ok("Success");
       } catch (AuthenticationTokenNotFoundException e) {
         return FormValidation.error(e.getMessage());

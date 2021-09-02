@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.synopsys.defensics.apiserver.model.HealthCheckResult;
 import com.synopsys.defensics.apiserver.model.Item;
 import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.RunState;
@@ -36,6 +37,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.mockserver.integration.ClientAndServer;
 import org.mockserver.matchers.Times;
@@ -88,7 +91,7 @@ public class DefensicsMockServerApiV2 {
    * @param server Server instance to be initialized.
    */
   public void initServer(ClientAndServer server) {
-    initHealthCheck(server);
+    initHealthCheck(server, true);
     initCreateRun(server);
     initUploadTestplan(server);
     initSetConfigurationSettings(server);
@@ -104,7 +107,13 @@ public class DefensicsMockServerApiV2 {
     }
   }
 
-  private void initHealthCheck(ClientAndServer server) {
+  public static void initHealthCheck(ClientAndServer server, boolean healthy) {
+    Map<String, HealthCheckResult> healthcheckResult = new HashMap<>();
+    healthcheckResult.put("apiServer", new HealthCheckResult(healthy, "Healthcheck message"));
+
+    // Return 500 Internal server error if there's unhealthy healthcheck
+    int statusCode = healthy ? 200 : 500;
+
     server
         .when(
             request()
@@ -113,17 +122,8 @@ public class DefensicsMockServerApiV2 {
                 .withHeader("Authorization", AUTHENTICATION_TOKEN)
                 .withPath("/api/v2/healthcheck"))
         .respond(HttpResponse.response()
-            .withBody(json(
-                "{\"data\": "
-                    + "{\n"
-                    + "    \"api-server\": {\n"
-                    + "      \"healthy\": true,\n"
-                    + "      \"message\": \"\"\n"
-                    + "    }\n"
-                    + "  }\n"
-                    + "}\n"
-            ))
-            .withStatusCode(200));
+            .withBody(json(new Item<>(healthcheckResult)))
+            .withStatusCode(statusCode));
   }
 
   private void initCreateRun(ClientAndServer server) {

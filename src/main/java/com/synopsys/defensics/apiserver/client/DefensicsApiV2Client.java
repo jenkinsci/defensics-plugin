@@ -16,6 +16,7 @@
 
 package com.synopsys.defensics.apiserver.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -333,6 +334,11 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
 
   @Override
   public boolean healthcheck() {
+    return getHealthChecks().values().stream().allMatch(HealthCheckResult::isHealthy);
+  }
+
+  @Override
+  public Map<String, HealthCheckResult> getHealthChecks() {
     final HttpUrl healthcheckUrl = apiBaseUrl.newBuilder()
         .addPathSegment("healthcheck")
         .build();
@@ -340,42 +346,42 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
     Request request = new Builder()
         .url(healthcheckUrl)
         .build();
+
     final String baseErrorMessage = String.format(
         "Unable to connect Defensics server healthcheck at address %s. "
             + "Please check you are using the correct token and Defensics API server is running",
         healthcheckUrl
     );
 
+    final String content;
     try (Response response = okHttpClient.newCall(request).execute()) {
-      // NOTE: Some of the status codes could be mapped to unhealthy status but that'll require
-      // upcoming more detailed healthcheck model so use now exception with error message.
-      if (response.code() >= 400) {
+      if (response.code() >= 400 && response.code() != 500) {
         final String errorMessage = errorMessageForFailingJaxRsRequest(
             baseErrorMessage,
             response
         );
         throw new DefensicsClientException(errorMessage);
       }
-      // Using optional/mapping since spotbugs issues NPE warning easily otherwise
-      try (final InputStream contentStream = Optional.of(response)
-          .map(Response::body)
-          .map(ResponseBody::byteStream)
-          .orElseThrow(
-              () -> new DefensicsClientException(baseErrorMessage + ". Server response empty")
-          )
-      ) {
-        final Item<Map<String, HealthCheckResult>> healthChecks = objectMapper.readValue(
-            contentStream,
-            new TypeReference<Item<Map<String, HealthCheckResult>>>() {}
-        );
 
-        if (healthChecks == null || healthChecks.getData() == null) {
-          throw new DefensicsClientException(baseErrorMessage + ". Server response empty");
-        }
-        return healthChecks.getData().values().stream().allMatch(HealthCheckResult::isHealthy);
+      final ResponseBody body = response.body();
+      if (body == null) {
+        throw new DefensicsClientException(baseErrorMessage + ". Server response empty");
       }
+      content = body.string();
     } catch (IOException e) {
       throw new DefensicsClientException(baseErrorMessage + ": " + e.getMessage(), e);
+    }
+
+    try {
+      final Item<Map<String, HealthCheckResult>> healthChecks = objectMapper.readValue(
+          content,
+          new TypeReference<Item<Map<String, HealthCheckResult>>>() {}
+      );
+      return healthChecks.getData();
+    } catch (JsonProcessingException e) {
+      throw new DefensicsClientException(
+          "Could not parse health check response: " + content, e
+      );
     }
   }
 

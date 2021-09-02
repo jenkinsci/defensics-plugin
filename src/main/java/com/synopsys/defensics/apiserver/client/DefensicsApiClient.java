@@ -17,6 +17,7 @@
 package com.synopsys.defensics.apiserver.client;
 
 import com.synopsys.defensics.apiserver.model.BaseSettings;
+import com.synopsys.defensics.apiserver.model.HealthCheckResult;
 import com.synopsys.defensics.apiserver.model.Result;
 import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.RunTestConfiguration;
@@ -27,6 +28,7 @@ import com.synopsys.defensics.apiserver.model.SuiteInstance;
 import com.synopsys.defensics.apiserver.model.VersionInformation;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -39,8 +41,19 @@ public interface DefensicsApiClient {
    *
    * @return Boolean true if server is healthy, false if not. Exception is thrown if connection to
    *     server was not possible.
+   * @throws DefensicsClientException if healthcheck information could not be fetched (eg. server
+   *     down, TLS configuration wrong, wrong token).
    */
   boolean healthcheck();
+
+  /**
+   * Get detailed healthcheck information.
+   *
+   * @return Healthcheck information as a map
+   * @throws DefensicsClientException if healthcheck information could not be fetched (eg. server
+   *     down, TLS configuration wrong, wrong token).
+   */
+  Map<String, HealthCheckResult> getHealthChecks();
 
   /**
    * Fetches API server version information. In future may contain some other component version

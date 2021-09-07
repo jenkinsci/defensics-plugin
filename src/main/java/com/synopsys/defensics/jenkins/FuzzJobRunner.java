@@ -253,7 +253,7 @@ public class FuzzJobRunner {
     if (!failingHealthChecks.isEmpty()) {
       final String serverStatusWarningMessage =
           "Defensics server has following unhealthy health checks which may affect server operation:\n"
-              + ApiService.formatUnhealthyHealthcheckLines(failingHealthChecks);
+              + ApiService.formatUnhealthyHealthCheckLines(failingHealthChecks);
       logger.logWarning(serverStatusWarningMessage);
     }
 

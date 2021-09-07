@@ -138,7 +138,7 @@ public class ApiService {
    * Get server health check status and returns unhealthy check results.
    *
    * @return Unhealthy check information
-   * @throws DefensicsRequestException if healthcheck information could not be fetched
+   * @throws DefensicsRequestException if health check information could not be fetched
    * @throws InterruptedException If processing was interrupted
    */
   public Map<String, HealthCheckResult> getFailingHealthChecks()
@@ -428,19 +428,19 @@ public class ApiService {
   }
 
   /**
-   * Returns formatted multiline string block about unhealthy healthchecks to be used in warnings.
+   * Returns formatted multiline string block about unhealthy health checks to be used in warnings.
    *
-   * @param failingHealthChecks Unhealthy healthchecks
-   * @return Unhealthy healthcheck(s) information - check name and message. Format is unstable.
+   * @param failingHealthChecks Unhealthy health checks
+   * @return Unhealthy health check(s) information - check name and message. Format is unstable.
    */
   @NotNull
-  public static String formatUnhealthyHealthcheckLines(
+  public static String formatUnhealthyHealthCheckLines(
       Map<String, HealthCheckResult> failingHealthChecks
   ) {
     final String healthCheckLines = failingHealthChecks.entrySet()
         .stream()
         .map(e ->
-            String.format("Healthcheck '%s'%s",
+            String.format("Health check '%s'%s",
                 e.getKey(),
                 e.getValue().getMessage().isEmpty() ? "" : ", message: " + e.getValue().getMessage()
             )

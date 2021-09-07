@@ -671,7 +671,7 @@ public class FailureScenarioIT {
    * Check that requests failing with TLS configuration mention that.
    */
   @Test
-  public void testHealthcheck_reportsTlsProblems() {
+  public void testHealthCheck_reportsTlsProblems() {
     Assume.assumeThat(
         "This test requires that API server is running with HTTPS",
         API_SERVER_URL.startsWith("https://"),
@@ -699,7 +699,7 @@ public class FailureScenarioIT {
    * Check that Jenkins logs contain information about 401 unauthorized access if token is wrong.
    */
   @Test
-  public void testHealthcheck_reportUnauthorized() {
+  public void testHealthCheck_reportUnauthorized() {
     Assume.assumeThat(
         "This test requires that API server is running with HTTPS - if HTTP, server could be "
             + "running in insecure mode",

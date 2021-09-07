@@ -348,7 +348,7 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
         .build();
 
     final String baseErrorMessage = String.format(
-        "Unable to connect Defensics server healthcheck at address %s. "
+        "Unable to connect Defensics server health check at address %s. "
             + "Please check you are using the correct token and Defensics API server is running",
         healthcheckUrl
     );

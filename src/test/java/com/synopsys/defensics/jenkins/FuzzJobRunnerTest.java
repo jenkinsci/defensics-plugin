@@ -312,7 +312,7 @@ public class FuzzJobRunnerTest {
   }
 
   @Test
-  public void testServer_warnsAboutUnhealthyHealthchecks() throws Exception {
+  public void testServer_warnsAboutUnhealthyHealthChecks() throws Exception {
     final FuzzJobRunner fuzzJobRunner = createFuzzJobRunnerWithMockServices();
     setupMocks();
     when(apiService.getFailingHealthChecks())
@@ -338,13 +338,13 @@ public class FuzzJobRunnerTest {
 
     verify(jenkinsRun).setResult(Result.SUCCESS);
 
-    // Currently unhealthy healthchecks are just logged as warnings and they don't stop the build.
+    // Currently unhealthy health checks are just logged as warnings and they don't stop the build.
     final ArgumentCaptor<String> warningCaptor = ArgumentCaptor.forClass(String.class);
     verify(logger).logWarning(warningCaptor.capture());
     assertThat(
         warningCaptor.getValue(),
         is("Defensics server has following unhealthy health checks which may affect server "
-            + "operation:\nHealthcheck 'apiServer', message: Check failed")
+            + "operation:\nHealth check 'apiServer', message: Check failed")
     );
   }
 

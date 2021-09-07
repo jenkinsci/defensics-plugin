@@ -232,7 +232,7 @@ public class InstanceConfiguration extends
           final String warningMessage =
               "Connection established, but Defensics server has following "
                   + "unhealthy health checks which may affect server operation:\n"
-                  + ApiService.formatUnhealthyHealthcheckLines(failingHealthChecks);
+                  + ApiService.formatUnhealthyHealthCheckLines(failingHealthChecks);
           return FormValidation.warning(warningMessage);
         }
         return FormValidation.ok("Success");

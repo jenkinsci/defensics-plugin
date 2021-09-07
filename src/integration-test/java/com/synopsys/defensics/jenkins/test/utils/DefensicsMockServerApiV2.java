@@ -108,10 +108,10 @@ public class DefensicsMockServerApiV2 {
   }
 
   public static void initHealthCheck(ClientAndServer server, boolean healthy) {
-    Map<String, HealthCheckResult> healthcheckResult = new HashMap<>();
-    healthcheckResult.put("apiServer", new HealthCheckResult(healthy, "Healthcheck message"));
+    Map<String, HealthCheckResult> healthCheckResult = new HashMap<>();
+    healthCheckResult.put("apiServer", new HealthCheckResult(healthy, "Health check message"));
 
-    // Return 500 Internal server error if there's unhealthy healthcheck
+    // Return 500 Internal server error if there's unhealthy health check
     int statusCode = healthy ? 200 : 500;
 
     server
@@ -122,7 +122,7 @@ public class DefensicsMockServerApiV2 {
                 .withHeader("Authorization", AUTHENTICATION_TOKEN)
                 .withPath("/api/v2/healthcheck"))
         .respond(HttpResponse.response()
-            .withBody(json(new Item<>(healthcheckResult)))
+            .withBody(json(new Item<>(healthCheckResult)))
             .withStatusCode(statusCode));
   }
 

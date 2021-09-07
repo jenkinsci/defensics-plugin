@@ -95,7 +95,7 @@ public class ApiServiceTest {
 
       assertThat(
           exception.getMessage(),
-          is(equalTo("Unable to connect Defensics server healthcheck at address " + apiAddress
+          is(equalTo("Unable to connect Defensics server health check at address " + apiAddress
               + ". "
               + "Please check you are using the "
               + "correct token and Defensics API server is running. "

@@ -130,8 +130,8 @@ public class InstanceConfigurationIT {
       assertThat(
           result.getMessage(),
           is("Connection established, but Defensics server has following unhealthy health checks "
-              + "which may affect server operation:<br>Healthcheck &#039;apiServer&#039;, message: "
-              + "Healthcheck message"
+              + "which may affect server operation:<br>Health check &#039;apiServer&#039;, message: "
+              + "Health check message"
           )
       );
     } finally {

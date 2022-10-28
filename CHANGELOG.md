@@ -1,5 +1,9 @@
 # Changelog
 
+## v2022.12.0 - 2022-XX-YY
+### Changed
+- Update plugin reference Jenkins LTS version to 2.319.3
+
 ## v2021.9.0 - 2021-09-14
 ### Changed
 - Change plugin versioning to match Defensics versioning year.month.revision.

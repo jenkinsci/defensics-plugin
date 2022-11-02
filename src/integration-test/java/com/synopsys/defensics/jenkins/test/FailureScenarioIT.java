@@ -219,6 +219,7 @@ public class FailureScenarioIT {
         expectedCaseCount
     );
     assertThat(logHas(run, expectedStatusLine), is(true));
+    assertThat(logHas(run, "(0/0) of tests run"), is(false));
 
     checkRunOkAndReportPresent(run);
     checkApiServerResourcesAreCleaned();

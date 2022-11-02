@@ -17,7 +17,9 @@
 package com.synopsys.defensics.jenkins;
 
 import com.synopsys.defensics.apiserver.model.Run;
+import com.synopsys.defensics.apiserver.model.RunState;
 import com.synopsys.defensics.jenkins.util.DefensicsUtils;
+import java.util.Arrays;
 
 public class RunLogger {
 
@@ -34,6 +36,12 @@ public class RunLogger {
    */
   public void log(Run run) {
     final long totalCases = run.getCasesToBeExecuted();
+    if (totalCases == 0
+        && Arrays.asList(RunState.STARTING, RunState.RUNNING).contains(run.getState())
+    ) {
+      // Do not log initial states where total amount of cases isn't yet determined.
+      return;
+    }
     final int paddingSize = getNumberLength(totalCases);
     final String status = String.format(
         "%4.1f%% (%" + paddingSize + "d/%d) of tests run. %s",

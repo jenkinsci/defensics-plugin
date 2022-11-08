@@ -20,7 +20,6 @@
     <surefire.rerunFailingTestsCount>0</surefire.rerunFailingTestsCount>
   </properties>
   <name>Defensics</name>
-  <description>Synopsys Defensics plugin for fuzz testing.</description>
   <url>https://github.com/jenkinsci/defensics-plugin/blob/master/doc/user-guide.md</url>
   <licenses>
     <license>

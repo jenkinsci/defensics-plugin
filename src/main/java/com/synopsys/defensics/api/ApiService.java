@@ -46,7 +46,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import okhttp3.OkHttpClient.Builder;
 import org.apache.commons.lang.exception.ExceptionUtils;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Intermediate API service class between Jenkins job and Defensics client. Does things which client
@@ -433,7 +432,6 @@ public class ApiService {
    * @param failingHealthChecks Unhealthy health checks
    * @return Unhealthy health check(s) information - check name and message. Format is unstable.
    */
-  @NotNull
   public static String formatUnhealthyHealthCheckLines(
       Map<String, HealthCheckResult> failingHealthChecks
   ) {

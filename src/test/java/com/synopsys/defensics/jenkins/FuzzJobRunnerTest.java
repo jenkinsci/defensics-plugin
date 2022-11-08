@@ -51,7 +51,6 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -388,7 +387,6 @@ public class FuzzJobRunnerTest {
    *
    * @return FuzzJobRunner with default mocks for unit tests
    */
-  @NotNull
   private FuzzJobRunner createFuzzJobRunnerWithMockServices() {
     return new FuzzJobRunner() {
       @Override
@@ -407,7 +405,7 @@ public class FuzzJobRunnerTest {
       }
 
       @Override
-      @NotNull PollingIntervals getPollingIntervals(
+      PollingIntervals getPollingIntervals(
           hudson.model.Run<?, ?> jenkinsRun, Launcher launcher, Logger logger
       ) {
         return pollingIntervals;

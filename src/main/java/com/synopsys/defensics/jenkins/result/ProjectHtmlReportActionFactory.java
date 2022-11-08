@@ -17,6 +17,7 @@
 package com.synopsys.defensics.jenkins.result;
 
 import com.synopsys.defensics.jenkins.result.HtmlReportPublisherTarget.HtmlReportAction;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.model.AbstractItem;
 import hudson.model.Action;
@@ -24,7 +25,6 @@ import hudson.model.Job;
 import hudson.model.Run;
 import java.util.Collection;
 import java.util.Collections;
-import javax.annotation.Nonnull;
 import jenkins.model.TransientActionFactory;
 import org.kohsuke.accmod.Restricted;
 import org.kohsuke.accmod.restrictions.DoNotUse;
@@ -44,8 +44,8 @@ public class ProjectHtmlReportActionFactory extends TransientActionFactory<Job> 
   }
 
   @Override
-  @Nonnull
-  public Collection<? extends Action> createFor(@Nonnull Job project) {
+  @NonNull
+  public Collection<? extends Action> createFor(@NonNull Job project) {
     final Run<?,?> lastCompletedBuild = project.getLastCompletedBuild();
     if (lastCompletedBuild != null) {
       return lastCompletedBuild.getActions(HtmlReportAction.class);

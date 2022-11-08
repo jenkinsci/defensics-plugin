@@ -22,7 +22,7 @@ import hudson.model.Action;
 import hudson.model.Run;
 import java.util.List;
 import java.util.Objects;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * This class exists to enable replacing the default graph icon html publisher uses
@@ -140,7 +140,7 @@ public final class HtmlReportPublisherTarget extends HtmlPublisherTarget {
           : "/plugin/defensics/images/24x24/defensics-logo.png";
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public HtmlPublisherTarget getHTMLTarget() {
       return HtmlReportPublisherTarget.this;

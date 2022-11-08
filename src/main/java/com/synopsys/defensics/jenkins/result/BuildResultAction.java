@@ -16,8 +16,8 @@
 
 package com.synopsys.defensics.jenkins.result;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.Action;
-import javax.annotation.CheckForNull;
 
 public class BuildResultAction implements Action {
 

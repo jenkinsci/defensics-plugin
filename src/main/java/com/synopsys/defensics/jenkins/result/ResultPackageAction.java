@@ -16,6 +16,7 @@
 
 package com.synopsys.defensics.jenkins.result;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.FilePath;
 import hudson.model.DirectoryBrowserSupport;
 import hudson.model.Run;
@@ -23,8 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.CheckForNull;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import jenkins.model.RunAction2;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
@@ -88,7 +88,7 @@ public class ResultPackageAction implements RunAction2 {
     return null;
   }
 
-  @Nonnull
+  @NonNull
   @Override
   public String getUrlName() {
     return URL_NAME;

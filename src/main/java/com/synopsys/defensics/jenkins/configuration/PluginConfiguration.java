@@ -16,11 +16,11 @@
 
 package com.synopsys.defensics.jenkins.configuration;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.Extension;
 import hudson.util.ListBoxModel;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.Nonnull;
 import jenkins.model.GlobalConfiguration;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
@@ -62,7 +62,7 @@ public class PluginConfiguration extends GlobalConfiguration {
     return true;
   }
 
-  @Nonnull
+  @NonNull
   @Override
   public String getDisplayName() {
     return DISPLAY_NAME;

@@ -17,13 +17,13 @@
 package com.synopsys.defensics.jenkins.result.history;
 
 import com.synopsys.defensics.jenkins.result.BuildResultAction;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import hudson.model.Action;
 import hudson.model.Job;
 import hudson.model.Run;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import javax.annotation.CheckForNull;
 import org.kohsuke.stapler.StaplerRequest;
 import org.kohsuke.stapler.StaplerResponse;
 

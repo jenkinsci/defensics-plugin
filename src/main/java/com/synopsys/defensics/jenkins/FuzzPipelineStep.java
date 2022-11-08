@@ -21,6 +21,7 @@ import com.google.inject.Inject;
 import com.synopsys.defensics.jenkins.configuration.InstanceConfiguration;
 import com.synopsys.defensics.jenkins.configuration.PluginConfiguration;
 import com.synopsys.defensics.jenkins.configuration.StepConfigurationValidator;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.ExtensionPoint;
@@ -35,7 +36,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import javax.annotation.Nonnull;
 import org.jenkinsci.Symbol;
 import org.jenkinsci.plugins.workflow.steps.Step;
 import org.jenkinsci.plugins.workflow.steps.StepContext;
@@ -97,7 +97,7 @@ public class FuzzPipelineStep extends Step {
   }
 
   @DataBoundSetter
-  public void setDefensicsInstance(@Nonnull String defensicsInstanceName) {
+  public void setDefensicsInstance(@NonNull String defensicsInstanceName) {
     this.selectedDefensicsInstanceName = defensicsInstanceName;
   }
 
@@ -150,7 +150,7 @@ public class FuzzPipelineStep extends Step {
     private transient Future<?> future;
 
     protected FuzzPipelineStepExecution(
-        @Nonnull StepContext context,
+        @NonNull StepContext context,
         FuzzPipelineStep fuzzPipelineStep
     ) {
       super(context);
@@ -208,7 +208,7 @@ public class FuzzPipelineStep extends Step {
      * @param cause for stop (e.g. User stop)
      */
     @Override
-    public void stop(@Nonnull Throwable cause) {
+    public void stop(@NonNull Throwable cause) {
       if (future != null) {
         future.cancel(true);
       }
@@ -262,7 +262,7 @@ public class FuzzPipelineStep extends Step {
       return STEP_NAME;
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public String getDisplayName() {
       return PluginConfiguration.DISPLAY_NAME;

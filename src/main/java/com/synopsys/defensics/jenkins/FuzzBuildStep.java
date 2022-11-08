@@ -34,7 +34,7 @@ import hudson.tasks.Builder;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import java.util.List;
-import javax.annotation.Nonnull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import jenkins.tasks.SimpleBuildStep;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -67,7 +67,7 @@ public class FuzzBuildStep extends Builder implements SimpleBuildStep {
 
   @DataBoundSetter
   public void setDefensicsInstance(
-      @Nonnull String defensicsInstanceName) {
+      @NonNull String defensicsInstanceName) {
     this.selectedDefensicsInstanceName = defensicsInstanceName;
   }
 
@@ -94,8 +94,8 @@ public class FuzzBuildStep extends Builder implements SimpleBuildStep {
   }
 
   @Override
-  public void perform(@Nonnull Run<?, ?> run, @Nonnull FilePath workspace,
-      @Nonnull Launcher launcher, @Nonnull TaskListener listener)
+  public void perform(@NonNull Run<?, ?> run, @NonNull FilePath workspace,
+      @NonNull Launcher launcher, @NonNull TaskListener listener)
       throws AbortException, InterruptedException {
     FuzzStep fuzzStep = new FuzzStep(
         getDescriptor(),
@@ -153,7 +153,7 @@ public class FuzzBuildStep extends Builder implements SimpleBuildStep {
       return true;
     }
 
-    @Nonnull
+    @NonNull
     @Override
     public String getDisplayName() {
       return PluginConfiguration.DISPLAY_NAME;

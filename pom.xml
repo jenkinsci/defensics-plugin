@@ -12,7 +12,6 @@
   <packaging>hpi</packaging>
   <properties>
     <jenkins.version>2.319.3</jenkins.version>
-    <java.level>8</java.level>
     <java.version>1.8</java.version>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>

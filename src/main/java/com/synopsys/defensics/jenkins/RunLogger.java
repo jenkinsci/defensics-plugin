@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020-2021 Synopsys, Inc.
+ * Copyright © 2020-2022 Synopsys, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ public class RunLogger {
     final String status = String.format(
         "%4.1f%% (%" + paddingSize + "d/%d) of tests run. %s",
         getPercentage(run),
-        run.getRunIndex(),
+        run.getTestCasesExecuted(),
         totalCases,
         getFailureStatus(run)
     );
@@ -46,13 +46,13 @@ public class RunLogger {
   }
 
   private float getPercentage(Run run) {
-    final long runIndex = run.getRunIndex();
+    final long testCasesExecuted = run.getTestCasesExecuted();
     final long total = run.getCasesToBeExecuted();
     if (total == 0) {
       // Return 100% in cases where zero cases meant to be run.
       return 100f;
     }
-    return runIndex * 100f / total;
+    return testCasesExecuted * 100f / total;
   }
 
   private String getFailureStatus(Run run) {

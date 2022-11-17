@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020-2021 Synopsys, Inc.
+ * Copyright © 2020-2022 Synopsys, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -211,6 +211,15 @@ public class FailureScenarioIT {
         logHas(run, Pattern.compile("Defensics server version: [2][0-1][0-9][0-9].*")),
         is(true)
     );
+
+    final int expectedCaseCount = 101;
+    String expectedStatusLine = String.format(
+        "[Defensics] 100.0%% (%d/%d) of tests run. All passed.",
+        expectedCaseCount,
+        expectedCaseCount
+    );
+    assertThat(logHas(run, expectedStatusLine), is(true));
+
     checkRunOkAndReportPresent(run);
     checkApiServerResourcesAreCleaned();
     checkResultPackagePresent(run, SETTING_FILE_PATH);

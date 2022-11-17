@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020-2021 Synopsys, Inc.
+ * Copyright © 2020-2022 Synopsys, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,12 +27,15 @@ public class Run extends BaseTestRun {
   @Schema(description = "Number of test cases that are going to be executed on the test run")
   private long casesToBeExecuted;
 
-  // Case index changes during the run. Client can't specify these, so it's not postable/patchable.
-  @Schema(description = "Index of the case run is currently executing")
-  private long caseIndex;
+  @Schema(description = "Number of test cases executed")
+  private long testCasesExecuted;
 
-  @Schema(description = "Number of cases already executed on test run")
-  private long runIndex;
+  // Case index changes during the run. Client can't specify these, so it's not postable/patchable.
+  @Schema(description = "Index of the test case run is currently executing")
+  private Long caseIndex;
+
+  @Schema(description = "Run-index of the test case run is currently executing")
+  private Long runIndex;
 
   @Schema(description = "Test run state")
   private RunState state;
@@ -53,7 +56,7 @@ public class Run extends BaseTestRun {
   )
   private List<FailureSummaryEntry> failureSummary;
 
-  @Schema(description = "Id of the result corresponding this test run")
+  @Schema(description = "Id of the result corresponding to this test run")
   private String resultId;
 
   /**
@@ -88,8 +91,9 @@ public class Run extends BaseTestRun {
       OffsetDateTime startTime,
       String parentConfigurationId,
       long casesToBeExecuted,
-      long caseIndex,
-      long runIndex,
+      long testCasesExecuted,
+      Long caseIndex,
+      Long runIndex,
       RunState state,
       RunVerdict verdict,
       List<FailureSummaryEntry> failureSummary,
@@ -105,6 +109,7 @@ public class Run extends BaseTestRun {
     );
     this.id = id;
     this.casesToBeExecuted = casesToBeExecuted;
+    this.testCasesExecuted = testCasesExecuted;
     this.caseIndex = caseIndex;
     this.runIndex = runIndex;
     this.state = state;
@@ -160,11 +165,11 @@ public class Run extends BaseTestRun {
     this.caseIndex = caseIndex;
   }
 
-  public long getCaseIndex() {
+  public Long getCaseIndex() {
     return caseIndex;
   }
 
-  public long getRunIndex() {
+  public Long getRunIndex() {
     return runIndex;
   }
 
@@ -194,6 +199,10 @@ public class Run extends BaseTestRun {
 
   public void setCasesToBeExecuted(long casesToBeExecuted) {
     this.casesToBeExecuted = casesToBeExecuted;
+  }
+
+  public long getTestCasesExecuted() {
+    return testCasesExecuted;
   }
 
   @Override

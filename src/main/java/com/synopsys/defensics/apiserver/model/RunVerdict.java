@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020 Synopsys, Inc.
+ * Copyright © 2020-2022 Synopsys, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ public enum RunVerdict {
     WARNING,
     PASS,
     FAIL,
-    INCONCLUSIVE,
+    NONE,
     // Unknown enum values are mapped to this on client side (Allows client
     // to handle cases where client and server version don't match and server
     // has added some new values to the enum)

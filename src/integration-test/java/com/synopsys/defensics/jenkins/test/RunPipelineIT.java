@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020-2021 Synopsys, Inc.
+ * Copyright © 2020-2022 Synopsys, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -217,6 +217,35 @@ public class RunPipelineIT {
     assertThat(project.getAction(HtmlReportAction.class),
         is(nullValue()));
     assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(true));
+  }
+
+  @Test
+  public void testJobEndedWithoutVerdict() throws Exception {
+    project.setDefinition(new CpsFlowDefinition(PIPELINE_SCRIPT, true));
+    DefensicsMockServer mockServer = new DefensicsMockServer(true, "NONE", RunState.COMPLETED);
+    mockServer.initServer(RunPipelineIT.mockServer);
+    ProjectUtils.setupProject(
+        jenkinsRule,
+        project,
+        NAME,
+        LOCAL_URL,
+        CERTIFICATE_VALIDATION_ENABLED,
+        credentialsId,
+        SETTING_FILE_NAME);
+
+    WorkflowRun run = project.scheduleBuild2(0).get();
+    dumpRunLog(run);
+
+    assertThat(run.getResult(), is(equalTo(Result.FAILURE)));
+    assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
+    assertThat(run.getActions(HTMLAction.class).size(), is(equalTo(0)));
+    assertThat(project.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
+    assertThat(project.getAction(HtmlReportAction.class).getUrlName(),
+        is(equalTo(run.getActions(HtmlReportAction.class).get(0).getUrlName())));
+    assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(true));
+    String expectedSummary = "ERROR: Fuzzing completed with verdict NONE and 0 failures. "
+        + "See Defensics Results for details.";
+    assertThat(run.getLog(100).contains(expectedSummary), is(true));
   }
 
   private void dumpRunLog(WorkflowRun run) throws IOException {

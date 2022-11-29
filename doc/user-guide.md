@@ -75,9 +75,8 @@ your authentication token as credential of kind **Secret text**.
     ![Configuring Defensics instances](img/global-configuration-add-instance.png)
 3. Select **Test Connection** to verify that your settings are correct.  If the 
 connection is valid, a confirmation message of *Success* is shown.
-    * [How do I start the Defensics API Server?](faq.md#how-do-i-start-the-defensics-api-server)
-    * [I get an error "unable to find valid certification path to requested 
-target", how do I fix it?](faq.md#i-get-an-error-unable-to-find-valid-certification-path-to-requested-target-how-do-i-fix-it)
+    * [How do I start the Defensics API Server?](https://github.com/jenkinsci/defensics-plugin/blob/master/doc/faq.md#how-do-i-start-the-defensics-api-server)
+    * [I get an error "unable to find valid certification path to requested target", how do I fix it?](https://github.com/jenkinsci/defensics-plugin/blob/master/doc/faq.md#i-get-an-error-unable-to-find-valid-certification-path-to-requested-target-how-do-i-fix-it)
 4. Select **Save**.
 
 ### Deleting connections
@@ -104,11 +103,11 @@ test**.
 list is selected.
 4. Set the **Test configuration file path** to use for testing. The path is 
 relative to the project's workspace. 
-    * [Where can I get a .set file?](faq.md#where-can-i-get-a-set-file)
-    * [How do I get my .set file into my job's workspace?](faq.md#how-do-i-get-my-set-file-into-my-jobs-workspace)
+    * [Where can I get a .set file?](https://github.com/jenkinsci/defensics-plugin/blob/master/doc/faq.md#where-can-i-get-a-set-file)
+    * [How do I get my .set file into my job's workspace?](https://github.com/jenkinsci/defensics-plugin/blob/master/doc/faq.md#how-do-i-get-my-set-file-into-my-jobs-workspace)
 5. If you want to override any settings from the test configuration file, you 
 can do so in the **Test configuration setting overrides** text box.
-    * [How should I override test configuration file settings?](faq.md#how-should-i-override-test-configuration-file-settings)
+    * [How should I override test configuration file settings?](https://github.com/jenkinsci/defensics-plugin/blob/master/doc/faq.md#how-should-i-override-test-configuration-file-settings)
 6. If you want Defensics result package zip files to be saved with each build, 
 check the **Save Defensics result package for builds** checkbox. The files are 
 quite big and storing many of them will take up disk space, so this is disabled 
@@ -161,6 +160,6 @@ Trend chart appears on the project status page.
 The project status page sidebar menu also contains a link to the latest build's 
 Defensics Results report, if the latest build has one.
 
-## FAQ
+## Frequently asked questions
 
-[FAQ](faq.md)
+[FAQ](https://github.com/jenkinsci/defensics-plugin/blob/master/doc/faq.md)

@@ -19,6 +19,7 @@ package com.synopsys.defensics.apiserver.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.io.File;
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.List;
 
@@ -42,6 +43,12 @@ public class Run extends BaseTestRun {
 
   @Schema(description = "Test run verdict")
   private RunVerdict verdict;
+
+  @Schema(
+      description = "Percentage of planned run completed (null for unlimited test runs)",
+      example = "43.5"
+  )
+  private BigDecimal completionPercentage;
 
   // Actual run configuration containing the settings used by run. Auto-created
   // at run creation based on the shared configuration provided
@@ -89,6 +96,7 @@ public class Run extends BaseTestRun {
       String projectId,
       RunType runType,
       OffsetDateTime startTime,
+      BigDecimal completionPercentage,
       String parentConfigurationId,
       long casesToBeExecuted,
       long testCasesExecuted,
@@ -116,6 +124,7 @@ public class Run extends BaseTestRun {
     this.verdict = verdict;
     this.failureSummary = failureSummary;
     this.resultId = resultId;
+    this.completionPercentage = completionPercentage;
   }
 
   public Run(String runId) {
@@ -221,5 +230,13 @@ public class Run extends BaseTestRun {
 
   public void setResultId(String resultId) {
     this.resultId = resultId;
+  }
+
+  public BigDecimal getCompletionPercentage() {
+    return completionPercentage;
+  }
+
+  public void setCompletionPercentage(BigDecimal completionPercentage) {
+    this.completionPercentage = completionPercentage;
   }
 }

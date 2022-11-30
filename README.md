@@ -77,6 +77,13 @@ To install the plugin manually to a Jenkins:
 2. Restart Jenkins.
 
 ## Release notes
+
+### Version 2022.12.0
+- Update plugin to match Defensics 2022.12 API changes. This plugin version
+  requires Defensics 2022.12.0 or newer.
+- Plugin dependencies and core libraries are updated. Now the oldest supported
+  Jenkins version is 2.319.3.
+
 ### Version 2021.9.0
 - Plugin version scheme is unified to follow Defensics versioning
 - Plugin dependencies and core libraries are updated to fix security issues.

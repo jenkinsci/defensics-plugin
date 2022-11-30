@@ -1,6 +1,6 @@
 # Changelog
 
-## v2022.12.0 - 2022-XX-YY
+## v2022.12.0 - 2022-12-12
 ### Changed
 - Update plugin reference Jenkins LTS version to 2.319.3
 - Update Credentials plugin to 2.6.1.1 which fixes CVE-2022-29036

@@ -345,16 +345,6 @@
         <artifactId>asm</artifactId>
         <version>9.2</version>
       </dependency>
-      <dependency>
-        <groupId>com.google.guava</groupId>
-        <artifactId>guava</artifactId>
-        <!-- Seems Jenkins and CPS is using _old_ Guava 18.0. MockServer is using newer Guava but it breaks CPS executor 
-          handling so lock this to old version. Upgrade if possible. This can be removed when minimum supported Jenkins version is 2.320:
-          https://www.jenkins.io/blog/2021/11/09/guava-upgrade/
-        -->
-        <scope>provided</scope>
-        <version>18.0</version>
-      </dependency>
     </dependencies>
   </dependencyManagement>
 </project>

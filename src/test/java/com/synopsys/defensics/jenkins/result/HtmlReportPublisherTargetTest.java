@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020 Synopsys, Inc.
+ * Copyright © 2020-2023 Synopsys, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,7 +58,12 @@ public class HtmlReportPublisherTargetTest {
   public void testEqualsAndHashCode() {
     EqualsVerifier.forClass(HtmlReportPublisherTarget.class)
         .withRedefinedSuperclass()
-        .withIgnoredFields("reportTitles", "includes", "escapeUnderscores")
+        .withIgnoredFields(
+            "reportTitles",
+            "includes",
+            "escapeUnderscores",
+            "useWrapperFileDirectly"
+        )
         .verify();
   }
 }

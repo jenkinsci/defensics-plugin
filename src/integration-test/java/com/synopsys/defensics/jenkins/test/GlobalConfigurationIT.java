@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020 Synopsys, Inc.
+ * Copyright © 2020-2023 Synopsys, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,12 +26,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.fail;
 
-import com.gargoylesoftware.htmlunit.FailingHttpStatusCodeException;
 import com.synopsys.defensics.jenkins.configuration.InstanceConfiguration;
 import com.synopsys.defensics.jenkins.configuration.PluginConfiguration;
 import hudson.util.ListBoxModel;
 import java.util.ArrayList;
 import java.util.List;
+import org.htmlunit.FailingHttpStatusCodeException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

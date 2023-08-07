@@ -1,5 +1,8 @@
 # Changelog
 
+## v2023.9.0 - 2023-09-XX
+- Update plugin reference Jenkins LTS version to 2.375.4.
+
 ## v2022.12.0 - 2022-12-12
 ### Changed
 - Update plugin reference Jenkins LTS version to 2.319.3

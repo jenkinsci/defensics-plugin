@@ -1,7 +1,11 @@
 # Changelog
 
 ## v2023.9.0 - 2023-09-XX
-- Update plugin reference Jenkins LTS version to 2.375.4.
+- Update plugin reference Jenkins LTS version to 2.375.4
+- Update HTML Publisher plugin to 1.31
+- Update Credentials plugin to 1224.vc23ca_a_9a_2cb_0
+- Update Plain Credentials plugin to 143.v1b_df8b_d3b_e48
+- Update other plugin dependencies
 
 ## v2022.12.0 - 2022-12-12
 ### Changed

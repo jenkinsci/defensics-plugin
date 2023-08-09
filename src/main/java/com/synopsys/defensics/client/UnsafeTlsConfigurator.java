@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020 Synopsys, Inc.
+ * Copyright © 2021-2023 Synopsys, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,13 +16,13 @@
 
 package com.synopsys.defensics.client;
 
+import java.net.http.HttpClient;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-import okhttp3.OkHttpClient.Builder;
 
 /**
  * Helper class to configure HTTP client to use looser TLS configuration in case Jenkins JVM
@@ -39,7 +39,7 @@ public class UnsafeTlsConfigurator {
    *
    * @param clientBuilder builder of OkHttp client
    */
-  public static void configureUnsafeTlsOkHttpClient(Builder clientBuilder) {
+  public static void configureUnsafeTlsOkHttpClient(HttpClient.Builder clientBuilder) {
     final X509TrustManager x509TrustManager = new X509TrustManager() {
       @Override
       public void checkClientTrusted(X509Certificate[] chain,
@@ -62,8 +62,7 @@ public class UnsafeTlsConfigurator {
     try {
       final SSLContext sslContext = SSLContext.getInstance("TLS");
       sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
-      clientBuilder.sslSocketFactory(sslContext.getSocketFactory(), x509TrustManager)
-          .hostnameVerifier((hostname, session) -> true);
+      clientBuilder.sslContext(sslContext);
     } catch (NoSuchAlgorithmException | KeyManagementException e) {
       throw new IllegalStateException(
           "Could not configure looser TLS configuration for the HTTP client",

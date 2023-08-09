@@ -170,7 +170,7 @@ public class FuzzJobRunner {
             + "See Defensics Results for details.");
       }
     } catch (InterruptedException | ClosedByInterruptException | InterruptedIOException e) {
-      // Let's clear the thread interrupted flag now, otherwise e.g. OkHttpClient doesn't do
+      // Let's clear the thread interrupted flag now, otherwise e.g. HttpClient doesn't do
       // any of the cleanup requests. Reset interrupt flag after cleanup.
       wasInterrupted = Thread.interrupted();
 

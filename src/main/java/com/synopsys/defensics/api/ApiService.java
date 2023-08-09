@@ -27,24 +27,21 @@ import com.synopsys.defensics.apiserver.model.SuiteInstance;
 import com.synopsys.defensics.apiserver.model.VersionInformation;
 import com.synopsys.defensics.client.DefensicsRequestException;
 import com.synopsys.defensics.client.UnsafeTlsConfigurator;
-import com.synopsys.defensics.client.UserAgentConfigurator;
 import com.synopsys.defensics.client.model.HtmlReport;
-import com.synopsys.defensics.jenkins.util.DefensicsUtils;
 import hudson.FilePath;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import okhttp3.OkHttpClient.Builder;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
 /**
@@ -70,20 +67,7 @@ public class ApiService {
       boolean certificateValidationDisabled
   ) {
 
-    final DefensicsUtils defensicsUtils = new DefensicsUtils();
-    Consumer<Builder> clientConfigurator = builder -> {
-      UserAgentConfigurator.configureUserAgent(builder, defensicsUtils.createUserAgentString());
-
-      // Set read timeout longer since eg. report generation can take multiple minutes.
-      // Note: according to https://www.baeldung.com/okhttp-timeouts, readTimeout is defined
-      // as the maximum allowed time of inactivity between two packets, not the total time allowed
-      // for response reading.
-      // TODO: It'd be better if timeouts are per endpoint since most operations should finish
-      // pretty fast, but result-package and report download can take longer. Looks OkHttp
-      // support read timeout setting only during build, so there need to be two clients
-      // for different purposes which is a bit clumsy.
-      builder.readTimeout(20, TimeUnit.MINUTES);
-
+    Consumer<HttpClient.Builder> clientConfigurator = builder -> {
       if (certificateValidationDisabled) {
         // Disable strict TLS checking if user has checked "Disable TLS checking".
         // Not preferred method, better would be to use TLS checking.
@@ -405,7 +389,7 @@ public class ApiService {
               || ExceptionUtils.indexOfType(cause, ClosedByInterruptException.class) >= 0
               || ExceptionUtils.indexOfType(cause, InterruptedException.class) >= 0);
 
-      // SocketTimeoutException comes from OkHttpClient when eg. readTimeout is met so
+      // SocketTimeoutException comes from HttpClient when e.g. readTimeout is met so
       // this shouldn't come from user actions and should be classified as build fail.
       if (cause instanceof SocketTimeoutException) {
         jobInterruptedByUser = false;

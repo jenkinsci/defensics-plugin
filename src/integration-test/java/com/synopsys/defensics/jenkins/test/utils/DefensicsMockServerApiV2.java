@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020-2021 Synopsys, Inc.
+ * Copyright © 2020-2023 Synopsys, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public class DefensicsMockServerApiV2 {
       "src/integration-test/resources/com/synopsys/defensics/jenkins/test/result-package.zip";
 
   private static final String EXPECTED_USER_AGENT_REGEX = "Defensics-Jenkins-Plugin.*";
-  private static final String CONTENT_TYPE_JSON = "application/json; charset=utf-8";
+  private static final String CONTENT_TYPE_JSON = "application/json";
   private static final String REPORT_FORMAT = "cloud-html";
   private final RunVerdict verdict;
   private final RunState endState;

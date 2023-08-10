@@ -29,6 +29,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -36,6 +37,10 @@ import java.util.Optional;
  * Helper class for client requests.
  */
 public class DefensicsApiClientConnect {
+  /**
+   * User-Agent used in requests.
+   */
+  private String userAgent = "Defensics-API-client";
 
   /**
    * Client for the requests.
@@ -63,6 +68,10 @@ public class DefensicsApiClientConnect {
     this.token = token != null ? token.toCharArray() : null;
   }
 
+  public void setUserAgent(String userAgentString) {
+    this.userAgent = userAgentString;
+  }
+
   /**
    * GET given URL and return response as a stream. Note: caller needs to close the stream.
    *
@@ -73,7 +82,7 @@ public class DefensicsApiClientConnect {
   protected InputStream getInputStream(HttpUrl url, String operationString) {
     HttpRequest request = HttpRequest.newBuilder(url.getUri())
         .GET()
-        .headers(getAuthorizationHeader())
+        .headers(getCommonHeaders())
         .build();
     try {
       HttpResponse<InputStream> response = httpClient.send(request, BodyHandlers.ofInputStream());
@@ -132,7 +141,7 @@ public class DefensicsApiClientConnect {
   protected void delete(HttpUrl url, String operation) {
     HttpRequest request = HttpRequest.newBuilder(url.getUri())
         .DELETE()
-        .headers(getAuthorizationHeader())
+        .headers(getCommonHeaders())
         .build();
     try {
       HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
@@ -168,7 +177,7 @@ public class DefensicsApiClientConnect {
   ) {
     HttpRequest request = HttpRequest.newBuilder(url.getUri())
         .POST(body.getBodyPublisher())
-        .headers(getAuthorizationHeader())
+        .headers(getCommonHeaders())
         .header("Content-Type", body.getContentType())
         .build();
     try {
@@ -218,7 +227,7 @@ public class DefensicsApiClientConnect {
   ) {
     HttpRequest request = HttpRequest.newBuilder(url.getUri())
         .GET()
-        .headers(getAuthorizationHeader())
+        .headers(getCommonHeaders())
         .build();
     try {
       HttpResponse<String> response = httpClient.send(request, BodyHandlers.ofString());
@@ -264,7 +273,7 @@ public class DefensicsApiClientConnect {
   ) {
     HttpRequest request = HttpRequest.newBuilder(url.getUri())
         .GET()
-        .headers(getAuthorizationHeader())
+        .headers(getCommonHeaders())
         .build();
     try {
       HttpResponse<byte[]> response = httpClient.send(request, BodyHandlers.ofByteArray());
@@ -307,11 +316,15 @@ public class DefensicsApiClientConnect {
    * @return Returns key-value pair for Authorization header if token is known, empty set if
    *     token is null.
    */
-  private String[] getAuthorizationHeader() {
-    if (token != null) {
-      return new String[]{"Authorization", "Bearer " + new String(token)};
-    } else {
-      return new String[0];
+  private String[] getCommonHeaders() {
+    ArrayList<String> headers = new ArrayList<>();
+    if (userAgent != null) {
+      headers.addAll(List.of("User-Agent", userAgent));
     }
+
+    if (token != null) {
+      headers.addAll(List.of("Authorization", "Bearer " + new String(token)));
+    }
+    return headers.toArray(new String[0]);
   }
 }

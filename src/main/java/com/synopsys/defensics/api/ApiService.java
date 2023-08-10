@@ -16,7 +16,6 @@
 
 package com.synopsys.defensics.api;
 
-import com.synopsys.defensics.apiserver.client.DefensicsApiClient;
 import com.synopsys.defensics.apiserver.client.DefensicsApiClient.DefensicsClientException;
 import com.synopsys.defensics.apiserver.client.DefensicsApiV2Client;
 import com.synopsys.defensics.apiserver.model.HealthCheckResult;
@@ -28,6 +27,7 @@ import com.synopsys.defensics.apiserver.model.VersionInformation;
 import com.synopsys.defensics.client.DefensicsRequestException;
 import com.synopsys.defensics.client.UnsafeTlsConfigurator;
 import com.synopsys.defensics.client.model.HtmlReport;
+import com.synopsys.defensics.jenkins.util.DefensicsUtils;
 import hudson.FilePath;
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,7 +55,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
  */
 public class ApiService {
 
-  private final DefensicsApiClient defensicsClient;
+  private final DefensicsApiV2Client defensicsClient;
   private final URI apiBaseUrl;
 
   /**
@@ -88,6 +88,8 @@ public class ApiService {
         authenticationToken,
         clientConfigurator
     );
+    DefensicsUtils defensicsUtils = new DefensicsUtils();
+    defensicsClient.setUserAgent(defensicsUtils.createUserAgentString());
   }
 
   /**
@@ -96,7 +98,7 @@ public class ApiService {
    * @param defensicsClient Defensics client
    * @param apiBaseUrl API server base URL containing the trailing "/api/v2"
    */
-  ApiService(DefensicsApiClient defensicsClient, URI apiBaseUrl) {
+  ApiService(DefensicsApiV2Client defensicsClient, URI apiBaseUrl) {
     this.defensicsClient = defensicsClient;
     this.apiBaseUrl = apiBaseUrl;
   }

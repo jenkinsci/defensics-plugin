@@ -354,4 +354,8 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
         CONTENT_TYPE_JSON
     );
   }
+
+  public void setUserAgent(String userAgentString) {
+    defensicsApiClientConnect.setUserAgent(userAgentString);
+  }
 }

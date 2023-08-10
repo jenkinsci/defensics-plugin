@@ -221,11 +221,6 @@
       <artifactId>plain-credentials</artifactId>
     </dependency>
     <dependency>
-      <groupId>com.squareup.okhttp3</groupId>
-      <artifactId>okhttp</artifactId>
-      <version>4.10.0</version>
-    </dependency>
-    <dependency>
         <groupId>io.swagger.core.v3</groupId>
         <artifactId>swagger-annotations</artifactId>
         <version>2.2.15</version>
@@ -326,11 +321,6 @@
         <version>2198.v39c76fc308ca</version>
         <scope>import</scope>
         <type>pom</type>
-      </dependency>
-      <dependency> <!-- For OkHttp 4 -->
-        <groupId>org.jetbrains.kotlin</groupId>
-        <artifactId>kotlin-stdlib-common</artifactId>
-        <version>1.6.20</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

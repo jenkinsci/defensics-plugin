@@ -16,16 +16,14 @@
 
 package com.synopsys.defensics.apiserver.client;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URLEncoder;
+import org.springframework.web.util.DefaultUriBuilderFactory;
+import org.springframework.web.util.UriBuilder;
 
 /**
- * Stub HttpUrl to imitate OkHttp HttpUrl builder behaviour.
- * TODO: Eventually this should be replaced with proper UriBuilder like javax.ws.rs.core.UriBuilder,
- * but that'd require bringing external dependency.
+ * Stub HttpUrl to match OkHttp HttpUrl builder behaviour. This uses Spring's UriBuilder
+ * as that's provided in the Jenkins core libraries. Other option would be
+ * javax.ws.rs.core.UriBuilder but that'd add a new dependency.
  */
 public class HttpUrl {
   private final URI uri;
@@ -47,13 +45,10 @@ public class HttpUrl {
   }
 
   /**
-   * Builder to construct new URL. Replace with 3rd implementation if there's some lightweight
-   * version.
+   * Builder to construct new HttpUrl.
    */
   public static class Builder {
-    private final URI originalUri;
-    private String currentPath;
-    private String currentQuery;
+    private final UriBuilder builder;
 
     /**
      * Constructor.
@@ -61,9 +56,7 @@ public class HttpUrl {
      * @param uri Base URI to be augmented
      */
     public Builder(URI uri) {
-      this.originalUri = uri;
-      this.currentPath = originalUri.getPath();
-      this.currentQuery = originalUri.getQuery();
+      builder = new DefaultUriBuilderFactory(uri.toString()).builder();
     }
 
     /**
@@ -74,18 +67,7 @@ public class HttpUrl {
      * @return builder
      */
     public Builder addQueryParameter(String key, String value) {
-      if (currentQuery == null) {
-        currentQuery = "";
-      }
-      if (!currentQuery.isEmpty()) {
-        currentQuery += "&";
-      }
-
-      currentQuery += String.format(
-          "%s=%s",
-          URLEncoder.encode(key, UTF_8),
-          URLEncoder.encode(value, UTF_8)
-      );
+      builder.queryParam(key, value);
       return this;
     }
 
@@ -105,15 +87,7 @@ public class HttpUrl {
       if (segment.contains("..")) {
         throw new IllegalArgumentException("Segment cannot contain '..'");
       }
-
-      if (currentPath == null) {
-        currentPath = "";
-      }
-
-      if (!currentPath.endsWith("/")) {
-        currentPath = currentPath + "/";
-      }
-      currentPath = currentPath + URLEncoder.encode(segment, UTF_8);
+      builder.pathSegment(segment);
       return this;
     }
 
@@ -123,26 +97,7 @@ public class HttpUrl {
      * @return new HttpUrl.
      */
     public HttpUrl build() {
-      try {
-        StringBuilder sb = new StringBuilder();
-        if (originalUri.getScheme() != null) {
-          sb.append(originalUri.getScheme());
-          sb.append("://");
-        }
-        if (originalUri.getAuthority() != null) {
-          sb.append(originalUri.getAuthority());
-        }
-        if (currentPath != null) {
-          sb.append(currentPath);
-        }
-        if (currentQuery != null) {
-          sb.append("?").append(currentQuery);
-        }
-        URI finalUri = new URI(sb.toString());
-        return new HttpUrl(finalUri);
-      } catch (URISyntaxException e) {
-        throw new IllegalArgumentException("Invalid URI: " + e.getMessage(), e);
-      }
+      return new HttpUrl(builder.build());
     }
   }
 }

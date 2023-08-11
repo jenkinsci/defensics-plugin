@@ -71,7 +71,7 @@ public class ApiService {
       if (certificateValidationDisabled) {
         // Disable strict TLS checking if user has checked "Disable TLS checking".
         // Not preferred method, better would be to use TLS checking.
-        UnsafeTlsConfigurator.configureUnsafeTlsOkHttpClient(builder);
+        UnsafeTlsConfigurator.configureUnsafeTlsHttpClient(builder);
       }
     };
 

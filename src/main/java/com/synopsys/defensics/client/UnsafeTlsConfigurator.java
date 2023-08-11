@@ -1,5 +1,5 @@
 /*
- * Copyright © 2021-2023 Synopsys, Inc.
+ * Copyright © 2020-2023 Synopsys, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,15 @@
 
 package com.synopsys.defensics.client;
 
+import java.net.Socket;
 import java.net.http.HttpClient;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509ExtendedTrustManager;
 import javax.net.ssl.X509TrustManager;
 
 /**
@@ -32,24 +35,51 @@ import javax.net.ssl.X509TrustManager;
 public class UnsafeTlsConfigurator {
 
   /**
-   * Configures given OkHttpBuilder to use unsafe TLS: Trust all certificates and endpoints.
+   * Configures given HttpBuilder to use unsafe TLS: Trust all certificates and endpoints.
    * This allows the client to communicate with self-signed or custom certificates that are not in
    * root CA. Should be used as a last resort if Jenkins JVM or server cannot be configured to have
    * known (CA) certificates.
    *
-   * @param clientBuilder builder of OkHttp client
+   * @param clientBuilder builder of Http client
    */
-  public static void configureUnsafeTlsOkHttpClient(HttpClient.Builder clientBuilder) {
-    final X509TrustManager x509TrustManager = new X509TrustManager() {
+  public static void configureUnsafeTlsHttpClient(HttpClient.Builder clientBuilder) {
+    final X509TrustManager x509TrustManager = new X509ExtendedTrustManager() {
       @Override
-      public void checkClientTrusted(X509Certificate[] chain,
-          String authType) {
-      }
+      public void checkClientTrusted(
+          X509Certificate[] chain,
+          String authType,
+          Socket socket
+      ) {}
 
       @Override
-      public void checkServerTrusted(X509Certificate[] chain,
-          String authType) {
-      }
+      public void checkServerTrusted(
+          X509Certificate[] chain,
+          String authType,
+          Socket socket
+      ) {}
+
+      @Override
+      public void checkClientTrusted(
+          X509Certificate[] chain,
+          String authType,
+          SSLEngine engine
+      ) {}
+
+      @Override
+      public void checkServerTrusted(
+          X509Certificate[] chain,
+          String authType,
+          SSLEngine engine
+      ) {}
+
+      @Override
+      public void checkClientTrusted(X509Certificate[] chain, String authType) {}
+
+      @Override
+      public void checkServerTrusted(
+          X509Certificate[] chain,
+          String authType
+      ) {}
 
       @Override
       public X509Certificate[] getAcceptedIssuers() {

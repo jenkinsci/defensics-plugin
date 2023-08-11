@@ -846,7 +846,7 @@ public class FailureScenarioIT {
         defensicsApiClient = new DefensicsApiV2Client(
             apiBaseUri,
             authToken,
-            UnsafeTlsConfigurator::configureUnsafeTlsOkHttpClient
+            UnsafeTlsConfigurator::configureUnsafeTlsHttpClient
         );
       } else {
         defensicsApiClient = new DefensicsApiV2Client(

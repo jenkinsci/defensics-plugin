@@ -23,9 +23,11 @@ import static com.synopsys.defensics.jenkins.test.utils.Constants.PIPELINE_ERROR
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 import com.synopsys.defensics.apiserver.model.RunState;
+import com.synopsys.defensics.apiserver.model.RunVerdict;
 import com.synopsys.defensics.jenkins.result.HtmlReportPublisherTarget.HtmlReportAction;
 import com.synopsys.defensics.jenkins.result.ResultPackageAction;
 import com.synopsys.defensics.jenkins.test.utils.CredentialsUtil;
@@ -196,7 +198,11 @@ public class RunPipelineIT {
   @Test
   public void testJobFailed() throws Exception {
     project.setDefinition(new CpsFlowDefinition(PIPELINE_SCRIPT, true));
-    DefensicsMockServer mockServer = new DefensicsMockServer(true, "PASS", RunState.ERROR);
+    DefensicsMockServer mockServer = new DefensicsMockServer(
+        true,
+        RunVerdict.WARNING.toString(),
+        RunState.ERROR
+    );
     mockServer.initServer(RunPipelineIT.mockServer);
     ProjectUtils.setupProject(
         jenkinsRule,
@@ -211,11 +217,10 @@ public class RunPipelineIT {
     dumpRunLog(run);
 
     assertThat(run.getResult(), is(equalTo(Result.FAILURE)));
-    assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(0)));
+    assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
     assertThat(run.getActions(HTMLAction.class).size(), is(equalTo(0)));
-    assertThat(project.getActions(HtmlReportAction.class).size(), is(equalTo(0)));
-    assertThat(project.getAction(HtmlReportAction.class),
-        is(nullValue()));
+    assertThat(project.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
+    assertThat(project.getAction(HtmlReportAction.class), is(notNullValue()));
     assertThat(run.getLog(100).contains(PIPELINE_ERROR_TEXT), is(true));
   }
 

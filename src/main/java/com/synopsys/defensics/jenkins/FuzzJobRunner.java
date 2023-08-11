@@ -133,7 +133,13 @@ public class FuzzJobRunner {
 
       defensicsRun = trackRunStatus(defensicsRun.getId(), logger);
 
-      logger.println("Fuzz testing is COMPLETED.");
+      if (defensicsRun.getState().equals(RunState.COMPLETED))  {
+        logger.println("Fuzz testing is COMPLETED.");
+      } else {
+        logger.logError(String.format("Test run terminated with %s.", defensicsRun.getState()));
+        logRunErrorMessage(logger, defensicsRun);
+      }
+
       logger.println("Failures: " + DefensicsUtils.countRunFailures(defensicsRun));
       logger.println("Verdict: " + defensicsRun.getVerdict());
 
@@ -204,33 +210,24 @@ public class FuzzJobRunner {
   }
 
   /**
-   * Inspects given run and its suite in error state and creates suitable error message.
-   * This method can log additional information to console.
+   * Inspects given run and its suite and logs an error message if present.
    *
    * @param logger Logger to print urgent information
    * @param defensicsRun Run to inspect
-   * @return Error message
    * @throws InterruptedException if processing was interrupted
    */
-  private String getRunErrorMessage(Logger logger, Run defensicsRun) throws InterruptedException {
-    final StringBuilder errorMessageBuilder = new StringBuilder();
-
-    errorMessageBuilder.append("Fuzzing failed. ");
+  private void logRunErrorMessage(Logger logger, Run defensicsRun) throws InterruptedException {
     try {
       // Check if there's more error information in suite record
-      final Optional<SuiteInstance> suiteInstanceMaybe =
-          defensicsClient.getConfigurationSuite(defensicsRun.getId());
-
-      suiteInstanceMaybe.ifPresent(suiteInstance -> {
-        if (suiteInstance.getError() != null && !suiteInstance.getError().isEmpty()) {
-          logger.logError("Suite error: " + suiteInstance.getError());
-          errorMessageBuilder.append("Suite error: ").append(suiteInstance.getError());
-        }
-      });
+      defensicsClient.getConfigurationSuite(defensicsRun.getId())
+          .ifPresent(suiteInstance -> {
+            if (suiteInstance.getError() != null && !suiteInstance.getError().isEmpty()) {
+              logger.logError("Suite error: " + suiteInstance.getError());
+            }
+          });
     } catch (DefensicsRequestException e) {
-      errorMessageBuilder.append("Could not get suite information: ").append(e.getMessage());
+      logger.logError("Could not get suite error information: " + e.getMessage());
     }
-    return errorMessageBuilder.toString();
   }
 
   /**
@@ -286,9 +283,7 @@ public class FuzzJobRunner {
         case FATAL:
         case ERROR:
           runLogger.log(run);
-          logger.logError("Test run terminated with ERROR.");
-          final String errorMessage = getRunErrorMessage(logger, run);
-          throw new AbortException(errorMessage);
+          return run;
         case STARTING:
         case RUNNING:
           runLogger.log(run);

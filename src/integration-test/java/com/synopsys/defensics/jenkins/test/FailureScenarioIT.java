@@ -285,7 +285,7 @@ public class FailureScenarioIT {
         NAME,
         SETTING_FILE_PATH,
         String.format("--uri %s %s", SUT_URI, instrumentationString),
-        false
+        true
     );
 
     setupProject(pipelineScript);
@@ -339,7 +339,7 @@ public class FailureScenarioIT {
         NAME,
         SETTING_FILE_PATH,
         String.format("--uri %s", wrongSutUri),
-        false
+        true
     );
     initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
     setupProject(pipelineScript);
@@ -351,8 +351,9 @@ public class FailureScenarioIT {
     assertThat(logHas(run, expectedMessage), is(true));
     assertThat(run.getResult(), is(equalTo(Result.FAILURE)));
 
-    checkNoReport(run);
     checkApiServerResourcesAreCleaned();
+    checkRunAndReportPresent(run, Result.FAILURE, true);
+    checkResultPackagePresent(run, SETTING_FILE_PATH);
   }
 
   /**
@@ -766,7 +767,9 @@ public class FailureScenarioIT {
       Result expectedResult,
       boolean shouldLogPipelineError
   ) throws IOException {
-    assertThat(logHas(run, "100.0%"), is(true));
+    if (expectedResult.equals(Result.SUCCESS)) {
+      assertThat(logHas(run, "100.0%"), is(true));
+    }
     assertThat(run.getResult(), is(equalTo(expectedResult)));
     assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
     assertThat(run.getActions(HTMLAction.class).size(), is(equalTo(0)));

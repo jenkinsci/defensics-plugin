@@ -172,7 +172,25 @@ public class FuzzJobRunner {
       // any of the cleanup requests. Reset interrupt flag after cleanup.
       wasInterrupted = Thread.interrupted();
 
-      handleRunInterruption(defensicsRun);
+      if (defensicsRun != null) {
+        handleRunInterruption(defensicsRun);
+
+        try {
+          // Refresh run to get latest state and try to retrieve results. As the build was
+          // interrupted, this may not succeed if user/jenkins stops the build after interrupt.
+          defensicsRun = defensicsClient.getRun(defensicsRun.getId());
+          if (defensicsRun != null && defensicsRun.getResultId() != null) {
+            logger.println("Downloading results for the interrupted job");
+
+            publishResults(jenkinsRun, defensicsRun, workspace, testPlan.getName());
+            if (saveResultPackage) {
+              publishResultPackage(jenkinsRun, defensicsRun, testPlan);
+            }
+          }
+        } catch (Exception ex) {
+          logger.logError("Could not save results for the interrupted job: " + ex.getMessage());
+        }
+      }
       runResult = Result.ABORTED;
       throw new AbortException("Fuzzing was interrupted.");
     } catch (Exception e) {

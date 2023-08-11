@@ -25,7 +25,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
 
 import com.synopsys.defensics.apiserver.model.RunState;
 import com.synopsys.defensics.apiserver.model.RunVerdict;
@@ -180,10 +179,8 @@ public class RunFreestyleIT {
     FreeStyleBuild run = runFuture.get();
 
     assertThat(run.getResult(), is(equalTo(Result.ABORTED)));
-    assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(0)));
-    assertThat(run.getActions(HTMLAction.class).size(), is(equalTo(0)));
-    assertThat(project.getAction(HtmlReportAction.class),
-        is(nullValue()));
+    assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
+    assertThat(project.getAction(HtmlReportAction.class), is(notNullValue()));
   }
 
   @Test
@@ -208,7 +205,6 @@ public class RunFreestyleIT {
 
     assertThat(run.getResult(), is(equalTo(Result.FAILURE)));
     assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
-    assertThat(run.getActions(HTMLAction.class).size(), is(equalTo(0)));
     assertThat(project.getAction(HtmlReportAction.class), is(notNullValue()));
   }
 

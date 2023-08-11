@@ -367,7 +367,7 @@ public class FailureScenarioIT {
         NAME,
         SETTING_FILE_PATH,
         String.format("--uri %s", wrongSutUri),
-        false
+        true
     );
     initialSuiteInstanceCount = apiUtils.getSuiteInstances().size();
     setupProject(pipelineScript);
@@ -384,7 +384,8 @@ public class FailureScenarioIT {
     // NOTE: In this case first connection failed so there's no results but later on suite error
     // can occur at later stage and we'd likely want to have report for already executed cases
     // if report can be generated
-    checkNoReport(run);
+    checkRunAndReportPresent(run, Result.FAILURE, true);
+    checkResultPackagePresent(run, SETTING_FILE_PATH);
     checkApiServerResourcesAreCleaned();
   }
 
@@ -536,7 +537,7 @@ public class FailureScenarioIT {
 
     WorkflowRun run = runFuture.get();
     dumpLogs(run);
-    checkNoReport(run);
+    checkRunAndReportPresent(run, Result.ABORTED, true);
 
     checkRunAbortedCleanly(run);
     checkApiServerResourcesAreCleaned();
@@ -557,6 +558,13 @@ public class FailureScenarioIT {
         credentialsId,
         SETTING_FILE_PATH);
 
+    pipelineScript = createPipelineScript(
+        NAME,
+        SETTING_FILE_PATH,
+        String.format("--uri %s --index 0-1000", SUT_URI),
+        true
+    );
+
     project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
 
     // Schedule build
@@ -564,13 +572,16 @@ public class FailureScenarioIT {
     Thread.sleep(100);
 
     final WorkflowRun lastBuild = project.getLastBuild();
-    JenkinsJobUtils.triggerAbortOnLogLine(lastBuild, "Fuzz testing is RUNNING.");
+    // Interrupt build after >= 10 test cases have been run and logged like this
+    //   [Defensics]  0.6% (  13/1001) of tests run. All passed.
+    JenkinsJobUtils.triggerAbortOnLogLine(lastBuild, "[0-9]{2,4}/[0-9]+\\) of tests run");
 
     WorkflowRun run = runFuture.get();
     dumpLogs(run);
-    checkNoReport(run);
 
     checkRunAbortedCleanly(run);
+    checkRunAndReportPresent(run, Result.ABORTED, true);
+    checkResultPackagePresent(run, SETTING_FILE_PATH);
     checkApiServerResourcesAreCleaned();
   }
 

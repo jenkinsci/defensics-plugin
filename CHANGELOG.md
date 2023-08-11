@@ -1,7 +1,9 @@
 # Changelog
 
 ## v2023.9.0 - 2023-09-XX
-- Download report and optionally result-package if run terminated with ERROR/FATAL state
+- Download report and optionally result-package also in the following cases:
+  1) run was terminated with ERROR/FATAL state, 2) run was interrupted. Previously
+  report and result-package were downloaded only when all planned test cases were run.
 - Update plugin reference Jenkins LTS version to 2.375.4
 - Update HTML Publisher plugin to 1.31
 - Update Credentials plugin to 1224.vc23ca_a_9a_2cb_0

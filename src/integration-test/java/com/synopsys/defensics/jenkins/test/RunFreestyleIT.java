@@ -27,7 +27,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
 import com.synopsys.defensics.apiserver.model.RunState;
-import com.synopsys.defensics.apiserver.model.RunVerdict;
 import com.synopsys.defensics.jenkins.result.HtmlReportPublisherTarget.HtmlReportAction;
 import com.synopsys.defensics.jenkins.result.ResultPackageAction;
 import com.synopsys.defensics.jenkins.test.utils.CredentialsUtil;
@@ -180,16 +179,13 @@ public class RunFreestyleIT {
 
     assertThat(run.getResult(), is(equalTo(Result.ABORTED)));
     assertThat(run.getActions(HtmlReportAction.class).size(), is(equalTo(1)));
+    assertThat(run.getActions(HTMLAction.class).size(), is(equalTo(0)));
     assertThat(project.getAction(HtmlReportAction.class), is(notNullValue()));
   }
 
   @Test
   public void testJobFailed() throws Exception {
-    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(
-        true,
-        RunVerdict.WARNING.toString(),
-        RunState.ERROR
-    );
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, "PASS", RunState.ERROR);
     defensicsMockServer.initServer(this.mockServer);
     ProjectUtils.setupProject(
         jenkinsRule,

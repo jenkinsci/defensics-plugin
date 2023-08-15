@@ -154,7 +154,9 @@ public class FuzzJobRunner {
         publishResultPackage(jenkinsRun, defensicsRun, testPlan);
       }
 
-      if (defensicsRun.getVerdict().equals(RunVerdict.PASS)) {
+      if (defensicsRun.getVerdict().equals(RunVerdict.PASS)
+          && defensicsRun.getState().equals(RunState.COMPLETED)
+      ) {
         runResult = Result.SUCCESS;
         defensicsClient.deleteRun(defensicsRun.getId());
         defensicsRun = null;

@@ -26,7 +26,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
 import com.synopsys.defensics.apiserver.model.RunState;
-import com.synopsys.defensics.apiserver.model.RunVerdict;
 import com.synopsys.defensics.jenkins.result.HtmlReportPublisherTarget.HtmlReportAction;
 import com.synopsys.defensics.jenkins.result.ResultPackageAction;
 import com.synopsys.defensics.jenkins.test.utils.CredentialsUtil;
@@ -196,11 +195,7 @@ public class RunPipelineIT {
   @Test
   public void testJobFailed() throws Exception {
     project.setDefinition(new CpsFlowDefinition(PIPELINE_SCRIPT, true));
-    DefensicsMockServer mockServer = new DefensicsMockServer(
-        true,
-        RunVerdict.WARNING.toString(),
-        RunState.ERROR
-    );
+    DefensicsMockServer mockServer = new DefensicsMockServer(true, "PASS", RunState.ERROR);
     mockServer.initServer(RunPipelineIT.mockServer);
     ProjectUtils.setupProject(
         jenkinsRule,

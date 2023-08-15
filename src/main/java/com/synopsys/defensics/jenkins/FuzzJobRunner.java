@@ -92,6 +92,9 @@ public class FuzzJobRunner {
     // has been done.
     boolean wasInterrupted = false;
 
+    boolean reportDownloaded = false;
+    boolean resultPackageDownloaded = false;
+
     Run defensicsRun = null;
     Result runResult = null;
 
@@ -143,15 +146,12 @@ public class FuzzJobRunner {
       logger.println("Failures: " + DefensicsUtils.countRunFailures(defensicsRun));
       logger.println("Verdict: " + defensicsRun.getVerdict());
 
-      publishResults(
-          jenkinsRun,
-          defensicsRun,
-          workspace,
-          testPlan.getName()
-      );
+      publishResults(jenkinsRun, defensicsRun, workspace, testPlan.getName());
+      reportDownloaded = true;
 
       if (saveResultPackage) {
         publishResultPackage(jenkinsRun, defensicsRun, testPlan);
+        resultPackageDownloaded = true;
       }
 
       if (defensicsRun.getVerdict().equals(RunVerdict.PASS)
@@ -177,20 +177,23 @@ public class FuzzJobRunner {
       if (defensicsRun != null) {
         handleRunInterruption(defensicsRun);
 
-        try {
-          // Refresh run to get latest state and try to retrieve results. As the build was
-          // interrupted, this may not succeed if user/jenkins stops the build after interrupt.
-          defensicsRun = defensicsClient.getRun(defensicsRun.getId());
-          if (defensicsRun != null && defensicsRun.getResultId() != null) {
-            logger.println("Downloading results for the interrupted job");
-
-            publishResults(jenkinsRun, defensicsRun, workspace, testPlan.getName());
-            if (saveResultPackage) {
-              publishResultPackage(jenkinsRun, defensicsRun, testPlan);
+        if (!reportDownloaded || (saveResultPackage && !resultPackageDownloaded)) {
+          try {
+            // Refresh run to get latest state and try to retrieve results. As the build was
+            // interrupted, this may not succeed if user/jenkins stops the build after interrupt.
+            defensicsRun = defensicsClient.getRun(defensicsRun.getId());
+            if (defensicsRun != null && defensicsRun.getResultId() != null) {
+              logger.println("Downloading results for the interrupted job");
+              if (!reportDownloaded) {
+                publishResults(jenkinsRun, defensicsRun, workspace, testPlan.getName());
+              }
+              if (saveResultPackage && !resultPackageDownloaded) {
+                publishResultPackage(jenkinsRun, defensicsRun, testPlan);
+              }
             }
+          } catch (Exception ex) {
+            logger.logError("Could not save results for the interrupted job: " + ex.getMessage());
           }
-        } catch (Exception ex) {
-          logger.logError("Could not save results for the interrupted job: " + ex.getMessage());
         }
       }
       runResult = Result.ABORTED;

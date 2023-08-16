@@ -112,7 +112,7 @@ public class FailureScenarioIT {
   /** Used SUT address. */
   private static final String SUT_URI = "http://127.0.0.1:7000";
 
-  private String pipelineScript = createPipelineScript(
+  private final String defaultPipelineScript = createPipelineScript(
       NAME,
       SETTING_FILE_PATH,
       String.format("--uri %s", SUT_URI),
@@ -123,12 +123,12 @@ public class FailureScenarioIT {
   private int initialSuiteInstanceCount = -1;
 
   @Rule
-  public JenkinsRule jenkinsRule = new JenkinsRule();
+  public final JenkinsRule jenkinsRule = new JenkinsRule();
   private WorkflowJob project;
   private ApiUtils apiUtils;
 
   @ClassRule
-  public static TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public static final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Before
   public void checkRequisites() {
@@ -256,7 +256,7 @@ public class FailureScenarioIT {
         String.format("node('%s')", slave.getNodeName())
     );
     // Ensure that replace did something
-    assertThat(scriptWithNode, is(not(equalTo(this.pipelineScript))));
+    assertThat(scriptWithNode, is(not(equalTo(pipelineScript))));
 
     setupProject(scriptWithNode);
 
@@ -281,7 +281,7 @@ public class FailureScenarioIT {
         "--instrumentation-stop-limit 1"
     ));
 
-    pipelineScript = createPipelineScript(
+    String pipelineScript = createPipelineScript(
         NAME,
         SETTING_FILE_PATH,
         String.format("--uri %s %s", SUT_URI, instrumentationString),
@@ -314,7 +314,7 @@ public class FailureScenarioIT {
         "--tg-text off" // Anomaly control change requires suite reload
     ));
 
-    pipelineScript = createPipelineScript(
+    String pipelineScript = createPipelineScript(
         NAME,
         SETTING_FILE_PATH,
         String.format("--uri %s %s", SUT_URI, instrumentationString),
@@ -335,7 +335,7 @@ public class FailureScenarioIT {
   @Test
   public void testRun_wrongUri() throws Exception {
     final String wrongSutUri = "http://non-routable.invalid:9999";
-    pipelineScript = createPipelineScript(
+    String pipelineScript = createPipelineScript(
         NAME,
         SETTING_FILE_PATH,
         String.format("--uri %s", wrongSutUri),
@@ -363,7 +363,7 @@ public class FailureScenarioIT {
   @Test
   public void testRun_wrongPort() throws Exception {
     final String wrongSutUri = "http://127.0.0.1:9999";
-    pipelineScript = createPipelineScript(
+    String pipelineScript = createPipelineScript(
         NAME,
         SETTING_FILE_PATH,
         String.format("--uri %s", wrongSutUri),
@@ -459,7 +459,7 @@ public class FailureScenarioIT {
         credentialsId,
         SETTING_FILE_PATH);
 
-    project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
+    project.setDefinition(new CpsFlowDefinition(defaultPipelineScript, true));
 
     // Schedule build
     final QueueTaskFuture<WorkflowRun> runFuture = project.scheduleBuild2(0);
@@ -492,7 +492,7 @@ public class FailureScenarioIT {
         credentialsId,
         SETTING_FILE_PATH);
 
-    project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
+    project.setDefinition(new CpsFlowDefinition(defaultPipelineScript, true));
 
     // Schedule build
     final QueueTaskFuture<WorkflowRun> runFuture = project.scheduleBuild2(0);
@@ -526,7 +526,7 @@ public class FailureScenarioIT {
         credentialsId,
         SETTING_FILE_PATH);
 
-    project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
+    project.setDefinition(new CpsFlowDefinition(defaultPipelineScript, true));
 
     // Schedule build
     final QueueTaskFuture<WorkflowRun> runFuture = project.scheduleBuild2(0);
@@ -558,7 +558,7 @@ public class FailureScenarioIT {
         credentialsId,
         SETTING_FILE_PATH);
 
-    pipelineScript = createPipelineScript(
+    String pipelineScript = createPipelineScript(
         NAME,
         SETTING_FILE_PATH,
         String.format("--uri %s --index 0-1000", SUT_URI),
@@ -601,7 +601,7 @@ public class FailureScenarioIT {
         credentialsId,
         SETTING_FILE_PATH);
 
-    project.setDefinition(new CpsFlowDefinition(pipelineScript, true));
+    project.setDefinition(new CpsFlowDefinition(defaultPipelineScript, true));
 
     // Schedule build
     final QueueTaskFuture<WorkflowRun> runFuture = project.scheduleBuild2(0);

@@ -19,7 +19,7 @@ package com.synopsys.defensics.client.model;
 public enum HtmlReport {
   Multiple("zip"), Single("single-html"), Cloud("cloud-html");
 
-  private String text;
+  private final String text;
 
   HtmlReport(String textual) {
     this.text = textual;

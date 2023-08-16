@@ -49,7 +49,7 @@ import org.mockserver.integration.ClientAndServer;
 public class RunFreestyleIT {
 
   @Rule
-  public JenkinsRule jenkinsRule = new JenkinsRule();
+  public final JenkinsRule jenkinsRule = new JenkinsRule();
 
   private FreeStyleProject project;
   private ClientAndServer mockServer;

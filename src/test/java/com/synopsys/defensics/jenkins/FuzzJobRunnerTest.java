@@ -71,7 +71,7 @@ import org.mockito.stubbing.Answer;
  */
 public class FuzzJobRunnerTest {
   @Rule
-  public TemporaryFolder temporaryFolder = new TemporaryFolder();
+  public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
   @Rule
   public Timeout timeout = new Timeout(10, TimeUnit.SECONDS);
@@ -115,7 +115,7 @@ public class FuzzJobRunnerTest {
   @Mock
   private PluginManager pluginManager;
 
-  private boolean saveResultPackage = false;
+  private final boolean saveResultPackage = false;
 
   private static final String RUN_ID = "5adcf4cc-7a86-4f3c-8fa4-ba316ce686c0";
 

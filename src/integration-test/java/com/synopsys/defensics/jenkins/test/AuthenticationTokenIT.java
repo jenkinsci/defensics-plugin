@@ -33,7 +33,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 public class AuthenticationTokenIT {
 
   @Rule
-  public JenkinsRule jenkinsRule = new JenkinsRule();
+  public final JenkinsRule jenkinsRule = new JenkinsRule();
 
   @Before
   public void setup() {

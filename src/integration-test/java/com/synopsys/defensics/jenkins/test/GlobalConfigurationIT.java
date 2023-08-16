@@ -40,7 +40,7 @@ import org.jvnet.hudson.test.JenkinsRule;
 public class GlobalConfigurationIT {
 
   @Rule
-  public JenkinsRule jenkinsRule = new JenkinsRule();
+  public final JenkinsRule jenkinsRule = new JenkinsRule();
 
   private InstanceConfiguration instanceConfiguration;
   private List<InstanceConfiguration> defensicsInstances;

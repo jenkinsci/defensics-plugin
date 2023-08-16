@@ -44,7 +44,7 @@ import org.mockserver.integration.ClientAndServer;
 public class InstanceConfigurationIT {
 
   @Rule
-  public JenkinsRule jenkinsRule = new JenkinsRule();
+  public final JenkinsRule jenkinsRule = new JenkinsRule();
 
   private DefensicsInstanceConfigurationDescriptor defensicsInstanceConfigurationDescriptor;
   private String credentialsId;

@@ -43,7 +43,7 @@ public class JobConfigurationIT {
       new InstanceConfiguration("My Other Defensics", "http://my.other.defensics",
           true, "test-credentials2");
   @Rule
-  public JenkinsRule jenkinsRule = new JenkinsRule();
+  public final JenkinsRule jenkinsRule = new JenkinsRule();
   private FuzzBuildStep fuzzBuildStep;
   private FuzzBuildStepDescriptor stepConfigurationDescriptor;
 

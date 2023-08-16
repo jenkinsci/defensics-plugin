@@ -69,11 +69,11 @@ public class RunPipelineIT {
   ));
 
   // If true, prints Jenkins console logs for each run
-  private boolean dumpRunLogs = true;
+  private final boolean dumpRunLogs = true;
 
   private static ClientAndServer mockServer;
   @Rule
-  public JenkinsRule jenkinsRule = new JenkinsRule();
+  public final JenkinsRule jenkinsRule = new JenkinsRule();
   private WorkflowJob project;
   private String credentialsId;
 

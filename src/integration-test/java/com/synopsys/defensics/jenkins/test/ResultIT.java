@@ -57,7 +57,7 @@ public class ResultIT {
 
   private static ClientAndServer mockServer;
   @Rule
-  public JenkinsRule jenkinsRule = new JenkinsRule();
+  public final JenkinsRule jenkinsRule = new JenkinsRule();
   private FreeStyleProject project;
   private String credentialsId;
 

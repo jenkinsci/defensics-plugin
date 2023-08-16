@@ -38,6 +38,18 @@ public class CredentialsUtil {
    * @throws IOException if adding credentials fails
    */
   public static String createValidCredentials(Jenkins jenkins) throws IOException {
+    return createValidCredentials(jenkins, VALID_TOKEN);
+  }
+
+  /**
+   * Create valid (as in accepted by MockServer) credentials to given Jenkins.
+   *
+   * @param jenkins Jenkins instance (can be test harness Jenkins)
+   * @param token Defensics API token to use.
+   * @return Credential id
+   * @throws IOException if adding credentials fails
+   */
+  public static String createValidCredentials(Jenkins jenkins, String token) throws IOException {
     CredentialsStore store = CredentialsProvider.lookupStores(jenkins)
         .iterator()
         .next();
@@ -45,7 +57,8 @@ public class CredentialsUtil {
         CredentialsScope.GLOBAL,
         CREDENTIAL_ID,
         "Test Secret Text",
-        Secret.fromString(VALID_TOKEN));
+        Secret.fromString(token)
+    );
     store.addCredentials(Domain.global(), credential);
     return CREDENTIAL_ID;
   }

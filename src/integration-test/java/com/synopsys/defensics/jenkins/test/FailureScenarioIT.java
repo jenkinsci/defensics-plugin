@@ -67,50 +67,41 @@ import org.junit.rules.TemporaryFolder;
 import org.jvnet.hudson.test.JenkinsRule;
 
 /**
- * End-to-end tests testing failure modes: cases where job fails in different stage in various
- * ways. This could be moved outside of integration tests, e.g. e2e-tests when final run environment
- * has been decided. Now this is run manually by setting values in the beginning of this class.
+ * End-to-end tests testing different (failure) modes.
  *
- * <p>NOTE about interrupted jobs: Currently tests trigger job stop when logs contain given
- * keywords. This makes the exact spot where stop happens in job in-precise and could cause some
- * jitter in tests.
+ * <p>These tests need externally running API server which has HTTP suite 4.13.0 installed.
+ * Now this class is run manually by setting the configuration values in this class or by passing
+ * values with system properties. See code for currently supported system properties.
  * </p>
- *
- * <p>To be able to run these tests, check that things listed in external dependencies are
- * enabled and their configuration is correct.
- * </p>
- *
- * <p>Other things to test:
- * <ul>
- *   <li>Jenkins has HTTP address, but server is using HTTPS</li>
- *   <li>Test that API server reports that suite from testplan is not found.</li>
- *   <li>Test that error is reported if client sends a request body which server doesn't
- *   recognize. This comes in case Jenkins plugin models are out-of-sync with server models</li>
- *   <li>etc...</li>
- * </ul>
+ * <p>This class could be renamed and moved outside from integration tests to e.g. e2e-tests.</p>
  */
 public class FailureScenarioIT {
 
   /** Tests are not run until this is true. */
-  private static final boolean hasRequiredDependencies = false;
+  private static final boolean hasRequiredDependencies = Boolean.parseBoolean(
+      System.getProperty("DEFENSICS_RUN_E2E_TESTS", "false")
+  );
 
-  /*
-   * Required external dependencies
-   * o Defensics API Server running.
-   *   Should have HTTP Server suite 4.11.1 installed and license for it.
-   * o HTTP SUT. Now 'python -m SimpleHTTPServer 7000' has been used.
-   */
   /** API Server address. */
-  private static final String API_SERVER_URL = "http://127.0.0.1:3150";
+  private static final URI API_SERVER_URL = URI.create(
+      System.getProperty("DEFENSICS_API_URL", "https://127.0.0.1:3150" )
+  );
+
+  /**
+   * API token for API server. Set this when starting tests.
+   */
+  private static final String API_TOKEN = System.getProperty("DEFENSICS_API_TOKEN", null);
+
+  /** Used SUT address. */
+  private static final URI SUT_URI = URI.create(
+      System.getProperty("DEFENSICS_SUT_URL", "http://127.0.0.1:7000")
+  );
 
   /**
    * Set to true if API server has been started with --enable-script-execution.
    * Used to determine if error reporting tests can be run.
    */
   private static final boolean API_SERVER_HAS_ENABLED_EXTERNAL_INSTRUMENTATION = false;
-
-  /** Used SUT address. */
-  private static final String SUT_URI = "http://127.0.0.1:7000";
 
   private final String defaultPipelineScript = createPipelineScript(
       NAME,
@@ -174,14 +165,12 @@ public class FailureScenarioIT {
     env.put("DEFENSICS_MAX_POLLING_INTERVAL", "1");
     jenkinsRule.jenkins.getGlobalNodeProperties().add(prop);
 
-    credentialsId = CredentialsUtil.createValidCredentials(jenkinsRule.jenkins);
+    credentialsId = CredentialsUtil.createValidCredentials(jenkinsRule.jenkins, API_TOKEN);
     project = jenkinsRule.createProject(WorkflowJob.class);
 
     // Use ApiUtils for now since it's used to fetch only suite-instance count. APIv2 client has
     // already this functionality so this can be removed when APIv1 is removed.
-    apiUtils = new ApiUtils(
-        URI.create(API_SERVER_URL).resolve("/api/v2"),
-        CredentialsUtil.VALID_TOKEN);
+    apiUtils = new ApiUtils(API_SERVER_URL.resolve("/api/v2"), API_TOKEN);
   }
 
   /**
@@ -454,7 +443,7 @@ public class FailureScenarioIT {
         jenkinsRule,
         project,
         NAME,
-        API_SERVER_URL,
+        API_SERVER_URL.toString(),
         CERTIFICATE_VALIDATION_DISABLED,
         credentialsId,
         SETTING_FILE_PATH);
@@ -487,7 +476,7 @@ public class FailureScenarioIT {
         jenkinsRule,
         project,
         NAME,
-        API_SERVER_URL,
+        API_SERVER_URL.toString(),
         CERTIFICATE_VALIDATION_DISABLED,
         credentialsId,
         SETTING_FILE_PATH);
@@ -521,7 +510,7 @@ public class FailureScenarioIT {
         jenkinsRule,
         project,
         NAME,
-        API_SERVER_URL,
+        API_SERVER_URL.toString(),
         CERTIFICATE_VALIDATION_DISABLED,
         credentialsId,
         SETTING_FILE_PATH);
@@ -553,7 +542,7 @@ public class FailureScenarioIT {
         jenkinsRule,
         project,
         NAME,
-        API_SERVER_URL,
+        API_SERVER_URL.toString(),
         CERTIFICATE_VALIDATION_DISABLED,
         credentialsId,
         SETTING_FILE_PATH);
@@ -596,7 +585,7 @@ public class FailureScenarioIT {
         jenkinsRule,
         project,
         NAME,
-        API_SERVER_URL,
+        API_SERVER_URL.toString(),
         CERTIFICATE_VALIDATION_DISABLED,
         credentialsId,
         SETTING_FILE_PATH);
@@ -658,7 +647,7 @@ public class FailureScenarioIT {
         jenkinsRule,
         project,
         NAME,
-        API_SERVER_URL,
+        API_SERVER_URL.toString(),
         CERTIFICATE_VALIDATION_DISABLED,
         credentialsId,
         SETTING_FILE_PATH);
@@ -696,12 +685,12 @@ public class FailureScenarioIT {
   public void testHealthCheck_reportsTlsProblems() {
     Assume.assumeThat(
         "This test requires that API server is running with HTTPS",
-        API_SERVER_URL.startsWith("https://"),
+        API_SERVER_URL.getScheme().equals("https"),
         is(true)
     );
     final ApiService apiService = new ApiService(
-        API_SERVER_URL,
-        CredentialsUtil.VALID_TOKEN,
+        API_SERVER_URL.toString(),
+        API_TOKEN,
         false
     );
 
@@ -725,12 +714,12 @@ public class FailureScenarioIT {
     Assume.assumeThat(
         "This test requires that API server is running with HTTPS - if HTTP, server could be "
             + "running in insecure mode",
-        API_SERVER_URL.startsWith("https://"),
+        API_SERVER_URL.getScheme().equals("https"),
         is(true)
     );
     final boolean disableCertValidation = true;
     final ApiService apiService = new ApiService(
-        API_SERVER_URL,
+        API_SERVER_URL.toString(),
         CredentialsUtil.VALID_TOKEN,
         disableCertValidation
     );
@@ -755,7 +744,7 @@ public class FailureScenarioIT {
         jenkinsRule,
         project,
         NAME,
-        API_SERVER_URL,
+        API_SERVER_URL.toString(),
         true, credentialsId,
         SETTING_FILE_PATH
     );

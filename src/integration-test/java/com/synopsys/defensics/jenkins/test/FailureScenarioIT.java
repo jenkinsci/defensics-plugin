@@ -36,6 +36,7 @@ import com.synopsys.defensics.client.UnsafeTlsConfigurator;
 import com.synopsys.defensics.jenkins.result.HtmlReportPublisherTarget.HtmlReportAction;
 import com.synopsys.defensics.jenkins.result.ResultPackageAction;
 import com.synopsys.defensics.jenkins.test.utils.CredentialsUtil;
+import com.synopsys.defensics.jenkins.test.utils.HttpSutRule;
 import com.synopsys.defensics.jenkins.test.utils.JenkinsJobUtils;
 import com.synopsys.defensics.jenkins.test.utils.ProjectUtils;
 import htmlpublisher.HtmlPublisherTarget.HTMLAction;
@@ -54,6 +55,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
+import org.apache.commons.math3.analysis.function.Add;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
@@ -92,10 +94,12 @@ public class FailureScenarioIT {
    */
   private static final String API_TOKEN = System.getProperty("DEFENSICS_API_TOKEN", null);
 
+  /** JUnit rule to start and stop stub HTTP server in given port. */
+  @Rule
+  public HttpSutRule httpSutRule = new HttpSutRule(7000);
+
   /** Used SUT address. */
-  private static final URI SUT_URI = URI.create(
-      System.getProperty("DEFENSICS_SUT_URL", "http://127.0.0.1:7000")
-  );
+  private final URI SUT_URI = httpSutRule.getAddress();
 
   /**
    * Set to true if API server has been started with --enable-script-execution.

@@ -27,6 +27,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
 import com.synopsys.defensics.apiserver.model.RunState;
+import com.synopsys.defensics.apiserver.model.RunVerdict;
 import com.synopsys.defensics.jenkins.result.HtmlReportPublisherTarget.HtmlReportAction;
 import com.synopsys.defensics.jenkins.result.ResultPackageAction;
 import com.synopsys.defensics.jenkins.test.utils.CredentialsUtil;
@@ -74,7 +75,7 @@ public class RunFreestyleIT {
 
   @Test
   public void testRunBuildStep() throws Exception {
-    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, "PASS", RunState.COMPLETED);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, RunVerdict.PASS, RunState.COMPLETED);
     defensicsMockServer.initServer(this.mockServer);
     ProjectUtils.setupProject(
         jenkinsRule,
@@ -108,7 +109,7 @@ public class RunFreestyleIT {
 
   @Test
   public void testRunPostBuildStep() throws Exception {
-    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, "PASS", RunState.COMPLETED);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, RunVerdict.PASS, RunState.COMPLETED);
     defensicsMockServer.initServer(this.mockServer);
     ProjectUtils.setupProject(
         jenkinsRule,
@@ -131,7 +132,7 @@ public class RunFreestyleIT {
 
   @Test
   public void testConfigurationRoundTripAndRun() throws Exception {
-    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, "PASS", RunState.COMPLETED);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, RunVerdict.PASS, RunState.COMPLETED);
     defensicsMockServer.initServer(this.mockServer);
     ProjectUtils.setupProject(
         jenkinsRule,
@@ -156,7 +157,7 @@ public class RunFreestyleIT {
 
   @Test
   public void testAbortJob() throws Exception {
-    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, "PASS", RunState.COMPLETED);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, RunVerdict.PASS, RunState.COMPLETED);
     defensicsMockServer.initServer(this.mockServer);
     ProjectUtils.setupProject(
         jenkinsRule,
@@ -185,7 +186,7 @@ public class RunFreestyleIT {
 
   @Test
   public void testJobFailed() throws Exception {
-    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, "PASS", RunState.ERROR);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, RunVerdict.PASS, RunState.ERROR);
     defensicsMockServer.initServer(this.mockServer);
     ProjectUtils.setupProject(
         jenkinsRule,
@@ -206,7 +207,7 @@ public class RunFreestyleIT {
 
   @Test
   public void testJobFailure() throws Exception {
-    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, "FAIL", RunState.COMPLETED);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, RunVerdict.FAIL, RunState.COMPLETED);
     defensicsMockServer.initServer(this.mockServer);
 
     ProjectUtils.setupProject(

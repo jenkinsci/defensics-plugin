@@ -27,6 +27,7 @@ import static org.junit.Assert.fail;
 import com.synopsys.defensics.apiserver.client.DefensicsApiV2Client;
 import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.RunState;
+import com.synopsys.defensics.apiserver.model.RunVerdict;
 import com.synopsys.defensics.client.DefensicsRequestException;
 import com.synopsys.defensics.jenkins.test.utils.DefensicsMockServer;
 import hudson.FilePath;
@@ -53,7 +54,7 @@ public class ApiServiceTest {
     mockServer = ClientAndServer.startClientAndServer(1080);
     final DefensicsMockServer defensicsMockServer = new DefensicsMockServer(
         true,
-        "PASS",
+        RunVerdict.PASS,
         RunState.STARTING
     );
     defensicsMockServer.initServer(mockServer);

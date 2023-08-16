@@ -26,6 +26,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
 import com.synopsys.defensics.apiserver.model.RunState;
+import com.synopsys.defensics.apiserver.model.RunVerdict;
 import com.synopsys.defensics.jenkins.result.HtmlReportPublisherTarget.HtmlReportAction;
 import com.synopsys.defensics.jenkins.result.ResultPackageAction;
 import com.synopsys.defensics.jenkins.test.utils.CredentialsUtil;
@@ -97,7 +98,7 @@ public class RunPipelineIT {
   @Test
   public void testRun() throws Exception {
     project.setDefinition(new CpsFlowDefinition(PIPELINE_SCRIPT, true));
-    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, "PASS", RunState.COMPLETED);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, RunVerdict.PASS, RunState.COMPLETED);
     defensicsMockServer.initServer(RunPipelineIT.mockServer);
 
     ProjectUtils.setupProject(
@@ -133,7 +134,7 @@ public class RunPipelineIT {
   @Test
   public void testRunJobWithFailures() throws Exception {
     project.setDefinition(new CpsFlowDefinition(PIPELINE_SCRIPT, true));
-    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, "FAIL", RunState.COMPLETED);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, RunVerdict.FAIL, RunState.COMPLETED);
     defensicsMockServer.initServer(RunPipelineIT.mockServer);
     ProjectUtils.setupProject(
         jenkinsRule,
@@ -160,7 +161,7 @@ public class RunPipelineIT {
   @Test
   public void testAbortJob() throws Exception {
     // Create and use new client to prevent Job from completing.
-    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, "PASS", RunState.COMPLETED);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(true, RunVerdict.PASS, RunState.COMPLETED);
     defensicsMockServer.initServer(RunPipelineIT.mockServer);
     ProjectUtils.setupProject(
         jenkinsRule,
@@ -195,7 +196,7 @@ public class RunPipelineIT {
   @Test
   public void testJobFailed() throws Exception {
     project.setDefinition(new CpsFlowDefinition(PIPELINE_SCRIPT, true));
-    DefensicsMockServer mockServer = new DefensicsMockServer(true, "PASS", RunState.ERROR);
+    DefensicsMockServer mockServer = new DefensicsMockServer(true, RunVerdict.PASS, RunState.ERROR);
     mockServer.initServer(RunPipelineIT.mockServer);
     ProjectUtils.setupProject(
         jenkinsRule,
@@ -220,7 +221,7 @@ public class RunPipelineIT {
   @Test
   public void testJobEndedWithoutVerdict() throws Exception {
     project.setDefinition(new CpsFlowDefinition(PIPELINE_SCRIPT, true));
-    DefensicsMockServer mockServer = new DefensicsMockServer(true, "NONE", RunState.COMPLETED);
+    DefensicsMockServer mockServer = new DefensicsMockServer(true, RunVerdict.NONE, RunState.COMPLETED);
     mockServer.initServer(RunPipelineIT.mockServer);
     ProjectUtils.setupProject(
         jenkinsRule,

@@ -28,6 +28,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
 import com.synopsys.defensics.apiserver.model.RunState;
+import com.synopsys.defensics.apiserver.model.RunVerdict;
 import com.synopsys.defensics.jenkins.result.HtmlReportPublisherTarget.HtmlReportAction;
 import com.synopsys.defensics.jenkins.result.ResultPublisher;
 import com.synopsys.defensics.jenkins.result.history.ProjectHistoryAction;
@@ -89,7 +90,7 @@ public class ResultIT {
 
   @Test
   public void testPublishReport() throws Exception {
-    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(false, "PASS", RunState.COMPLETED);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(false, RunVerdict.PASS, RunState.COMPLETED);
     defensicsMockServer.initServer(ResultIT.mockServer);
 
     try (JenkinsRule.WebClient webClient = jenkinsRule.createWebClient()) {
@@ -109,7 +110,7 @@ public class ResultIT {
 
   @Test
   public void testPublishReportWithFailures() throws Exception {
-    DefensicsMockServer mockServer = new DefensicsMockServer(false, "FAIL", RunState.COMPLETED);
+    DefensicsMockServer mockServer = new DefensicsMockServer(false, RunVerdict.FAIL, RunState.COMPLETED);
     mockServer.initServer(ResultIT.mockServer);
 
     try (JenkinsRule.WebClient webClient = jenkinsRule.createWebClient()) {
@@ -129,7 +130,7 @@ public class ResultIT {
 
   @Test
   public void testPublishMultipleReports() throws Exception {
-    DefensicsMockServer mockServer = new DefensicsMockServer(false, "PASS", RunState.COMPLETED);
+    DefensicsMockServer mockServer = new DefensicsMockServer(false, RunVerdict.PASS, RunState.COMPLETED);
     mockServer.initServer(ResultIT.mockServer);
 
     String setFileName = "http_1000.set";
@@ -188,7 +189,7 @@ public class ResultIT {
 
   @Test
   public void testTrendGraph() throws Exception {
-    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(false, "PASS", RunState.COMPLETED);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(false, RunVerdict.PASS, RunState.COMPLETED);
     defensicsMockServer.initServer(ResultIT.mockServer);
 
     try (JenkinsRule.WebClient webClient = jenkinsRule.createWebClient()) {
@@ -208,7 +209,7 @@ public class ResultIT {
 
   @Test
   public void testTrendGraphSomeBuildsHaveNoDefensicsResults() throws Exception {
-    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(false, "PASS", RunState.COMPLETED);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(false, RunVerdict.PASS, RunState.COMPLETED);
     defensicsMockServer.initServer(ResultIT.mockServer);
 
     try (JenkinsRule.WebClient webClient = jenkinsRule.createWebClient()) {
@@ -230,7 +231,7 @@ public class ResultIT {
 
   @Test
   public void testTrendGraphNotShownWhenTooFewResults() throws Exception {
-    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(false, "PASS", RunState.COMPLETED);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(false, RunVerdict.PASS, RunState.COMPLETED);
     defensicsMockServer.initServer(ResultIT.mockServer);
 
     try (JenkinsRule.WebClient webClient = jenkinsRule.createWebClient()) {
@@ -249,7 +250,7 @@ public class ResultIT {
 
   @Test
   public void testResultPackagePublishIsDisabledByDefault() throws Exception {
-    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(false, "PASS", RunState.COMPLETED);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(false, RunVerdict.PASS, RunState.COMPLETED);
     defensicsMockServer.initServer(ResultIT.mockServer);
 
     try (JenkinsRule.WebClient webClient = jenkinsRule.createWebClient()) {
@@ -262,7 +263,7 @@ public class ResultIT {
 
   @Test
   public void testResultPackagePublish() throws Exception {
-    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(false, "PASS", RunState.COMPLETED);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(false, RunVerdict.PASS, RunState.COMPLETED);
     defensicsMockServer.initServer(ResultIT.mockServer);
 
     ProjectUtils.addBuildStep(project, NAME, SETTING_FILE_PATH, true);
@@ -279,7 +280,7 @@ public class ResultIT {
 
   @Test
   public void testMultipleResultPackages() throws Exception {
-    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(false, "PASS", RunState.COMPLETED);
+    DefensicsMockServer defensicsMockServer = new DefensicsMockServer(false, RunVerdict.PASS, RunState.COMPLETED);
     defensicsMockServer.initServer(ResultIT.mockServer);
 
     ProjectUtils.addBuildStep(project, NAME, SETTING_FILE_PATH, true);

@@ -17,6 +17,7 @@
 package com.synopsys.defensics.jenkins.test.utils;
 
 import com.synopsys.defensics.apiserver.model.RunState;
+import com.synopsys.defensics.apiserver.model.RunVerdict;
 import java.util.concurrent.TimeUnit;
 import org.mockserver.configuration.ConfigurationProperties;
 import org.mockserver.integration.ClientAndServer;
@@ -32,11 +33,11 @@ import org.slf4j.event.Level;
 public class DefensicsMockServer {
   public static final String RUN_ID = "72c5c70f-102c-489c-a7cc-6625d47c5ab6";
   public static final String RESULT_ID = "9ee36d3c-2f7d-4ae7-8ed9-974ca0518b2a";
-  private final String verdict;
+  private final RunVerdict verdict;
   private final RunState endState;
   private final boolean authentication;
 
-  public DefensicsMockServer(boolean authentication, String verdict, RunState endState) {
+  public DefensicsMockServer(boolean authentication, RunVerdict verdict, RunState endState) {
     this.verdict = verdict;
     this.authentication = authentication;
     this.endState = endState;

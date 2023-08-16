@@ -25,6 +25,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 
 import com.synopsys.defensics.apiserver.model.RunState;
+import com.synopsys.defensics.apiserver.model.RunVerdict;
 import com.synopsys.defensics.jenkins.configuration.InstanceConfiguration.DefensicsInstanceConfigurationDescriptor;
 import com.synopsys.defensics.jenkins.test.utils.CredentialsUtil;
 import com.synopsys.defensics.jenkins.test.utils.DefensicsMockServer;
@@ -104,7 +105,7 @@ public class InstanceConfigurationIT {
     ClientAndServer mockServer = ClientAndServer.startClientAndServer(1080);
     try {
       DefensicsMockServer defensicsMockServer = new DefensicsMockServer(
-          true, "PASS", RunState.COMPLETED
+          true, RunVerdict.PASS, RunState.COMPLETED
       );
       defensicsMockServer.initServer(mockServer);
 

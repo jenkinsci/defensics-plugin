@@ -61,7 +61,7 @@ public class DefensicsMockServerApiV2 {
   private static final String EXPECTED_USER_AGENT_REGEX = "Defensics-Jenkins-Plugin.*";
   private static final String CONTENT_TYPE_JSON = "application/json; charset=utf-8";
   private static final String REPORT_FORMAT = "cloud-html";
-  private final String verdict;
+  private final RunVerdict verdict;
   private final RunState endState;
   private final boolean authentication;
 
@@ -70,7 +70,7 @@ public class DefensicsMockServerApiV2 {
 
   public DefensicsMockServerApiV2(
       boolean authentication,
-      String verdict,
+      RunVerdict verdict,
       RunState endState
   ) {
     this.authentication = authentication;
@@ -230,7 +230,7 @@ public class DefensicsMockServerApiV2 {
             Times.exactly(1)) //First response is "STARTING"
         .respond(HttpResponse.response()
             .withHeader("Content-Type", CONTENT_TYPE_JSON)
-            .withBody(json(getRunJson("PASS", RunState.STARTING, 0)))
+            .withBody(json(getRunJson(RunVerdict.PASS, RunState.STARTING, 0)))
             .withStatusCode(200));
 
     server
@@ -243,7 +243,7 @@ public class DefensicsMockServerApiV2 {
             Times.exactly(1)) //Following response is "RUNNING"
         .respond(HttpResponse.response()
             .withHeader("Content-Type", CONTENT_TYPE_JSON)
-            .withBody(json(getRunJson("PASS", RunState.RUNNING, 300)))
+            .withBody(json(getRunJson(RunVerdict.PASS, RunState.RUNNING, 300)))
             .withStatusCode(200));
     server
         .when(
@@ -316,14 +316,14 @@ public class DefensicsMockServerApiV2 {
         .respond(HttpResponse.response().withStatusCode(204));
   }
 
-  private String getRunJson(String verdict, RunState runState, long runIndex) {
+  private String getRunJson(RunVerdict verdict, RunState runState, long runIndex) {
     Run run = new Run(RUN_ID);
     run.setState(runState);
     run.setRunIndex((int)runIndex);
     run.setCaseIndex((int)runIndex);
     run.setCasesToBeExecuted((int)TOTAL);
     if (verdict != null) {
-      run.setVerdict(RunVerdict.valueOf(verdict));
+      run.setVerdict(verdict);
     }
     run.setFailureSummary(Collections.emptyList());
     run.setResultId(RESULT_ID);

@@ -21,7 +21,6 @@ import com.synopsys.defensics.jenkins.configuration.MissingConfigurationExceptio
 import hudson.AbortException;
 import hudson.FilePath;
 import hudson.Launcher;
-import hudson.model.Result;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import java.io.IOException;

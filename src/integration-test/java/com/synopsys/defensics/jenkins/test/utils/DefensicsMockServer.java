@@ -32,7 +32,6 @@ import org.slf4j.event.Level;
  */
 public class DefensicsMockServer {
   public static final String RUN_ID = "72c5c70f-102c-489c-a7cc-6625d47c5ab6";
-  public static final String RESULT_ID = "9ee36d3c-2f7d-4ae7-8ed9-974ca0518b2a";
   private final RunVerdict verdict;
   private final RunState endState;
   private final boolean authentication;

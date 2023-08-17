@@ -23,6 +23,7 @@ import com.synopsys.defensics.jenkins.configuration.PluginConfiguration;
 import hudson.FilePath;
 import hudson.model.FreeStyleProject;
 import hudson.model.TopLevelItem;
+import java.io.IOException;
 import java.io.InputStream;
 import org.jvnet.hudson.test.JenkinsRule;
 
@@ -30,7 +31,7 @@ public class ProjectUtils {
   public static void setupProject(JenkinsRule jenkinsRule, TopLevelItem project,
       String defensicsName, String defensicsUrl, boolean certificateValidationDisabled,
       String credentialsId,
-      String settingFileName) throws Exception {
+      String settingFileName) {
     addInstanceConfiguration(jenkinsRule, defensicsName, defensicsUrl, certificateValidationDisabled,
         credentialsId);
 
@@ -92,11 +93,15 @@ public class ProjectUtils {
    * @throws Exception If there is a problem copying.
    */
   public static void copyFileToWorkspace(JenkinsRule jenkinsRule, TopLevelItem project,
-      String settingFileName) throws Exception {
+      String settingFileName) {
     FilePath workspace = jenkinsRule.jenkins.getWorkspaceFor(project);
     FilePath report = workspace.child(settingFileName);
     try (InputStream resourceAsStream = ProjectUtils.class.getResourceAsStream(settingFileName)) {
       report.copyFrom(resourceAsStream);
+    } catch (IOException | InterruptedException e) {
+      throw new IllegalStateException(
+          String.format("Cannot copy file %s to workspace", settingFileName), e
+      );
     }
   }
 }

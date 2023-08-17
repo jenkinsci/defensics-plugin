@@ -50,7 +50,7 @@ public class ApiServiceTest {
   private ApiService api;
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     mockServer = ClientAndServer.startClientAndServer(1080);
     final DefensicsMockServer defensicsMockServer = new DefensicsMockServer(
         true,

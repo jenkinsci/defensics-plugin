@@ -153,7 +153,7 @@ public class ResultIT {
     }
   }
 
-  private void setupSecondDefensics(String setFileName) throws Exception {
+  private void setupSecondDefensics(String setFileName) {
     // Set up second build step with different Defensics configuration
     String name2 = "My Other Defensics";
     ProjectUtils.addInstanceConfiguration(jenkinsRule, name2, LOCAL_URL,

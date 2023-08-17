@@ -120,7 +120,7 @@ public class FuzzJobRunnerTest {
   private static final String RUN_ID = "5adcf4cc-7a86-4f3c-8fa4-ba316ce686c0";
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
     MockitoAnnotations.openMocks(this);
   }
 

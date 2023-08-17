@@ -745,10 +745,10 @@ public class FailureScenarioIT {
 
   /**
    * Set up project and make it use given pipeline script
+   *
    * @param pipelineScript Script to use
-   * @throws Exception
    */
-  private void setupProject(String pipelineScript) throws Exception {
+  private void setupProject(String pipelineScript) {
     final CpsFlowDefinition definition = new CpsFlowDefinition(pipelineScript, true);
     project.setDefinition(definition);
     ProjectUtils.setupProject(

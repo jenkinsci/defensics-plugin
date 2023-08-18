@@ -208,25 +208,7 @@ public class DefensicsApiV2Client implements DefensicsApiClient {
         .addPathSegment("healthcheck")
         .build();
 
-    try {
-      return getSingleItem(
-          healthcheckUrl,
-          "get healthcheck",
-          new TypeReference<Item<Map<String, HealthCheckResult>>>() {
-          }
-      ).orElseThrow();
-    } catch (DefensicsClientException e) {
-      // Expand error message for healthcheck response
-      final String baseErrorMessage = String.format(
-          "Unable to connect Defensics server healthcheck at address %s. "
-              + "Please check you are using the correct token and Defensics API server is running.",
-          healthcheckUrl.getUri()
-      );
-      throw new DefensicsClientException(
-          baseErrorMessage + " " + e.getMessage(),
-          e.getCause()
-      );
-    }
+      return defensicsApiClientConnect.getHealthCheck(healthcheckUrl).orElseThrow();
   }
 
   @Override

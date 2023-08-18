@@ -36,7 +36,6 @@ import hudson.util.FormValidation.Kind;
 import hudson.util.ListBoxModel;
 import java.io.IOException;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -120,7 +119,6 @@ public class InstanceConfigurationIT {
   }
 
   @Test
-  @Ignore("FIXME: API client should return response even on 500 error")
   public void testConnectionTest_unhealthyServer() {
     ClientAndServer mockServer = ClientAndServer.startClientAndServer(1080);
     try {

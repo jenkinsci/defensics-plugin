@@ -16,7 +16,6 @@
 
 package com.synopsys.defensics.jenkins.test.utils;
 
-import static org.mockserver.model.Header.header;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.JsonBody.json;
 import static org.mockserver.model.NottableString.not;
@@ -122,6 +121,7 @@ public class DefensicsMockServerApiV2 {
                 .withHeader("Authorization", AUTHENTICATION_TOKEN)
                 .withPath("/api/v2/healthcheck"))
         .respond(HttpResponse.response()
+            .withHeader("Content-Type", CONTENT_TYPE_JSON)
             .withBody(json(new Item<>(healthCheckResult)))
             .withStatusCode(statusCode));
   }
@@ -201,14 +201,12 @@ public class DefensicsMockServerApiV2 {
         .when(
             request()
                 .withHeader("User-Agent", EXPECTED_USER_AGENT_REGEX)
-                .withHeader(
-                    (
-                        header(
-                            string("Authorization"),
-                            not(AUTHENTICATION_TOKEN)))))
+                .withHeader(string("Authorization"), not(AUTHENTICATION_TOKEN))
+        )
         .respond(
             HttpResponse
                 .response()
+                .withHeader("Content-Type", CONTENT_TYPE_JSON)
                 .withBody("Unauthorized. No authentication credentials found in request.")
                 .withStatusCode(401));
   }

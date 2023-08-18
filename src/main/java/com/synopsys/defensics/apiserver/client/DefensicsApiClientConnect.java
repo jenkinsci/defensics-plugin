@@ -19,6 +19,7 @@ package com.synopsys.defensics.apiserver.client;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.synopsys.defensics.apiserver.client.DefensicsApiClient.DefensicsClientException;
+import com.synopsys.defensics.apiserver.model.HealthCheckResult;
 import com.synopsys.defensics.apiserver.model.Item;
 import com.synopsys.defensics.apiserver.model.ItemArray;
 import java.io.BufferedInputStream;
@@ -31,6 +32,7 @@ import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -326,5 +328,54 @@ public class DefensicsApiClientConnect {
       headers.addAll(List.of("Authorization", "Bearer " + new String(token)));
     }
     return headers.toArray(new String[0]);
+  }
+
+  public Optional<Map<String, HealthCheckResult>> getHealthCheck(HttpUrl healthcheckUrl) {
+    final String baseErrorMessage = String.format(
+        "Unable to connect Defensics server health check at address %s. "
+            + "Please check you are using the correct token and Defensics API server is running",
+        healthcheckUrl.getUri()
+    );
+
+    HttpRequest request = HttpRequest.newBuilder(healthcheckUrl.getUri())
+        .GET()
+        .headers(getCommonHeaders())
+        .build();
+    try {
+      HttpResponse<byte[]> response = httpClient.send(request, BodyHandlers.ofByteArray());
+      if (response.statusCode() == 404) {
+        return Optional.empty();
+      }
+      // Return the healthcheck response JSON on 500 instead of error message object.
+      if (response.statusCode() >= 400 && response.statusCode() != 500) {
+        String message = DefensicsApiClientUtility.errorMessageForFailingJaxRsRequest(
+            baseErrorMessage,
+            response
+        );
+
+        throw new DefensicsClientException(message);
+      }
+
+      return Optional.of(response)
+          .map(HttpResponse::body)
+          .map(body -> {
+            try {
+              return objectMapper.readValue(
+                  body,
+                  new TypeReference<Item<Map<String, HealthCheckResult>>>() {}
+              );
+            } catch (IOException e) {
+              throw new DefensicsClientException("Could not parse response: " + e.getMessage(), e);
+            }
+          })
+          .map(Item::getData)
+          .map(Optional::of)
+          .orElseThrow(() -> new DefensicsClientException(baseErrorMessage + ". Server response empty"));
+    } catch (IOException | InterruptedException e) {
+      throw new DefensicsClientException(
+          baseErrorMessage + ": " + e.getMessage(),
+          e
+      );
+    }
   }
 }

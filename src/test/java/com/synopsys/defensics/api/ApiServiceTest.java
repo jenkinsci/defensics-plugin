@@ -31,7 +31,6 @@ import hudson.FilePath;
 import java.io.File;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockserver.integration.ClientAndServer;
@@ -80,7 +79,6 @@ public class ApiServiceTest {
     }
   }
 
-  @Ignore("FIXME: API client should return response even on 500 error")
   @Test
   public void testTestConnectionFailAuth() throws Exception {
     try {
@@ -97,7 +95,7 @@ public class ApiServiceTest {
               + ". "
               + "Please check you are using the "
               + "correct token and Defensics API server is running. "
-              + "Could not get healthcheck. HTTP status code: 401, message: Unauthorized. "
+              + "HTTP status code: 401, message: Unauthorized. "
               + "No authentication credentials found in request."
               )));
     }

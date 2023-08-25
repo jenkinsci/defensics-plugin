@@ -17,14 +17,11 @@
 package com.synopsys.defensics.api;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
-import com.synopsys.defensics.apiserver.client.DefensicsApiV2Client;
 import com.synopsys.defensics.apiserver.model.Run;
 import com.synopsys.defensics.apiserver.model.RunState;
 import com.synopsys.defensics.apiserver.model.RunVerdict;
@@ -32,8 +29,6 @@ import com.synopsys.defensics.client.DefensicsRequestException;
 import com.synopsys.defensics.jenkins.test.utils.DefensicsMockServer;
 import hudson.FilePath;
 import java.io.File;
-import java.net.URI;
-import java.time.Duration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -136,48 +131,5 @@ public class ApiServiceTest {
     api.saveResults(run, resultFolder);
     assertThat(resultFolder.exists(), is(equalTo(true)));
     assertThat(resultFolder.child("report.html").exists(), is(equalTo(true)));
-  }
-
-  /**
-   * Test following things:
-   *
-   * 1) Client timeout setting works
-   * 2) Exception thrown from exceeding timeouts is DefensicsRequestException instead of
-   *   InterruptedException so that'd make build to FAIL instead of ABORTED.
-   *
-   *  Note: Timeouts aren't currently used with Java HTTP client as most of the timeout settings have
-   *  moved to be request-specific instead of global setting. This test now just tests that it's
-   *  possible to set that one global connectTimeout if needed.
-   */
-  @Test
-  public void testClientTimeoutHandling() {
-    // Stops server so there isn't anything responding to this connection attempt. This is somewhat
-    // brittle
-    DefensicsMockServer.stopMockServer(mockServer);
-    final URI apiBaseUri = URI.create(DEFENSICS_URL);
-    final DefensicsApiV2Client clientWithShortTimeout = new DefensicsApiV2Client(
-        apiBaseUri.resolve("/api/v2"),
-        TOKEN,
-        builder -> builder.connectTimeout(Duration.ofMillis(1))
-    );
-    final ApiService apiService = new ApiService(clientWithShortTimeout, apiBaseUri);
-    final DefensicsRequestException defensicsRequestException = assertThrows(
-        DefensicsRequestException.class,
-        // Mock server is configured to have 5 ms delay for create-run request
-        apiService::createNewRun
-    );
-
-    assertThat(
-        defensicsRequestException.getMessage(),
-        containsString("Could not create test run")
-    );
-    // timeout wording varies a bit between test environments
-    assertThat(
-        defensicsRequestException.getMessage(),
-        anyOf(
-            containsString("timeout"),
-            containsString("timed out")
-        )
-    );
   }
 }

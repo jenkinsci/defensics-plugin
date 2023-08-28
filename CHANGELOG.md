@@ -4,11 +4,13 @@
 - Download report and optionally result-package also in the following cases:
   1) run was terminated with ERROR/FATAL state, 2) run was interrupted. Previously
   report and result-package were downloaded only when all planned test cases were run.
-- Update plugin reference Jenkins LTS version to 2.375.4
+- Update plugin reference Jenkins LTS version to 2.375.4 which requires Java 11
 - Update HTML Publisher plugin to 1.31
 - Update Credentials plugin to 1224.vc23ca_a_9a_2cb_0
 - Update Plain Credentials plugin to 143.v1b_df8b_d3b_e48
 - Update other plugin dependencies
+- The used HTTP client was changed from OkHttp to Java 11 HTTP client which allowed
+  to remove dependencies to OkHttp, Okio, and Kotlin and handled Okio vulnerability CVE-2023-3635.
 
 ## v2022.12.0 - 2022-12-12
 ### Changed

@@ -8,7 +8,7 @@ on how to use the plugin, see [Defensics Jenkins Plugin User Guide](doc/user-gui
 
 ### Prerequisites
 
-- Java 8 or 11
+- Java 11
 - Maven
 
 ## Configuring IntelliJ IDEA
@@ -77,6 +77,16 @@ To install the plugin manually to a Jenkins:
 2. Restart Jenkins.
 
 ## Release notes
+
+### Version 2023.9.0
+- Download report and optionally result-package also in the following cases:
+  1) run was terminated with ERROR/FATAL state, 2) run was interrupted. Previously
+  report and result-package were downloaded only when all planned test cases were run.
+- Plugin dependencies and core libraries are updated. Now the oldest supported
+  Jenkins version is 2.375.4 which requires Java 11.
+- The used HTTP client was changed from OkHttp to Java 11 to fix the CVE-2023-3635
+  vulnerability and to reduce dependencies.
+- This plugin version requires Defensics 2023.6.0 or newer.
 
 ### Version 2022.12.0
 - Update plugin to match Defensics 2022.12 API changes. This plugin version

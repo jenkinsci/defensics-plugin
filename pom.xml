@@ -121,7 +121,7 @@
           <properties>
             <owner>Synopsys, Inc.</owner>
             <inceptionYear>2020</inceptionYear>
-            <year>2021</year>
+            <year>2023</year>
           </properties>
           <includes>
             <include>**/*.java</include>

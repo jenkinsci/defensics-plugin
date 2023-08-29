@@ -151,6 +151,7 @@
               <encoding>UTF-8</encoding>
               <failOnViolation>true</failOnViolation>
               <logViolationsToConsole>true</logViolationsToConsole>
+              <includeTestSourceDirectory>true</includeTestSourceDirectory>
               <checkstyleRules>
                   <!-- Checkstyle is used now only to check file headers since mycila license plugin didn't support multiple year format.
                        If there are more checks, move this configuration to own file. 

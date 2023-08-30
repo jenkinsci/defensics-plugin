@@ -1,5 +1,5 @@
 /*
- * Copyright © 2020-2022 Synopsys, Inc.
+ * Copyright © 2020-2023 Synopsys, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,7 +70,7 @@ public class RunPipelineIT {
   ));
 
   // If true, prints Jenkins console logs for each run
-  private final boolean dumpRunLogs = true;
+  private static final boolean DUMP_RUN_LOGS = true;
 
   private static ClientAndServer mockServer;
   @Rule
@@ -248,7 +248,7 @@ public class RunPipelineIT {
   }
 
   private void dumpRunLog(WorkflowRun run) throws IOException {
-    if (dumpRunLogs) {
+    if (DUMP_RUN_LOGS) {
       run.getLog(999).forEach(System.out::println);
     }
   }

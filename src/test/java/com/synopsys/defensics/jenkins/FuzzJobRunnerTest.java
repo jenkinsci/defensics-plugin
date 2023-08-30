@@ -115,7 +115,7 @@ public class FuzzJobRunnerTest {
   @Mock
   private PluginManager pluginManager;
 
-  private final boolean saveResultPackage = false;
+  private static final boolean SAVE_RESULT_PACKAGE_FALSE = false;
 
   private static final String RUN_ID = "5adcf4cc-7a86-4f3c-8fa4-ba316ce686c0";
 
@@ -144,7 +144,7 @@ public class FuzzJobRunnerTest {
         testplan,
         "",
         instanceConfiguration,
-        saveResultPackage
+        SAVE_RESULT_PACKAGE_FALSE
     );
 
     verify(jenkinsRun).setResult(Result.SUCCESS);
@@ -185,7 +185,7 @@ public class FuzzJobRunnerTest {
           testplan,
           "",
           instanceConfiguration,
-          saveResultPackage
+          SAVE_RESULT_PACKAGE_FALSE
         )
     );
 
@@ -247,7 +247,7 @@ public class FuzzJobRunnerTest {
           testplan,
           "",
           instanceConfiguration,
-          saveResultPackage
+          SAVE_RESULT_PACKAGE_FALSE
       )
     );
 
@@ -277,7 +277,7 @@ public class FuzzJobRunnerTest {
             testplan,
             "",
             instanceConfiguration,
-            saveResultPackage
+            SAVE_RESULT_PACKAGE_FALSE
         )
     );
     assertThat(exception.getMessage(), is("Couldn't load suite, error: Suite error XXX"));
@@ -304,7 +304,7 @@ public class FuzzJobRunnerTest {
             testplan,
             "",
             instanceConfiguration,
-            saveResultPackage
+            SAVE_RESULT_PACKAGE_FALSE
         )
     );
     assertThat(exception.getMessage(), is("Couldn't load suite, error: Suite error XXX"));
@@ -332,7 +332,7 @@ public class FuzzJobRunnerTest {
         testplan,
         "",
         instanceConfiguration,
-        saveResultPackage
+        SAVE_RESULT_PACKAGE_FALSE
     );
 
     verify(jenkinsRun).setResult(Result.SUCCESS);

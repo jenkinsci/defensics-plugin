@@ -1,6 +1,6 @@
 # Changelog
 
-## v2023.9.0 - 2023-09-XX
+## v2023.9.0 - 2023-09-08
 - Download report and optionally result-package also in the following cases:
   1) run was terminated with ERROR/FATAL state, 2) run was interrupted. Previously
   report and result-package were downloaded only when all planned test cases were run.

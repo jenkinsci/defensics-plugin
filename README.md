@@ -84,8 +84,8 @@ To install the plugin manually to a Jenkins:
   report and result-package were downloaded only when all planned test cases were run.
 - Plugin dependencies and core libraries are updated. Now the oldest supported
   Jenkins version is 2.375.4 which requires Java 11.
-- The used HTTP client was changed from OkHttp to Java 11 to fix the CVE-2023-3635
-  vulnerability and to reduce dependencies.
+- The used HTTP client was changed from OkHttp to Java 11 HTTP client to fix the
+  CVE-2023-3635 vulnerability and to reduce dependencies.
 - This plugin version requires Defensics 2023.6.0 or newer.
 
 ### Version 2022.12.0

@@ -38,6 +38,9 @@ import org.junit.Test;
 import org.junit.rules.Timeout;
 
 public class TrendGraphTest {
+  static {
+    System.setProperty("java.awt.headless", "true");
+  }
 
   private List<Run<?,?>> runs;
   private TrendGraph trendGraph;

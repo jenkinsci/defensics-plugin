@@ -28,16 +28,22 @@ import hudson.model.Run;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.Timeout;
 
 public class TrendGraphTest {
 
   private List<Run<?,?>> runs;
   private TrendGraph trendGraph;
+
+  @Rule
+  public Timeout timeout = new Timeout(20, TimeUnit.SECONDS);
 
   @Before
   public void setup() {

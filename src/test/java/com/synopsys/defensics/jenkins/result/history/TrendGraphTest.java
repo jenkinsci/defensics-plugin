@@ -32,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 import org.jfree.chart.JFreeChart;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -64,7 +63,6 @@ public class TrendGraphTest {
       runs.add(run);
     }
     trendGraph = new TrendGraph(runs);
-    Assume.assumeTrue("FIXME: Remove, testing if tests proceed to this line", false);
   }
 
   @Test

@@ -32,10 +32,8 @@ import org.jfree.chart.JFreeChart;
 import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-@Ignore("Disable temporarily to see if Windows CI tests pass without timeout")
 public class TrendGraphTest {
 
   private List<Run<?,?>> runs;

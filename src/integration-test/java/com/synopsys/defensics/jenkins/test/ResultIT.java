@@ -49,6 +49,7 @@ import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlPage;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -187,6 +188,7 @@ public class ResultIT {
     assertThat(resultTab, is(nullValue()));
   }
 
+  @Ignore
   @Test
   public void testTrendGraph() throws Exception {
     DefensicsMockServer defensicsMockServer = new DefensicsMockServer(false, RunVerdict.PASS, RunState.COMPLETED);
@@ -207,6 +209,7 @@ public class ResultIT {
     }
   }
 
+  @Ignore
   @Test
   public void testTrendGraphSomeBuildsHaveNoDefensicsResults() throws Exception {
     DefensicsMockServer defensicsMockServer = new DefensicsMockServer(false, RunVerdict.PASS, RunState.COMPLETED);

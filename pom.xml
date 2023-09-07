@@ -14,6 +14,7 @@
     <jenkins.version>2.375.4</jenkins.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <surefire.rerunFailingTestsCount>0</surefire.rerunFailingTestsCount>
+    <jacoco.skip>true</jacoco.skip>
   </properties>
   <name>Defensics</name>
   <url>https://github.com/jenkinsci/defensics-plugin/blob/master/doc/user-guide.md</url>

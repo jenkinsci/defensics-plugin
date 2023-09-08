@@ -415,7 +415,7 @@ public class FuzzJobRunner {
    *
    * @param jenkinsRun   Jenkins run
    * @param defensicsRun Defensics run
-   * @param testPlan
+   * @param testPlan Originally used test plan file to construct result-package file name
    * @throws Exception See {@link ApiService#saveResultPackage(FilePath, String, Run)
    *                   saveResultPackage} for possible exceptions
    */

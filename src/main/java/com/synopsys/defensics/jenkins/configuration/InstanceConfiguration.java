@@ -135,7 +135,7 @@ public class InstanceConfiguration extends
      *
      * @param item          nearest ancestor item in Jenkins hierarchy.
      * @param credentialsId currently selected credentials (can be null).
-     * @return
+     * @return List box model.
      */
     public ListBoxModel doFillCredentialsIdItems(
         @AncestorInPath Item item,
@@ -162,7 +162,7 @@ public class InstanceConfiguration extends
      *
      * @param item  nearest ancestor item in Jenkins hierarchy.
      * @param value value of credentials id.
-     * @return
+     * @return Form validation result.
      */
     public FormValidation doCheckCredentialsId(
         @AncestorInPath Item item,

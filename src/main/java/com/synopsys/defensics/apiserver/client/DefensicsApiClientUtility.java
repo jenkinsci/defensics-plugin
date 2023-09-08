@@ -97,8 +97,6 @@ public class DefensicsApiClientUtility {
 
   /**
    * Configures object mapper to use dashes in field names and Java 8 time format, etc.
-   *
-   * @param mapper ObjectMapper to configure
    */
   protected static ObjectMapper createObjectMapper() {
     ObjectMapper objectMapper = new ObjectMapper();

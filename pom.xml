@@ -116,9 +116,9 @@
             <headerDefinition>/src/license/header-definition.xml</headerDefinition>
           </headerDefinitions>
           <properties>
-            <owner>Synopsys, Inc.</owner>
+            <owner>Black Duck Software, Inc</owner>
             <inceptionYear>2020</inceptionYear>
-            <year>2023</year>
+            <year>2024</year>
           </properties>
           <includes>
             <include>**/*.java</include>

@@ -6,7 +6,7 @@
     <artifactId>plugin</artifactId>
     <version>4.88</version>
   </parent>
-  <groupId>com.synopsys</groupId>
+  <groupId>io.jenkins.plugins</groupId>
   <artifactId>defensics</artifactId>
   <version>2023.9.1-SNAPSHOT</version>
   <packaging>hpi</packaging>

@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -57,12 +58,14 @@ public class HtmlReportPublisherTargetTest {
   @Test
   public void testEqualsAndHashCode() {
     EqualsVerifier.forClass(HtmlReportPublisherTarget.class)
+        .suppress(Warning.NONFINAL_FIELDS)
         .withRedefinedSuperclass()
         .withIgnoredFields(
             "reportTitles",
             "includes",
             "escapeUnderscores",
-            "useWrapperFileDirectly"
+            "useWrapperFileDirectly",
+            "numberOfWorkers"
         )
         .verify();
   }

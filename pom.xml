@@ -29,8 +29,8 @@
   </organization>
   <developers>
     <developer>
-      <id>synopsys_oss</id>
-      <email>sig-rnd-defensics-oss@synopsys.com</email>
+      <id>defensics_oss</id>
+      <email>sig-rnd-defensics-oss@blackduck.com</email>
     </developer>
   </developers>
   <scm>

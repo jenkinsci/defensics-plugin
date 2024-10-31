@@ -2,12 +2,12 @@
 
 ## Overview
 
-The Synopsys Defensics Jenkins plugin enables you to integrate Defensics fuzz 
+The Black Duck Defensics Jenkins plugin enables you to integrate Defensics fuzz
 testing into your Jenkins builds. It allows you to connect to multiple Defensics 
 instances and run pre-configured fuzz tests on them.
 
 More information on Defensics and fuzz testing is available at 
-https://www.synopsys.com/software-integrity/security-testing/fuzz-testing.html.
+https://www.blackduck.com/fuzz-testing.html.
  
 ## Requirements
 
@@ -126,7 +126,7 @@ The full syntax is:
 
 `defensics configurationFilePath: 'my_suite_configuration.set', 
 configurationOverrides: '--uri https://example.com', defensicsInstance: 
-'synopsys_defensics', saveResultPackage: true`
+'my_defensics_instance', saveResultPackage: true`
 
 The parameters are explained above in Configuring Defensics test steps for freestyle 
 projects.

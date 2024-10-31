@@ -37,7 +37,7 @@ CLI setting format. The format is **--key value**, where:
 The available settings depend on the test suite in use. To find out more, see 
 Defensics CLI help by using a machine where Defensics is installed and running:
 
-`java -jar /opt/synopsys/defensics/monitor/boot.jar --full-help`
+`java -jar <defensics-installation-path>/monitor/boot.jar --full-help`
 
 ## Why did my fuzzing step fail?
 
@@ -57,5 +57,5 @@ look for the lines that start with \[Defensics\] for errors.
 For more information about both kinds of failures, see Defensics documentation.
 
 ## How can I get more help?
-To get more help, contact Synopsys Software Integrity support: 
-https://www.synopsys.com/software-integrity/support.html.
+To get more help, contact Black Duck Software support:
+https://community.blackduck.com/

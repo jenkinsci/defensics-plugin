@@ -1,4 +1,4 @@
 <?jelly escape-by-default='true'?>
 <div>
-    Synopsys Defensics plugin for fuzz testing.
+    Defensics plugin for fuzz testing.
 </div>

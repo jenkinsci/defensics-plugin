@@ -43,11 +43,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.apache.commons.lang3.SystemUtils;
 import org.htmlunit.Page;
 import org.htmlunit.html.DomElement;
 import org.htmlunit.html.HtmlAnchor;
 import org.htmlunit.html.HtmlPage;
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -85,7 +87,9 @@ public class ResultIT {
 
   @After
   public void stopServer() {
-    DefensicsMockServer.stopMockServer(mockServer);
+    if (mockServer != null) {
+      DefensicsMockServer.stopMockServer(mockServer);
+    }
   }
 
   @Test
@@ -189,6 +193,10 @@ public class ResultIT {
 
   @Test
   public void testTrendGraph() throws Exception {
+    Assume.assumeFalse(
+      "TrendGraph tests are ignored on Windows as they stall in Github Jenkins build but pass locally",
+      SystemUtils.IS_OS_WINDOWS
+    );
     DefensicsMockServer defensicsMockServer = new DefensicsMockServer(false, RunVerdict.PASS, RunState.COMPLETED);
     defensicsMockServer.initServer(ResultIT.mockServer);
 
@@ -209,6 +217,10 @@ public class ResultIT {
 
   @Test
   public void testTrendGraphSomeBuildsHaveNoDefensicsResults() throws Exception {
+    Assume.assumeFalse(
+      "TrendGraph tests are ignored on Windows as they stall in Github Jenkins build but pass locally",
+      SystemUtils.IS_OS_WINDOWS
+    );
     DefensicsMockServer defensicsMockServer = new DefensicsMockServer(false, RunVerdict.PASS, RunState.COMPLETED);
     defensicsMockServer.initServer(ResultIT.mockServer);
 
@@ -231,6 +243,10 @@ public class ResultIT {
 
   @Test
   public void testTrendGraphNotShownWhenTooFewResults() throws Exception {
+    Assume.assumeFalse(
+      "TrendGraph tests are ignored on Windows as they stall in Github Jenkins build but pass locally",
+      SystemUtils.IS_OS_WINDOWS
+    );
     DefensicsMockServer defensicsMockServer = new DefensicsMockServer(false, RunVerdict.PASS, RunState.COMPLETED);
     defensicsMockServer.initServer(ResultIT.mockServer);
 

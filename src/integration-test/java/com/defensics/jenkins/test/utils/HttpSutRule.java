@@ -28,7 +28,7 @@ import org.junit.rules.ExternalResource;
 /**
  * Stub HTTP server used in E2E tests as a JUnit test rule.
  */
-public class HttpSutRule extends ExternalResource {
+public final class HttpSutRule extends ExternalResource {
   private final HttpServer httpServer;
 
   /** Default request handler. Returns 200 OK with short response. */

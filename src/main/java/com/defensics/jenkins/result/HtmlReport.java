@@ -22,7 +22,7 @@ import java.io.InterruptedIOException;
 import java.nio.channels.ClosedByInterruptException;
 import org.apache.commons.lang.exception.ExceptionUtils;
 
-public class HtmlReport {
+public final class HtmlReport {
 
   private final FilePath reportFolder;
   private final FilePath reportFile;

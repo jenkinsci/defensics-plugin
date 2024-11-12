@@ -20,7 +20,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.defensics.apiserver.model.Run;
 import com.defensics.apiserver.model.RunState;
@@ -68,37 +68,36 @@ public class ApiServiceTest {
 
   @Test
   public void testTestConnectionFailConnection() throws Exception {
-    try {
-      api = new ApiService(
-          "http://invalid.invalid", TOKEN, CERTIFICATE_VALIDATION_DISABLED);
-      api.healthCheck();
-      fail("Test connection with false url did not fail");
-    } catch (DefensicsRequestException exception) {
-      assertThat(
-          exception.getMessage(), containsString("invalid.invalid"));
-    }
+    api = new ApiService(
+        "http://invalid.invalid", TOKEN, CERTIFICATE_VALIDATION_DISABLED);
+    DefensicsRequestException exception = assertThrows(
+        DefensicsRequestException.class,
+        api::healthCheck
+    );
+    assertThat(exception.getMessage(), containsString("invalid.invalid"));
   }
 
   @Test
   public void testTestConnectionFailAuth() throws Exception {
-    try {
-      api = new ApiService(
-          DEFENSICS_URL, "wrong-token", CERTIFICATE_VALIDATION_DISABLED);
-      api.healthCheck();
-      fail("Test connection authentication did not return DefensicsRequestException");
-    } catch (DefensicsRequestException exception) {
-      final String apiAddress = "http://127.0.0.1:1080/api/v2/healthcheck";
+    api = new ApiService(
+        DEFENSICS_URL, "wrong-token", CERTIFICATE_VALIDATION_DISABLED);
+    DefensicsRequestException exception = assertThrows(
+        DefensicsRequestException.class,
+        api::healthCheck
+    );
 
-      assertThat(
-          exception.getMessage(),
-          is(equalTo("Unable to connect Defensics server health check at address " + apiAddress
-              + ". "
-              + "Please check you are using the "
-              + "correct token and Defensics API server is running. "
-              + "HTTP status code: 401, message: Unauthorized. "
-              + "No authentication credentials found in request."
-              )));
-    }
+    final String apiAddress = "http://127.0.0.1:1080/api/v2/healthcheck";
+
+    assertThat(
+        exception.getMessage(),
+        is("Unable to connect Defensics server health check at address " + apiAddress
+            + ". "
+            + "Please check you are using the "
+            + "correct token and Defensics API server is running. "
+            + "HTTP status code: 401, message: Unauthorized. "
+            + "No authentication credentials found in request."
+        )
+    );
   }
 
   @Test

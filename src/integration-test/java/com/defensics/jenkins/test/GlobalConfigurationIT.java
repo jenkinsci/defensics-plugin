@@ -24,7 +24,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import com.defensics.jenkins.configuration.InstanceConfiguration;
 import com.defensics.jenkins.configuration.PluginConfiguration;
@@ -69,36 +69,38 @@ public class GlobalConfigurationIT {
   }
 
   @Test
-  public void testMissingName() throws Exception {
+  public void testMissingName() {
     instanceConfiguration = new InstanceConfiguration(
         null, URL, CERTIFICATE_VALIDATION_DISABLED, CREDENTIALS_ID);
     defensicsInstances = new ArrayList<>();
     defensicsInstances.add(instanceConfiguration);
     pluginConfiguration.setDefensicsInstances(defensicsInstances);
 
-    try {
-      jenkinsRule.configRoundtrip();
-      fail("Saving global configuration should fail.");
-    } catch (FailingHttpStatusCodeException exception) {
-      assertThat(
-          exception.getResponse().getContentAsString(),
-          containsString("Defensics instance name is empty"));
-    }
+    FailingHttpStatusCodeException exception = assertThrows(
+        FailingHttpStatusCodeException.class,
+        jenkinsRule::configRoundtrip
+    );
+
+    assertThat(
+        exception.getResponse().getContentAsString(),
+        containsString("Defensics instance name is empty")
+    );
   }
 
   @Test
-  public void testDuplicateName() throws Exception {
+  public void testDuplicateName() {
     defensicsInstances.add(instanceConfiguration);
     pluginConfiguration.setDefensicsInstances(defensicsInstances);
 
-    try {
-      jenkinsRule.configRoundtrip();
-      fail("Saving global configuration should fail.");
-    } catch (FailingHttpStatusCodeException exception) {
-      assertThat(
-          exception.getResponse().getContentAsString(),
-          containsString("The Defensics instance name is already configured: " + NAME));
-    }
+    FailingHttpStatusCodeException exception = assertThrows(
+        FailingHttpStatusCodeException.class,
+        jenkinsRule::configRoundtrip
+    );
+
+    assertThat(
+        exception.getResponse().getContentAsString(),
+        containsString("The Defensics instance name is already configured: " + NAME)
+    );
   }
 
   @Test
@@ -109,14 +111,15 @@ public class GlobalConfigurationIT {
     defensicsInstances.add(instanceConfiguration);
     pluginConfiguration.setDefensicsInstances(defensicsInstances);
 
-    try {
-      jenkinsRule.configRoundtrip();
-      fail("Saving global configuration should fail.");
-    } catch (FailingHttpStatusCodeException exception) {
-      assertThat(
-          exception.getResponse().getContentAsString(),
-          containsString("Defensics instance URL is empty"));
-    }
+    FailingHttpStatusCodeException exception = assertThrows(
+        FailingHttpStatusCodeException.class,
+        jenkinsRule::configRoundtrip
+    );
+
+    assertThat(
+        exception.getResponse().getContentAsString(),
+        containsString("Defensics instance URL is empty")
+    );
   }
 
   @Test
@@ -127,14 +130,15 @@ public class GlobalConfigurationIT {
     defensicsInstances.add(instanceConfiguration);
     pluginConfiguration.setDefensicsInstances(defensicsInstances);
 
-    try {
-      jenkinsRule.configRoundtrip();
-      fail("Saving global configuration should fail.");
-    } catch (FailingHttpStatusCodeException exception) {
-      assertThat(
-          exception.getResponse().getContentAsString(),
-          containsString("Defensics instance URL is not valid"));
-    }
+    FailingHttpStatusCodeException exception = assertThrows(
+        FailingHttpStatusCodeException.class,
+        jenkinsRule::configRoundtrip
+    );
+
+    assertThat(
+        exception.getResponse().getContentAsString(),
+        containsString("Defensics instance URL is not valid")
+    );
   }
 
   @Test
@@ -152,7 +156,5 @@ public class GlobalConfigurationIT {
     assertThat(listBoxModel.get(0).value, is(equalTo(instanceConfiguration.getName())));
     assertThat(listBoxModel.get(1).name, is(equalTo(instanceConfiguration2.getDisplayName())));
     assertThat(listBoxModel.get(1).value, is(equalTo(instanceConfiguration2.getName())));
-
   }
-
 }

@@ -23,7 +23,7 @@ import static com.defensics.jenkins.test.utils.Constants.URL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import hudson.model.Descriptor.FormException;
 import java.util.ArrayList;
@@ -63,14 +63,13 @@ public class InstanceConfigurationValidatorTest {
     defensicsInstances.add(configuration);
     defensicsInstances.add(invalidConfiguration);
 
-    try {
-      instanceConfigurationValidator.validate(defensicsInstances);
-      fail("instanceConfigurationValidator.validate didn't throw FormException");
-    } catch (FormException exception) {
-      assertThat(
-          exception.getMessage(),
-          is(equalTo("Defensics instance name is empty")));
-    }
+    FormException exception = assertThrows(
+        FormException.class,
+        () -> instanceConfigurationValidator.validate(defensicsInstances)
+    );
+    assertThat(
+        exception.getMessage(),
+        is(equalTo("Defensics instance name is empty")));
   }
 
   @Test
@@ -79,14 +78,11 @@ public class InstanceConfigurationValidatorTest {
         new InstanceConfiguration(NAME, "", CERTIFICATE_VALIDATION_DISABLED, CREDENTIALS_ID);
     defensicsInstances.add(configuration);
     defensicsInstances.add(invalidConfiguration);
-    try {
-      instanceConfigurationValidator.validate(defensicsInstances);
-      fail("instanceConfigurationValidator.validate didn't throw FormException");
-    } catch (FormException exception) {
-      assertThat(
-          exception.getMessage(),
-          is(equalTo("Defensics instance URL is empty")));
-    }
+    FormException exception = assertThrows(
+        FormException.class,
+        () -> instanceConfigurationValidator.validate(defensicsInstances)
+    );
+    assertThat(exception.getMessage(), is(equalTo("Defensics instance URL is empty")));
   }
 
   @Test
@@ -96,29 +92,27 @@ public class InstanceConfigurationValidatorTest {
         NAME, invalidUrl, CERTIFICATE_VALIDATION_DISABLED, CREDENTIALS_ID);
     defensicsInstances.add(configuration);
     defensicsInstances.add(invalidConfiguration);
-    try {
-      instanceConfigurationValidator.validate(defensicsInstances);
-      fail("instanceConfigurationValidator.validate didn't throw FormException");
-    } catch (FormException exception) {
-      assertThat(
-          exception.getMessage(),
-          is(equalTo("Defensics instance URL is not valid: " + invalidUrl)));
-    }
+    FormException exception = assertThrows(
+        FormException.class,
+        () -> instanceConfigurationValidator.validate(defensicsInstances)
+    );
+    assertThat(
+        exception.getMessage(),
+        is(equalTo("Defensics instance URL is not valid: " + invalidUrl))
+    );
   }
 
   @Test
   public void testValidateNonUniqueName() {
     defensicsInstances.add(configuration);
     defensicsInstances.add(configuration);
-    try {
-      instanceConfigurationValidator.validate(defensicsInstances);
-      fail("instanceConfigurationValidator.validate didn't throw FormException");
-    } catch (FormException exception) {
-      assertThat(
-          exception.getMessage(),
-          is(equalTo(
-              "The Defensics instance name is already configured: "
-                  + configuration.getName())));
-    }
+    FormException exception = assertThrows(
+        FormException.class,
+        () -> instanceConfigurationValidator.validate(defensicsInstances)
+    );
+    assertThat(
+        exception.getMessage(),
+        is("The Defensics instance name is already configured: " + configuration.getName())
+    );
   }
 }

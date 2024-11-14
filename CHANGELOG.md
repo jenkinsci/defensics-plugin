@@ -1,5 +1,16 @@
 # Changelog
 
+## v2024.11.0 - 2024-11-26
+- Changed the plugin branding to Black Duck. NOTE: This version is incompatible with
+  previous releases, meaning that old configurations and results aren't usable
+  in this version as old configuration/result objects had class path
+  references to the old company. The configurations and results can be fixed
+  manually if needed; ask Black Duck support for more information.
+- Updated plugin reference Jenkins LTS version to 2.426.3, which requires Java 11.
+- Updated Credentials plugin to 1380.va_435002fa_924.
+- Updated Plain Credentials plugin to 183.va_de8f1dd5a_2b_.
+- Updated other plugin dependencies.
+
 ## v2023.9.0 - 2023-09-08
 - Download report and optionally result-package also in the following cases:
   1) run was terminated with ERROR/FATAL state, 2) run was interrupted. Previously

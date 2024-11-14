@@ -78,6 +78,17 @@ To install the plugin manually to a Jenkins:
 
 ## Release notes
 
+### Version 2024.11.0
+- Changed the plugin branding to Black Duck. NOTE: This version is incompatible with
+  previous releases, meaning that old configurations and results aren't usable
+  in this version as old configuration/result objects had class path
+  references to the old company. The configurations and results can be fixed
+  manually if needed; ask Black Duck support for more information.
+- Plugin dependencies and core libraries are updated. Now the oldest supported
+  Jenkins version is 2.426.3, which requires Java 11.
+- No functional changes.
+- This plugin version requires Defensics 2023.6.0 or newer.
+
 ### Version 2023.9.0
 - Download report and optionally result-package also in the following cases:
   1) run was terminated with ERROR/FATAL state, 2) run was interrupted. Previously

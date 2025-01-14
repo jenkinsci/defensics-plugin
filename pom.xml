@@ -12,7 +12,9 @@
   <packaging>hpi</packaging>
   <properties>
     <hpi.compatibleSinceVersion>2024.11.0</hpi.compatibleSinceVersion>
-    <jenkins.version>2.426.3</jenkins.version>
+    <!-- https://www.jenkins.io/doc/developer/plugin-development/choosing-jenkins-baseline/ -->
+    <jenkins.baseline>2.426</jenkins.baseline>
+    <jenkins.version>${jenkins.baseline}.3</jenkins.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <surefire.rerunFailingTestsCount>0</surefire.rerunFailingTestsCount>
   </properties>
@@ -330,7 +332,7 @@
     <dependencies>
       <dependency>
         <groupId>io.jenkins.tools.bom</groupId>
-        <artifactId>bom-2.426.x</artifactId>
+        <artifactId>bom-${jenkins.baseline}.x</artifactId>
         <version>3208.vb_21177d4b_cd9</version>
         <scope>import</scope>
         <type>pom</type>

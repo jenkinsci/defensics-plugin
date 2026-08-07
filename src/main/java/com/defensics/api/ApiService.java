@@ -29,6 +29,7 @@ import com.defensics.client.UnsafeTlsConfigurator;
 import com.defensics.client.model.HtmlReport;
 import com.defensics.jenkins.util.DefensicsUtils;
 import hudson.FilePath;
+import hudson.Functions;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
@@ -42,7 +43,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import org.apache.commons.lang.exception.ExceptionUtils;
 
 /**
  * Intermediate API service class between Jenkins job and Defensics client. Does things which client
@@ -387,9 +387,9 @@ public class ApiService {
     // Check if there was user interruption, and if yes, map to InterruptedException
     if (cause != null) {
       boolean jobInterruptedByUser =
-          (ExceptionUtils.indexOfType(cause, InterruptedIOException.class) >= 0
-              || ExceptionUtils.indexOfType(cause, ClosedByInterruptException.class) >= 0
-              || ExceptionUtils.indexOfType(cause, InterruptedException.class) >= 0);
+          (hasCauseOfType(cause, InterruptedIOException.class)
+              || hasCauseOfType(cause, ClosedByInterruptException.class)
+              || hasCauseOfType(cause, InterruptedException.class));
 
       // SocketTimeoutException comes from HttpClient when e.g. readTimeout is met so
       // this shouldn't come from user actions and should be classified as build fail.
@@ -432,4 +432,20 @@ public class ApiService {
         .collect(Collectors.joining("\n"));
     return healthCheckLines;
   }
+  /**
+   * True when {@code throwable} or any of its causes is of the given type, replacing Commons Lang's
+   * {@code ExceptionUtils.indexOfType(...) >= 0}.
+   */
+  private static boolean hasCauseOfType(Throwable throwable, Class<?> type) {
+    for (Throwable current = throwable; current != null; current = current.getCause()) {
+      if (type.isInstance(current)) {
+        return true;
+      }
+      if (current.getCause() == current) {
+        break;
+      }
+    }
+    return false;
+  }
+
 }

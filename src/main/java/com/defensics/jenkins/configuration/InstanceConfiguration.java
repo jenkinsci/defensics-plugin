@@ -16,7 +16,6 @@
 
 package com.defensics.jenkins.configuration;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.common.StandardListBoxModel;
@@ -36,12 +35,12 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Objects;
 import jenkins.model.Jenkins;
-import org.apache.commons.lang.StringUtils;
 import org.jenkinsci.plugins.plaincredentials.StringCredentials;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
 import org.kohsuke.stapler.verb.POST;
+import hudson.Util;
 
 /**
  * Global configuration for one Defensics Instance.
@@ -123,7 +122,7 @@ public class InstanceConfiguration extends
      * @return Ok if name is valid, otherwise Error.
      */
     public FormValidation doCheckName(@QueryParameter final String name) {
-      if (isNotBlank(name)) {
+      if (Util.fixEmptyAndTrim(name) != null) {
         return FormValidation.ok();
       } else {
         return FormValidation.error("Name is not defined");
@@ -177,7 +176,7 @@ public class InstanceConfiguration extends
           return FormValidation.ok();
         }
       }
-      if (StringUtils.isBlank(value)) {
+      if (Util.fixEmptyAndTrim(value) == null) {
         return FormValidation.ok();
       }
       if (value.startsWith("${") && value.endsWith("}")) {
@@ -195,7 +194,7 @@ public class InstanceConfiguration extends
      */
     public FormValidation doCheckUrl(@QueryParameter final String url) {
 
-      if (isNotBlank(url)) {
+      if (Util.fixEmptyAndTrim(url) != null) {
         try {
           new URL(url);
           return FormValidation.ok();

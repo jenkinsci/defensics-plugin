@@ -16,8 +16,8 @@
 
 package com.defensics.jenkins.configuration;
 
-import static org.apache.commons.lang.StringUtils.isBlank;
 
+import hudson.Util;
 import hudson.util.FormValidation;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,7 +52,7 @@ public class StepConfigurationValidator {
    *         Otherwise Error.
    */
   public FormValidation validateConfigurationOverrides(String configurationOverrides) {
-    if (isBlank(configurationOverrides)) {
+    if (Util.fixEmptyAndTrim(configurationOverrides) == null) {
       return FormValidation.ok();
     } else {
 

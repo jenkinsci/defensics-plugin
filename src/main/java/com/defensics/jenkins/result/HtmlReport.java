@@ -17,10 +17,10 @@
 package com.defensics.jenkins.result;
 
 import hudson.FilePath;
+import hudson.Functions;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.nio.channels.ClosedByInterruptException;
-import org.apache.commons.lang.exception.ExceptionUtils;
 
 public final class HtmlReport {
 
@@ -55,9 +55,9 @@ public final class HtmlReport {
 
       // Check if there was interruption, and if yes, map to InterruptedException
       if (cause != null
-          && (ExceptionUtils.indexOfType(cause, InterruptedIOException.class) >= 0
-          || ExceptionUtils.indexOfType(cause, ClosedByInterruptException.class) >= 0
-          || ExceptionUtils.indexOfType(cause, InterruptedException.class) >= 0)
+          && (hasCauseOfType(cause, InterruptedIOException.class)
+          || hasCauseOfType(cause, ClosedByInterruptException.class)
+          || hasCauseOfType(cause, InterruptedException.class))
       ) {
         throw new InterruptedException(e.getCause().getMessage());
       } else {
@@ -133,4 +133,17 @@ public final class HtmlReport {
     reportCssFile.delete();
     reportFolder.delete();
   }
+  /** True when {@code throwable} or any of its causes is of the given type. */
+  private static boolean hasCauseOfType(Throwable throwable, Class<?> type) {
+    for (Throwable current = throwable; current != null; current = current.getCause()) {
+      if (type.isInstance(current)) {
+        return true;
+      }
+      if (current.getCause() == current) {
+        break;
+      }
+    }
+    return false;
+  }
+
 }

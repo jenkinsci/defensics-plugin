@@ -16,11 +16,11 @@
 
 package com.defensics.jenkins.configuration;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import com.cloudbees.plugins.credentials.CredentialsMatchers;
 import com.cloudbees.plugins.credentials.CredentialsProvider;
 import com.cloudbees.plugins.credentials.domains.HostnameRequirement;
+import hudson.Util;
 import hudson.security.ACL;
 import java.net.URL;
 import java.util.logging.Level;
@@ -78,7 +78,7 @@ public final class AuthenticationTokenProvider {
       URL url,
       String credentialsId
   ) throws AuthenticationTokenNotFoundException {
-    if (isNotBlank(credentialsId)) {
+    if (Util.fixEmptyAndTrim(credentialsId) != null) {
       StringCredentials creds = getCredentials(url, credentialsId);
       return creds.getSecret().getPlainText();
     } else {

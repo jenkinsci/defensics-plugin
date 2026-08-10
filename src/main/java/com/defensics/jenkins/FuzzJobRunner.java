@@ -16,7 +16,6 @@
 
 package com.defensics.jenkins;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import com.defensics.api.ApiService;
 import com.defensics.apiserver.model.HealthCheckResult;
@@ -36,6 +35,7 @@ import hudson.FilePath;
 import hudson.Launcher;
 import hudson.Plugin;
 import hudson.PluginManager;
+import hudson.Util;
 import hudson.model.Result;
 import hudson.util.VersionNumber;
 import java.io.IOException;
@@ -118,7 +118,7 @@ public class FuzzJobRunner {
       logger.println(suiteLoadingMessage);
       waitForSuiteLoading(defensicsRun);
 
-      if (isNotBlank(configurationOverrides)) {
+      if (Util.fixEmptyAndTrim(configurationOverrides) != null) {
         logger.println(
             "Overriding test configuration file settings with values: " + configurationOverrides);
         defensicsClient.setTestConfigurationSettings(defensicsRun.getId(), configurationOverrides);
